@@ -1,0 +1,2 @@
+Welcome to the home of .Net client for Readmill. Watchout the wiki space for documentation / announcements etc.
+For details and latest on Readmill API itself, visit: https://github.com/Readmill/API/wiki
