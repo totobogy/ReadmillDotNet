@@ -89,9 +89,9 @@ namespace Com.Readmill.Api
             userUriTemplates.Add(UserUriTemplateType.UserReadings, new UriTemplate(userReadingsTemplate, true));
         }
 
-        private Task<User> GetUserByUrlAsync(Uri userUrl)
+        private Task<T> GetByUrlAsync<T>(Uri url)
         {
-            Task<Task<User>> task = httpClient.GetAsync(userUrl).ContinueWith(
+            Task<Task<T>> task = httpClient.GetAsync(url).ContinueWith(
                 (requestTask) =>
                 {
                     // Get HTTP response from completed task. 
@@ -104,12 +104,16 @@ namespace Com.Readmill.Api
                     return (response.Content.ReadAsStreamAsync().ContinueWith(
                         (readTask) =>
                         {
-                            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(User));
-                            return (User)ser.ReadObject(readTask.Result);
+                            using (readTask.Result)
+                            {
+                                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+                                return (T) ser.ReadObject(readTask.Result);
+                            }
                         }));
                 });
 
             return task.Unwrap();
+
         }
 
         /// <summary>
@@ -125,7 +129,7 @@ namespace Com.Readmill.Api
 
             Uri uri = userUriTemplates[UserUriTemplateType.Owner].BindByName(new Uri(this.readmillBaseUrl), parameters);
 
-            return GetUserByUrlAsync(uri);
+            return GetByUrlAsync<User>(uri);
         }
 
         /// <summary>
@@ -139,7 +143,7 @@ namespace Com.Readmill.Api
             parameters.Add(ReadmillConstants.ClientId, this.ClientId);
             parameters.Add(UserClient.UserId, userId);
 
-            return GetUserByUrlAsync(userUriTemplates[UserUriTemplateType.Users].BindByName(new Uri(this.readmillBaseUrl), parameters));
+            return GetByUrlAsync<User>(userUriTemplates[UserUriTemplateType.Users].BindByName(new Uri(this.readmillBaseUrl), parameters));
         }
 
         /// <summary>
@@ -170,36 +174,8 @@ namespace Com.Readmill.Api
             }
 
             var readingsUrl = userUriTemplates[UserUriTemplateType.UserReadings].BindByName(new Uri(this.readmillBaseUrl), parameters);
-            return GetReadingsByUrlAsync(readingsUrl);
+            return GetByUrlAsync<List<Reading>>(readingsUrl);
         }
 
-        /// <summary>
-        /// Retrieves a list of readings from a fully-formed url
-        /// </summary>
-        /// <param name="readingsUrl">Fully formed url (including authentication information)</param>
-        /// <returns></returns>
-        public Task<List<Reading>> GetReadingsByUrlAsync(Uri readingsUrl)
-        {
-            Task<Task<List<Reading>>> task = httpClient.GetAsync(readingsUrl).ContinueWith(
-                (requestTask) =>
-                {
-                    // Get HTTP response from completed task. 
-                    HttpResponseMessage response = requestTask.Result;
-
-                    // Check that response was successful or throw exception 
-                    response.EnsureSuccessStatusCode();
-
-                    //Read as stream
-                    return (response.Content.ReadAsStreamAsync().ContinueWith(
-                        (readTask) =>
-                        {
-                            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(List<Reading>));
-                            return (List<Reading>)ser.ReadObject(readTask.Result);
-                        }));
-                });
-
-            return task.Unwrap();
-
-        }
     }
 }
