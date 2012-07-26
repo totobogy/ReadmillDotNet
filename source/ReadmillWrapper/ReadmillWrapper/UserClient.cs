@@ -17,7 +17,6 @@ namespace Com.Readmill.Api
 
     public class UserClient : ReadmillClient
     {
-        HttpClient httpClient;
         Dictionary<UserUriTemplateType, UriTemplate> userUriTemplates;
 
         #region Url Templates used by UserClient
@@ -75,7 +74,6 @@ namespace Com.Readmill.Api
         public UserClient(string clientId)
         {
             this.ClientId = clientId;
-            httpClient = new HttpClient();
 
             //Populate Templates
             CreateTemplates();
@@ -87,34 +85,7 @@ namespace Com.Readmill.Api
             userUriTemplates.Add(UserUriTemplateType.Owner, new UriTemplate(ownerTemplate, true));
             userUriTemplates.Add(UserUriTemplateType.Users, new UriTemplate(usersTemplate, true));
             userUriTemplates.Add(UserUriTemplateType.UserReadings, new UriTemplate(userReadingsTemplate, true));
-        }
-
-        private Task<T> GetByUrlAsync<T>(Uri url)
-        {
-            Task<Task<T>> task = httpClient.GetAsync(url).ContinueWith(
-                (requestTask) =>
-                {
-                    // Get HTTP response from completed task. 
-                    HttpResponseMessage response = requestTask.Result;
-
-                    // Check that response was successful or throw exception 
-                    response.EnsureSuccessStatusCode();
-
-                    //Read as stream
-                    return (response.Content.ReadAsStreamAsync().ContinueWith(
-                        (readTask) =>
-                        {
-                            using (readTask.Result)
-                            {
-                                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-                                return (T) ser.ReadObject(readTask.Result);
-                            }
-                        }));
-                });
-
-            return task.Unwrap();
-
-        }
+        }        
 
         /// <summary>
         /// Retrieves the representation of the user corresponding to the authentication token.

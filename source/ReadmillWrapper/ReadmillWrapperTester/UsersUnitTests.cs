@@ -28,7 +28,7 @@ namespace ReadmillWrapperTester
                 (getUserTask) =>
                 {
                     if (!(getUserTask.Result.FullName == "Tushar Malhotra"))
-                        throw new InternalTestFailureException("Expecting FullName = Tushar Malhotra. Retrieved: " + getUserTask.Result.FullName);
+                        throw new InternalTestFailureException("Expected FullName: Tushar Malhotra. Retrieved: " + getUserTask.Result.FullName);
 
                     //ToDo: Add more / stronger validations     
                 });         
@@ -38,13 +38,8 @@ namespace ReadmillWrapperTester
         public void TestGetUserReadings()
         {
             UserClient client = new UserClient(this.clientId);
-            User me = null;
 
-            client.GetOwnerAsync(this.accessToken).ContinueWith(
-               (getUserTask) =>
-               {
-                   me = getUserTask.Result; 
-               }).Wait(TimeSpan.FromMinutes(1));   
+            User me = client.GetOwnerAsync(this.accessToken).Result;   
 
             ReadingsQueryOptions options = new ReadingsQueryOptions();
             options.CountValue = "3";
@@ -56,7 +51,7 @@ namespace ReadmillWrapperTester
                     if (getReadingsTask.Result.Count != 3)
                         throw new InternalTestFailureException("Expected 3 Readings. Retrieved: " + getReadingsTask.Result.Count);
                     
-                    //Add more / stronger validations?
+                    //Add more / stronger validations
                 });
             
         }
