@@ -23,31 +23,42 @@ namespace ReadmillWrapperTester
         public void TestGetOwner()
         {
             UserClient client = new UserClient(this.clientId);
-            User me = client.GetOwner(this.accessToken);
 
-            //Validations
-            if (!(me.FullName == "Tushar Malhotra"))
-                throw new InternalTestFailureException("FullName not validated.");
+            client.GetOwnerAsync(this.accessToken).ContinueWith(
+                (getUserTask) =>
+                {
+                    if (!(getUserTask.Result.FullName == "Tushar Malhotra"))
+                        throw new InternalTestFailureException("Expecting FullName = Tushar Malhotra. Retrieved: " + getUserTask.Result.FullName);
 
-            //ToDo: Add more / stronger validations      
+                    //ToDo: Add more / stronger validations     
+                });         
         }
 
         [TestMethod]
         public void TestGetUserReadings()
         {
             UserClient client = new UserClient(this.clientId);
-            User me = client.GetOwner(this.accessToken);
-            
+            User me = null;
+
+            client.GetOwnerAsync(this.accessToken).ContinueWith(
+               (getUserTask) =>
+               {
+                   me = getUserTask.Result; 
+               }).Wait(TimeSpan.FromMinutes(1));   
+
             ReadingsQueryOptions options = new ReadingsQueryOptions();
             options.CountValue = "3";
 
-            List<Reading> myReadings = client.GetUserReadings(me.Id, options);
-
-            //Validations
-            if (myReadings.Count != 3)
-                throw new InternalTestFailureException("Expected 3 Readings. Retrieved: " + myReadings.Count);
-
-            //Add more / stronger validations?
+            client.GetUserReadings(me.Id, options).ContinueWith(
+                (getReadingsTask) =>
+                {
+                    //Validations
+                    if (getReadingsTask.Result.Count != 3)
+                        throw new InternalTestFailureException("Expected 3 Readings. Retrieved: " + getReadingsTask.Result.Count);
+                    
+                    //Add more / stronger validations?
+                });
+            
         }
     }
 }

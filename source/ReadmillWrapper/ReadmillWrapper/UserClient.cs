@@ -6,13 +6,15 @@ using System.Net.Http;
 using System.Runtime.Serialization.Json;
 using Com.Readmill.Api.DataContracts;
 using System.Collections.Specialized;
+using Com.Readmill.Api;
+using System.Threading.Tasks;
 
 namespace Com.Readmill.Api
 {
-    //ToDo: USer Async? 
     //ToDo: Data types - not everything string
-    //ToDo: Clean up DC names
     //ToDo: Refactor base class for client?
+    //ToDo: Need Design / Redesign the entry point interface for API
+
     public class UserClient : ReadmillClient
     {
         HttpClient httpClient;
@@ -87,11 +89,9 @@ namespace Com.Readmill.Api
             userUriTemplates.Add(UserUriTemplateType.UserReadings, new UriTemplate(userReadingsTemplate, true));
         }
 
-        private User GetUserByUrl(Uri userUrl)
+        private Task<User> GetUserByUrlAsync(Uri userUrl)
         {
-            User user = null;
-
-            httpClient.GetAsync(userUrl).ContinueWith(
+            Task<Task<User>> task = httpClient.GetAsync(userUrl).ContinueWith(
                 (requestTask) =>
                 {
                     // Get HTTP response from completed task. 
@@ -101,15 +101,15 @@ namespace Com.Readmill.Api
                     response.EnsureSuccessStatusCode();
 
                     //Read as stream
-                    response.Content.ReadAsStreamAsync().ContinueWith(
+                    return (response.Content.ReadAsStreamAsync().ContinueWith(
                         (readTask) =>
                         {
                             DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(User));
-                            user = (User)ser.ReadObject(readTask.Result);
-                        }).Wait();
-                }).Wait();
+                            return (User)ser.ReadObject(readTask.Result);
+                        }));
+                });
 
-            return user;
+            return task.Unwrap();
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <param name="accessToken">authentication token</param>
         /// <returns>representation of the user corresponding to the authentication token</returns>
-        public User GetOwner(string accessToken)
+        public Task<User> GetOwnerAsync(string accessToken)
         {
             NameValueCollection parameters = new NameValueCollection();
             parameters.Add(ReadmillConstants.ClientId, this.ClientId);
@@ -125,7 +125,7 @@ namespace Com.Readmill.Api
 
             Uri uri = userUriTemplates[UserUriTemplateType.Owner].BindByName(new Uri(this.readmillBaseUrl), parameters);
 
-            return GetUserByUrl(uri);
+            return GetUserByUrlAsync(uri);
         }
 
         /// <summary>
@@ -133,13 +133,13 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <param name="userId">The Readmill user-id of the user you want to retrieve.</param>
         /// <returns></returns>
-        public User GetUserById(string userId)
+        public Task<User> GetUserByIdAsync(string userId)
         {
             NameValueCollection parameters = new NameValueCollection();
             parameters.Add(ReadmillConstants.ClientId, this.ClientId);
             parameters.Add(UserClient.UserId, userId);
 
-            return GetUserByUrl(userUriTemplates[UserUriTemplateType.Users].BindByName(new Uri(this.readmillBaseUrl), parameters));
+            return GetUserByUrlAsync(userUriTemplates[UserUriTemplateType.Users].BindByName(new Uri(this.readmillBaseUrl), parameters));
         }
 
         /// <summary>
@@ -148,38 +148,29 @@ namespace Com.Readmill.Api
         /// <param name="userId">Readmill user-id of the user whose readings you want to retrieve</param>
         /// <param name="options">Query options for retrieving the readings</param>
         /// <returns></returns>
-        public List<Reading> GetUserReadings(string userId, ReadingsQueryOptions options)
+        public Task<List<Reading>> GetUserReadings(string userId, ReadingsQueryOptions options)
         {
             NameValueCollection parameters = new NameValueCollection();
             parameters.Add(ReadmillConstants.ClientId, this.ClientId);
             parameters.Add(UserClient.UserId, userId);
             
-            //ToDo: Write an extension method on UriTemplate class to ignore null params from final uri
-            
-            if(!string.IsNullOrEmpty(options.FromValue))
-                parameters.Add(ReadingsQueryOptions.From, options.FromValue);
-
-            if (!string.IsNullOrEmpty(options.ToValue))
-                parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-
-            if (!string.IsNullOrEmpty(options.CountValue))
-                parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
-
-            if (!string.IsNullOrEmpty(options.OrderValueInternal))
-                parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
-
-            if (!string.IsNullOrEmpty(options.HighlightsCountFromValue))
-                parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
-
-            if (!string.IsNullOrEmpty(options.HighlightsCountToValue))
-                parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
-
-            if (!string.IsNullOrEmpty(options.StatusValue))
+            parameters.Add(ReadingsQueryOptions.From, options.FromValue);
+            parameters.Add(ReadingsQueryOptions.To, options.ToValue);
+            parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
+            parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
+            parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
+            parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
             parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
 
-            var readingsUrl = userUriTemplates[UserUriTemplateType.UserReadings].BindByName(new Uri(this.readmillBaseUrl), parameters);
-            return GetReadingsByUrl(readingsUrl);
+            //Remove extraneous parameters because Readmill doesn't like empty pairs
+            foreach (string key in parameters.AllKeys)
+            {
+                if (string.IsNullOrEmpty(parameters[key]))
+                    parameters.Remove(key);
+            }
 
+            var readingsUrl = userUriTemplates[UserUriTemplateType.UserReadings].BindByName(new Uri(this.readmillBaseUrl), parameters);
+            return GetReadingsByUrlAsync(readingsUrl);
         }
 
         /// <summary>
@@ -187,11 +178,9 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <param name="readingsUrl">Fully formed url (including authentication information)</param>
         /// <returns></returns>
-        public List<Reading> GetReadingsByUrl(Uri readingsUrl)
+        public Task<List<Reading>> GetReadingsByUrlAsync(Uri readingsUrl)
         {
-            List<Reading> readings = new List<Reading>();
-
-            httpClient.GetAsync(readingsUrl).ContinueWith(
+            Task<Task<List<Reading>>> task = httpClient.GetAsync(readingsUrl).ContinueWith(
                 (requestTask) =>
                 {
                     // Get HTTP response from completed task. 
@@ -201,15 +190,15 @@ namespace Com.Readmill.Api
                     response.EnsureSuccessStatusCode();
 
                     //Read as stream
-                    response.Content.ReadAsStreamAsync().ContinueWith(
+                    return (response.Content.ReadAsStreamAsync().ContinueWith(
                         (readTask) =>
                         {
-                            DataContractJsonSerializer ser = new DataContractJsonSerializer(readings.GetType());
-                            readings = (List<Reading>)ser.ReadObject(readTask.Result);
-                        }).Wait();
-                }).Wait();
+                            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(List<Reading>));
+                            return (List<Reading>)ser.ReadObject(readTask.Result);
+                        }));
+                });
 
-            return readings;
+            return task.Unwrap();
 
         }
     }

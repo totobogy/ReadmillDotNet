@@ -36,21 +36,7 @@ namespace Com.Readmill.Api
     {        
         static void Main(string[] args)
         {
-            string clientId = "3f2116709bb1f330084b9cd9f1045961";
-            string accessToken = "cda8ddc466d23baa1cea25da55517fb5";
-
-            UserClient client = new UserClient(clientId);
-            User me =  client.GetOwner(accessToken);
-            Console.WriteLine(me.FullName);
-
-            ReadingsQueryOptions options = new ReadingsQueryOptions();
-            
-            //ToDo: should int not string - user facing should be natural data types, convert internally  to strings
-            options.CountValue = "2";
-
-            List<Reading> myReadings = client.GetUserReadings(me.Id, options); 
-                
-            Console.ReadLine();           
+                   
         }
     }
 }
