@@ -2,52 +2,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 using System.Net.Http;
+using System.Json;
 using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using System.ServiceModel;
+using System.Collections.Specialized;
+
+using Com.Readmill.Api.DataContracts;
 
 namespace Com.Readmill.Api
-{
-    public abstract class ReadmillClient
+{        
+    public class ReadmillClient
     {
-        protected string readmillBaseUrl = ReadmillConstants.ReadmillBaseUrl;
-        protected string ClientId { get; set; }
-        protected string AccessToken { get; set; }
-
-        HttpClient httpClient;
-
-        public ReadmillClient()
+        public string ClientId { get; set; }
+        UserClient userClient;
+        
+        public ReadmillClient(string clientId)
         {
-            httpClient = new HttpClient();
+            this.ClientId = clientId;
         }
 
-        protected Task<T> GetByUrlAsync<T>(Uri url)
+        public UserClient Users
         {
-            Task<Task<T>> task = httpClient.GetAsync(url).ContinueWith(
-                (requestTask) =>
-                {
-                    // Get HTTP response from completed task. 
-                    HttpResponseMessage response = requestTask.Result;
-
-                    // Check that response was successful or throw exception 
-                    response.EnsureSuccessStatusCode();
-
-                    //Read as stream
-                    return (response.Content.ReadAsStreamAsync().ContinueWith(
-                        (readTask) =>
-                        {
-                            using (readTask.Result)
-                            {
-                                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-                                return (T)ser.ReadObject(readTask.Result);
-                            }
-                        }));
-                });
-
-            return task.Unwrap();
-
+            get
+            {
+                if (this.userClient == null)
+                    userClient = new UserClient(this.ClientId);
+                
+                return userClient;
+            }
         }
 
-        //protected abstract void 
+
+   
     }
+    
 }

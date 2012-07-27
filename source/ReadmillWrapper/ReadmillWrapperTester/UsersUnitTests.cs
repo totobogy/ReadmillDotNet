@@ -22,9 +22,9 @@ namespace ReadmillWrapperTester
         [TestMethod]
         public void TestGetOwner()
         {
-            UserClient client = new UserClient(this.clientId);
+            ReadmillClient client = new ReadmillClient(this.clientId);
 
-            client.GetOwnerAsync(this.accessToken).ContinueWith(
+            client.Users.GetOwnerAsync(this.accessToken).ContinueWith(
                 (getUserTask) =>
                 {
                     if (!(getUserTask.Result.FullName == "Tushar Malhotra"))
@@ -37,14 +37,14 @@ namespace ReadmillWrapperTester
         [TestMethod]
         public void TestGetUserReadings()
         {
-            UserClient client = new UserClient(this.clientId);
+            ReadmillClient client = new ReadmillClient(this.clientId);
 
-            User me = client.GetOwnerAsync(this.accessToken).Result;   
+            User me = client.Users.GetOwnerAsync(this.accessToken).Result;   
 
             ReadingsQueryOptions options = new ReadingsQueryOptions();
             options.CountValue = "3";
 
-            client.GetUserReadings(me.Id, options).ContinueWith(
+            client.Users.GetUserReadings(me.Id, options).ContinueWith(
                 (getReadingsTask) =>
                 {
                     //Validations

@@ -12,10 +12,8 @@ using System.Threading.Tasks;
 namespace Com.Readmill.Api
 {
     //ToDo: Data types - not everything string
-    //ToDo: Refactor base class for client?
-    //ToDo: Need Design / Redesign the entry point interface for API
 
-    public class UserClient : ReadmillClient
+    public class UserClient : ReadmillClientBase
     {
         Dictionary<UserUriTemplateType, UriTemplate> userUriTemplates;
 
@@ -71,15 +69,12 @@ namespace Com.Readmill.Api
         /// Instantiates a client for the Readmill/Users api
         /// </summary>
         /// <param name="clientId">Client Id of the application, assgined by Readmill when the app is registered</param>
-        public UserClient(string clientId)
+        public UserClient(string clientId): base(clientId)
         {
-            this.ClientId = clientId;
-
-            //Populate Templates
-            CreateTemplates();
+      
         }
 
-        private void CreateTemplates()
+        override protected void LoadTemplates()
         {
             userUriTemplates = new Dictionary<UserUriTemplateType, UriTemplate>();
             userUriTemplates.Add(UserUriTemplateType.Owner, new UriTemplate(ownerTemplate, true));
