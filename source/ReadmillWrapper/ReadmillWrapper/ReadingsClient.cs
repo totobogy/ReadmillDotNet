@@ -16,7 +16,7 @@ namespace Com.Readmill.Api
     {
         Dictionary<ReadingsUriTemplateType, UriTemplate> readingsUriTemplates;
 
-        #region Url Templates used by UsersClient
+        #region Url Templates used by ReadingsClient
 
         //Uri Template Parameter Constants
         const string ReadingId = "ReadingId";
@@ -90,7 +90,7 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <param name="options">Query options for retrieving the readings</param>
         /// <returns></returns>
-        public Task<List<Reading>> GetReadings(ReadingsQueryOptions options)
+        public Task<List<Reading>> GetReadingsAsync(ReadingsQueryOptions options)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
 
@@ -113,8 +113,7 @@ namespace Com.Readmill.Api
             return GetAsync<List<Reading>>(readingsUrl);
         }
 
-
-        public Task<Reading> GetReadingById(string readingId)
+        public Task<Reading> GetReadingByIdAsync(string readingId)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadingsClient.ReadingId, readingId);
@@ -123,8 +122,7 @@ namespace Com.Readmill.Api
             return GetAsync<Reading>(readingsUrl);
         }
 
-
-        public Task UpdateReading(string accessToken, string readingId, ReadingUpdate updatedReading)
+        public Task UpdateReadingAsync(string accessToken, string readingId, ReadingUpdate updatedReading)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
@@ -135,7 +133,7 @@ namespace Com.Readmill.Api
             return PutAsync<ReadingUpdate>(updatedReading, readingUrl);
         }
 
-        public Task DeleteReading(string acessToken, string readingId)
+        public Task DeleteReadingAsync(string acessToken, string readingId)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, acessToken);

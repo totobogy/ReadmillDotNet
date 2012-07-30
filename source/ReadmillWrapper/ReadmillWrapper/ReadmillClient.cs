@@ -22,15 +22,13 @@ namespace Com.Readmill.Api
     public class ReadmillClient
     {
         public string ClientId { get; set; }
-        
-        UsersClient userClient;
-        ReadingsClient readingsClient;
-        
+                
         public ReadmillClient(string clientId)
         {
             this.ClientId = clientId;
         }
 
+        UsersClient userClient;
         public UsersClient Users
         {
             get
@@ -42,6 +40,7 @@ namespace Com.Readmill.Api
             }
         }
 
+        ReadingsClient readingsClient;
         public ReadingsClient Readings
         {
             get
@@ -52,6 +51,18 @@ namespace Com.Readmill.Api
                 return readingsClient;
             }
 
+        }
+
+        BooksClient booksClient;
+        public BooksClient Books
+        {
+            get
+            {
+                if (this.booksClient == null)
+                    booksClient = new BooksClient(this.ClientId);
+
+                return booksClient;
+            }
         }
 
 

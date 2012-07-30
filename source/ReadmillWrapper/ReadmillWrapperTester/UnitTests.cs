@@ -9,7 +9,7 @@ using Com.Readmill.Api.DataContracts;
 namespace ReadmillWrapperTester
 {
     [TestClass]
-    public class UsersUnitTests
+    public class UnitTests
     {
         //Client ID:3f2116709bb1f330084b9cd9f1045961
         //Client Secret:0b8d3bdaacfa1797637bbb6791eb21dd
@@ -65,7 +65,7 @@ namespace ReadmillWrapperTester
             ReadingsQueryOptions options = new ReadingsQueryOptions();
             options.CountValue = "5";
 
-            List<Reading> readings = client.Readings.GetReadings(options).Result;
+            List<Reading> readings = client.Readings.GetReadingsAsync(options).Result;
 
             if (readings.Count != 5)
                 throw new InternalTestFailureException("Expected 5 Readings. Got: " + readings.Count);
@@ -73,7 +73,7 @@ namespace ReadmillWrapperTester
         }
 
         [TestMethod]
-        public void TestPutReading()
+        public void TestUpdateReading()
         {
             ReadmillClient client = new ReadmillClient(this.clientId);
 
@@ -89,17 +89,52 @@ namespace ReadmillWrapperTester
             try
             {
                 //'Put' an Update - set reading to public
-                client.Readings.UpdateReading(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
+                client.Readings.UpdateReadingAsync(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
 
                 //Validate
-                Assert.IsFalse(client.Readings.GetReadingById(readingId).Result.IsPrivate);
+                Assert.IsFalse(client.Readings.GetReadingByIdAsync(readingId).Result.IsPrivate);
             }
             finally
             {
                 //Reset this reading to 'private' - Not full proof - what if this throws?
                 testReading.ReadingUpdategram.IsPrivate = true;
-                client.Readings.UpdateReading(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
+                client.Readings.UpdateReadingAsync(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
             }
+        }
+
+        [TestMethod]
+        public void TestGetBooks()
+        {
+            ReadmillClient client = new ReadmillClient(this.clientId);
+
+            BooksQueryOptions options = new BooksQueryOptions();
+            options.CountValue = 5;
+
+            List<Book> books = client.Books.GetBooksAsync(options).Result;
+
+            if (books.Count != 5)
+                throw new InternalTestFailureException("Expected 5 Books. Got: " + books.Count);
+        }
+
+        [TestMethod]
+        public void TestBestMatch()
+        {
+            ReadmillClient client = new ReadmillClient(this.clientId);
+
+            BookMatchOptions options = new BookMatchOptions();
+            options.TitleValue = "Zen and the Art of Motorcycle Maintenance";
+            options.AuthorValue = "Robert M. Pirsig";
+
+            Book book = client.Books.GetBestMatchAsync(options).Result;
+
+            if (!book.Title.Equals(options.TitleValue) && !book.Author.Equals(options.AuthorValue))
+                throw new InternalTestFailureException("Returned bad match");
+        }
+
+        [TestMethod]
+        public void TestAddBook()
+        {
+
         }
     }
 }

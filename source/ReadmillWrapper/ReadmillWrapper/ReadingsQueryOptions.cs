@@ -80,4 +80,34 @@ namespace Com.Readmill.Api
         public string StatusValue { get; set; }
         public const string Status = "status";
     }
+
+    public struct BooksQueryOptions
+    {
+        public const string SearchString = "search";
+        public string SearchStringValue { get; set; }
+
+        public const string Count = "count";
+        public int CountValue { get; set; }
+    }
+
+    public struct BookMatchOptions
+    {
+        /// <summary>
+        /// Either BookMatchOptions.ISBNValue OR BOTH BookMatchOptions.TitleValue and BookMatchOptions.AuthorValue are required for a search
+        /// </summary>
+        public string TitleValue { get; set; }
+        public const string Title = "title";
+
+        /// <summary>
+        /// Either BookMatchOptions.ISBNValue OR BOTH BookMatchOptions.TitleValue and BookMatchOptions.AuthorValue are required for a search
+        /// </summary>
+        public string AuthorValue { get; set; }
+        public const string Author = "author";
+
+        /// <summary>
+        /// Either BookMatchOptions.ISBNValue OR BOTH BookMatchOptions.TitleValue and BookMatchOptions.AuthorValue are required for a search
+        /// </summary>
+        public string ISBNValue { get; set; }
+        public const string ISBN = "ISBN";
+    }
 }

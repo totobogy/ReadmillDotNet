@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BooksClient.cs" />
     <Compile Include="DataContracts.cs" />
     <Compile Include="ReadingsClient.cs" />
     <Compile Include="ReadmillClient.cs" />

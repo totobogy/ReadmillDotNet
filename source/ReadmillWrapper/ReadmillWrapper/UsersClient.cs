@@ -21,7 +21,7 @@ namespace Com.Readmill.Api
         #region Url Templates used by UsersClient
 
         //Uri Template Parameter Constants
-        const string UserId = "ReadingId";
+        const string UserId = "UserId";
 
         //Uri Template Types
         enum UsersUriTemplateType { Owner, Users, UserReadings };
