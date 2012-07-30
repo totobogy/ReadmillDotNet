@@ -126,75 +126,99 @@ namespace Com.Readmill.Api.DataContracts
     [DataContract]
     public class Reading
     {
-        [DataMember(Name="id")]
+        [DataMember(Name="id", EmitDefaultValue=false)]
         public string Id;
 
-        [DataMember(Name = "state")]
-        public string State;
+        public enum ReadingState { Interesting = 1, Open, Finished, Abandoned };
+        [DataMember(Name = "state", EmitDefaultValue = false)]
+        public ReadingState State;
 
-        [DataMember(Name = "private")]
-        public bool isPrivate;
+        [DataMember(Name = "private", EmitDefaultValue = false)]
+        public bool IsPrivate;
 
-        [DataMember(Name = "recommended")]
+        [DataMember(Name = "recommended", EmitDefaultValue = false)]
         public bool Recommended;
 
-        [DataMember(Name = "closing_remark")]
+        [DataMember(Name = "closing_remark", EmitDefaultValue = false)]
         public string ClosingRemark;
 
         //date
-        [DataMember(Name = "touched_at")]
+        [DataMember(Name = "touched_at", EmitDefaultValue = false)]
         public string TouchedAt;
 
         //date
-        [DataMember(Name = "finished_at")]
+        [DataMember(Name = "finished_at", EmitDefaultValue = false)]
         public string FinishedAt;
 
         //date
-        [DataMember(Name = "abandoned_at")]
+        [DataMember(Name = "abandoned_at", EmitDefaultValue = false)]
         public string AbandonedAt;
 
         //date
-        [DataMember(Name = "created_at")]
+        [DataMember(Name = "created_at", EmitDefaultValue = false)]
         public string CreatedAt;
 
-        [DataMember(Name = "duration")]
+        [DataMember(Name = "duration", EmitDefaultValue = false)]
         public Nullable<float> Duration;
 
-        [DataMember(Name = "progress")]
+        [DataMember(Name = "progress", EmitDefaultValue = false)]
         public Nullable<decimal> Progress;
 
-        [DataMember(Name = "estimated_time_left")]
+        [DataMember(Name = "estimated_time_left", EmitDefaultValue = false)]
         public Nullable<decimal> EstimatedTimeLeft;
 
-        [DataMember(Name = "average_period_time")]
+        [DataMember(Name = "average_period_time", EmitDefaultValue = false)]
         public Nullable<decimal> AveragePeriodTime;
 
-        [DataMember(Name = "book")]
+        [DataMember(Name = "book", EmitDefaultValue = false)]
         public Book Book;
 
-        [DataMember(Name = "user")]
+        [DataMember(Name = "user", EmitDefaultValue = false)]
         public User User;
 
-        [DataMember(Name = "permalink_url")]
+        [DataMember(Name = "permalink_url", EmitDefaultValue = false)]
         public string PermalinkUrl;
 
-        [DataMember(Name = "uri")]
+        [DataMember(Name = "uri", EmitDefaultValue = false)]
         public string Uri;
 
-        [DataMember(Name = "periods")]
+        [DataMember(Name = "periods", EmitDefaultValue = false)]
         public string Periods;
 
-        [DataMember(Name = "locations")]
+        [DataMember(Name = "locations", EmitDefaultValue = false)]
         public string Locations;
 
-        [DataMember(Name = "highlights")]
+        [DataMember(Name = "highlights", EmitDefaultValue = false)]
         public string Highlights;
 
-        [DataMember(Name = "comments")]
+        [DataMember(Name = "comments", EmitDefaultValue = false)]
         public string Comments;
 
-        [DataMember(Name = "comments_count")]
+        [DataMember(Name = "comments_count", EmitDefaultValue = false)]
         public int CommentsCount;
+    }
+
+
+    /// <summary>
+    /// This class exists due to a bug in Readmill API where the field is named differently for PUT requests
+    /// </summary>
+    [DataContract]
+    public class ReadingUpdategram : Reading
+    {
+
+        [DataMember(Name = "is_private")]
+        public bool IsPrivate;
+    }
+
+
+    /// <summary>
+    /// Needed for Put/Post requests
+    /// </summary>
+    [DataContract]
+    public class ReadingUpdate
+    {
+        [DataMember(Name = "reading")]
+        public ReadingUpdategram ReadingUpdategram;
     }
     
 }

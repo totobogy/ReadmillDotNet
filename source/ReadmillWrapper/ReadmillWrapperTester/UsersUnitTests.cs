@@ -53,7 +53,53 @@ namespace ReadmillWrapperTester
                     
                     //Add more / stronger validations
                 });
-            
+
+            //Reading reading = client.Users.GetUserReadings(me.Id, options).Result[0];
+        }
+
+        [TestMethod]
+        public void TestGetReadings()
+        {
+            ReadmillClient client = new ReadmillClient(this.clientId);
+
+            ReadingsQueryOptions options = new ReadingsQueryOptions();
+            options.CountValue = "5";
+
+            List<Reading> readings = client.Readings.GetReadings(options).Result;
+
+            if (readings.Count != 5)
+                throw new InternalTestFailureException("Expected 5 Readings. Got: " + readings.Count);
+
+        }
+
+        [TestMethod]
+        public void TestPutReading()
+        {
+            ReadmillClient client = new ReadmillClient(this.clientId);
+
+            //Reading id for "Why the lucky stiff's Poignant"
+            string readingId = "77987";
+
+            //Put Test
+            ReadingUpdate testReading = new ReadingUpdate();
+            testReading.ReadingUpdategram = new ReadingUpdategram();
+            //testReading.ReadingUpdategram.State = Reading.ReadingState.Open;
+            testReading.ReadingUpdategram.IsPrivate = false;
+
+            try
+            {
+                //'Put' an Update - set reading to public
+                client.Readings.UpdateReading(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
+
+                //Validate
+                Assert.IsFalse(client.Readings.GetReadingById(readingId).Result.IsPrivate);
+            }
+            finally
+            {
+                //Reset this reading to 'private' - Not full proof - what if this throws?
+                testReading.ReadingUpdategram.IsPrivate = true;
+                client.Readings.UpdateReading(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
+            }
         }
     }
 }

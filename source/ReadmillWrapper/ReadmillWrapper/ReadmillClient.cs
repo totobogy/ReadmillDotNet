@@ -16,26 +16,42 @@ using System.Collections.Specialized;
 using Com.Readmill.Api.DataContracts;
 
 namespace Com.Readmill.Api
-{        
+{
+    //ToDo: Improve Errors / Error parsing - html /css
+    
     public class ReadmillClient
     {
         public string ClientId { get; set; }
-        UserClient userClient;
+        
+        UsersClient userClient;
+        ReadingsClient readingsClient;
         
         public ReadmillClient(string clientId)
         {
             this.ClientId = clientId;
         }
 
-        public UserClient Users
+        public UsersClient Users
         {
             get
             {
                 if (this.userClient == null)
-                    userClient = new UserClient(this.ClientId);
+                    userClient = new UsersClient(this.ClientId);
                 
                 return userClient;
             }
+        }
+
+        public ReadingsClient Readings
+        {
+            get
+            {
+                if (this.readingsClient == null)
+                    readingsClient = new ReadingsClient(this.ClientId);
+
+                return readingsClient;
+            }
+
         }
 
 

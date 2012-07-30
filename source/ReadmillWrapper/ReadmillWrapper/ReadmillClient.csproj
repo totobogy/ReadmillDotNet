@@ -64,12 +64,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataContracts.cs" />
+    <Compile Include="ReadingsClient.cs" />
     <Compile Include="ReadmillClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadingsQueryOptions.cs" />
     <Compile Include="ReadmillClientBase.cs" />
     <Compile Include="ReadmillConstants.cs" />
-    <Compile Include="UserClient.cs" />
+    <Compile Include="UsersClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -8,22 +8,23 @@ using Com.Readmill.Api.DataContracts;
 using System.Collections.Specialized;
 using Com.Readmill.Api;
 using System.Threading.Tasks;
+using System.Security;
 
 namespace Com.Readmill.Api
 {
     //ToDo: Data types - not everything string
 
-    public class UserClient : ReadmillClientBase
+    public class UsersClient : ReadmillClientBase
     {
-        Dictionary<UserUriTemplateType, UriTemplate> userUriTemplates;
+        Dictionary<UsersUriTemplateType, UriTemplate> userUriTemplates;
 
-        #region Url Templates used by UserClient
+        #region Url Templates used by UsersClient
 
         //Uri Template Parameter Constants
-        const string UserId = "UserId";
+        const string UserId = "ReadingId";
 
         //Uri Template Types
-        enum UserUriTemplateType { Owner, Users, UserReadings };
+        enum UsersUriTemplateType { Owner, Users, UserReadings };
 
 
         #region Template Strings
@@ -34,13 +35,13 @@ namespace Com.Readmill.Api
             + "}";
 
         const string usersTemplate = "/users/{"
-            + UserClient.UserId
+            + UsersClient.UserId
             + "}?client_id={"
             + ReadmillConstants.ClientId
             + "}";
 
         const string userReadingsTemplate = "/users/{"
-            + UserClient.UserId
+            + UsersClient.UserId
             + "}/readings?client_id={"
             + ReadmillConstants.ClientId
             + "}&from={"
@@ -69,17 +70,17 @@ namespace Com.Readmill.Api
         /// Instantiates a client for the Readmill/Users api
         /// </summary>
         /// <param name="clientId">Client Id of the application, assgined by Readmill when the app is registered</param>
-        public UserClient(string clientId): base(clientId)
+        public UsersClient(string clientId): base(clientId)
         {
       
         }
 
         override protected void LoadTemplates()
         {
-            userUriTemplates = new Dictionary<UserUriTemplateType, UriTemplate>();
-            userUriTemplates.Add(UserUriTemplateType.Owner, new UriTemplate(ownerTemplate, true));
-            userUriTemplates.Add(UserUriTemplateType.Users, new UriTemplate(usersTemplate, true));
-            userUriTemplates.Add(UserUriTemplateType.UserReadings, new UriTemplate(userReadingsTemplate, true));
+            userUriTemplates = new Dictionary<UsersUriTemplateType, UriTemplate>();
+            userUriTemplates.Add(UsersUriTemplateType.Owner, new UriTemplate(ownerTemplate, true));
+            userUriTemplates.Add(UsersUriTemplateType.Users, new UriTemplate(usersTemplate, true));
+            userUriTemplates.Add(UsersUriTemplateType.UserReadings, new UriTemplate(userReadingsTemplate, true));
         }        
 
         /// <summary>
@@ -89,13 +90,13 @@ namespace Com.Readmill.Api
         /// <returns>representation of the user corresponding to the authentication token</returns>
         public Task<User> GetOwnerAsync(string accessToken)
         {
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Add(ReadmillConstants.ClientId, this.ClientId);
+            NameValueCollection parameters = GetInitializedParameterCollection();
+
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
 
-            Uri uri = userUriTemplates[UserUriTemplateType.Owner].BindByName(new Uri(this.readmillBaseUrl), parameters);
+            Uri uri = userUriTemplates[UsersUriTemplateType.Owner].BindByName(this.readmillBaseUri, parameters);
 
-            return GetByUrlAsync<User>(uri);
+            return GetAsync<User>(uri);
         }
 
         /// <summary>
@@ -105,11 +106,11 @@ namespace Com.Readmill.Api
         /// <returns></returns>
         public Task<User> GetUserByIdAsync(string userId)
         {
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Add(ReadmillConstants.ClientId, this.ClientId);
-            parameters.Add(UserClient.UserId, userId);
+            NameValueCollection parameters = GetInitializedParameterCollection();
 
-            return GetByUrlAsync<User>(userUriTemplates[UserUriTemplateType.Users].BindByName(new Uri(this.readmillBaseUrl), parameters));
+            parameters.Add(UsersClient.UserId, userId);
+
+            return GetAsync<User>(userUriTemplates[UsersUriTemplateType.Users].BindByName(this.readmillBaseUri, parameters));
         }
 
         /// <summary>
@@ -120,10 +121,10 @@ namespace Com.Readmill.Api
         /// <returns></returns>
         public Task<List<Reading>> GetUserReadings(string userId, ReadingsQueryOptions options)
         {
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Add(ReadmillConstants.ClientId, this.ClientId);
-            parameters.Add(UserClient.UserId, userId);
-            
+            NameValueCollection parameters = GetInitializedParameterCollection();
+
+            parameters.Add(UsersClient.UserId, userId);
+
             parameters.Add(ReadingsQueryOptions.From, options.FromValue);
             parameters.Add(ReadingsQueryOptions.To, options.ToValue);
             parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
@@ -139,8 +140,8 @@ namespace Com.Readmill.Api
                     parameters.Remove(key);
             }
 
-            var readingsUrl = userUriTemplates[UserUriTemplateType.UserReadings].BindByName(new Uri(this.readmillBaseUrl), parameters);
-            return GetByUrlAsync<List<Reading>>(readingsUrl);
+            var readingsUrl = userUriTemplates[UsersUriTemplateType.UserReadings].BindByName(this.readmillBaseUri, parameters);
+            return GetAsync<List<Reading>>(readingsUrl);
         }
 
     }
