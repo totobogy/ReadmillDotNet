@@ -231,5 +231,76 @@ namespace Com.Readmill.Api.DataContracts
         [DataMember(Name = "reading")]
         public Reading Reading;
     }
-    
+
+    [DataContract]
+    public class XPaths
+    {
+        [DataMember(Name = "start", IsRequired = true)]
+        public string StartTag;
+
+        [DataMember(Name="end", IsRequired = true)]
+        public string EndTag;
+    }
+
+    [DataContract]
+    public class Locators
+    {
+        [DataMember(Name = "position")]
+        public Decimal Position;
+
+        [DataMember(Name = "pre")]
+        public string Pre;
+
+        [DataMember(Name = "mid")]
+        public string Mid;
+
+        [DataMember(Name = "post")]
+        public string Post;
+
+        [DataMember(Name="xpath")]
+        public XPaths XPath;
+
+        [DataMember(Name = "file_id")]
+        public string FileId;
+    }
+
+    [DataContract]
+    public class Highlight
+    {
+        [DataMember(Name = "id")]
+        public string Id;
+
+        [DataMember(Name="reading_id")]
+        public string ReadingId;
+
+        [DataMember(Name="position")]
+        public decimal Position;
+
+        [DataMember(Name="content")]
+        public string Content;
+
+        [DataMember(Name="highlighted_at")]
+        public string HighlightedAt;
+
+        [DataMember(Name="uri")]
+        public string Uri;
+
+        [DataMember(Name="permalink")]
+        public string Permalink;
+
+        [DataMember(Name="permalink_url")]
+        public string PermalinkUrl;
+
+        [DataMember(Name="locators")]
+        public Locators Locators;
+
+        [DataMember(Name="user")]
+        public User User;
+
+        [DataMember(Name="comments")]
+        public string Comments;
+
+        [DataMember(Name="comments_count")]
+        public int CommentsCount;
+    }    
 }

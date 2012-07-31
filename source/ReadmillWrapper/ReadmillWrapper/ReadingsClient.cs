@@ -142,5 +142,7 @@ namespace Com.Readmill.Api
             var readingUrl = readingsUriTemplates[ReadingsUriTemplateType.SingleReading].BindByName(this.readmillBaseUri, parameters);
             return DeleteAsync(readingUrl);
         }
+
+
     }
 }
