@@ -63,10 +63,7 @@ namespace Com.Readmill.Api
 
                 return booksClient;
             }
-        }
-
-
-   
+        }   
     }
     
 }

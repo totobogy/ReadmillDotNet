@@ -16,7 +16,7 @@ namespace Com.Readmill.Api
     {
         Dictionary<BooksUriTemplateType, UriTemplate> booksUriTemplates;
 
-        #region Url Templates used by ReadingsClient
+        #region Url Templates used by BooksClient
 
         //Uri Template Parameter Constants
         const string BookId = "BookId";
@@ -24,7 +24,6 @@ namespace Com.Readmill.Api
 
         //Uri Template Types
         enum BooksUriTemplateType { Books, BooksMatch, SingleBook, BookReadings };
-
 
         #region Template Strings
         const string booksTemplate = "/books/?client_id={"
@@ -55,7 +54,29 @@ namespace Com.Readmill.Api
             + ReadmillConstants.ClientId
             + "}";
 
-        //bookReadingsTemplate
+        const string bookReadingsTemplate = "/books/{"
+            + BooksClient.BookId
+            + "}/readings?client_id={"
+            + ReadmillConstants.ClientId
+            + "}&access_token={"
+            + ReadmillConstants.AccessToken
+            + "}&from={"
+            + ReadingsQueryOptions.From
+            + "}&to={"
+            + ReadingsQueryOptions.To
+            + "}&count={"
+            + ReadingsQueryOptions.Count
+            + "}&order={"
+            + ReadingsQueryOptions.Order
+            + "}&filter={"
+            + ReadingsQueryOptions.Filter
+            + "}&highlights_count[from]={"
+            + ReadingsQueryOptions.HighlightsCountFrom
+            + "}&highlights_count[to]={"
+            + ReadingsQueryOptions.HighlightsCountTo
+            + "}&status={"
+            + ReadingsQueryOptions.Status
+            + "}";
 
         #endregion
 
@@ -77,7 +98,7 @@ namespace Com.Readmill.Api
             booksUriTemplates.Add(BooksUriTemplateType.Books, new UriTemplate(booksTemplate, true));
             booksUriTemplates.Add(BooksUriTemplateType.BooksMatch, new UriTemplate(booksMatchTemplate, true));
             booksUriTemplates.Add(BooksUriTemplateType.SingleBook, new UriTemplate(singleBookTemplate, true));
-            //bookReadingTemplate
+            booksUriTemplates.Add(BooksUriTemplateType.BookReadings, new UriTemplate(bookReadingsTemplate, true));
         }
 
         /// <summary>
@@ -132,6 +153,62 @@ namespace Com.Readmill.Api
 
         }
 
+        public Task<List<Reading>> GetBookReadingsAsync(string bookId, ReadingsQueryOptions options)
+        {
+            NameValueCollection parameters = GetInitializedParameterCollection();
+
+            parameters.Add(BooksClient.BookId, bookId);
+            parameters.Add(ReadingsQueryOptions.From, options.FromValue);
+            parameters.Add(ReadingsQueryOptions.To, options.ToValue);
+            parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
+            parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
+            parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
+            parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
+            parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+
+            //Remove extraneous parameters because Readmill doesn't like empty pairs
+            foreach (string key in parameters.AllKeys)
+            {
+                if (string.IsNullOrEmpty(parameters[key]))
+                    parameters.Remove(key);
+            }
+
+            var bookReadingsUrl = booksUriTemplates[BooksUriTemplateType.BookReadings].BindByName(this.readmillBaseUri, parameters);
+            return GetAsync<List<Reading>>(bookReadingsUrl);
+        }
+
+        /// <summary>
+        /// Get readings associated with the specified book, including private readings
+        /// </summary>
+        /// <param name="accessToken">Access Token</param>
+        /// <param name="bookId">Readmill Id of the book for which readings need to be retrieved</param>
+        /// <param name="?"></param>
+        /// <returns></returns>
+        public Task<List<Reading>> GetBookReadingsAsync(string accessToken, string bookId, ReadingsQueryOptions options)
+        {
+            NameValueCollection parameters = GetInitializedParameterCollection();
+
+            parameters.Add(BooksClient.BookId, bookId);
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
+            parameters.Add(ReadingsQueryOptions.From, options.FromValue);
+            parameters.Add(ReadingsQueryOptions.To, options.ToValue);
+            parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
+            parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
+            parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
+            parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
+            parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+
+            //Remove extraneous parameters because Readmill doesn't like empty pairs
+            foreach (string key in parameters.AllKeys)
+            {
+                if (string.IsNullOrEmpty(parameters[key]))
+                    parameters.Remove(key);
+            }
+
+            var bookReadingsUrl = booksUriTemplates[BooksUriTemplateType.BookReadings].BindByName(this.readmillBaseUri, parameters);
+            return GetAsync<List<Reading>>(bookReadingsUrl);
+        }
+
         public Task AddBookAsync(string accessToken, Book newBook)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
@@ -142,12 +219,25 @@ namespace Com.Readmill.Api
             return PostAsync<Book>(newBook, booksUrl);
         }
 
-        /*
-         * #Tags for highlights - useful for quotable quotes like apps
-         * Social api / better Users api: get followers / following, search for people by name
-         * More powerful search / metadata for books - categories / genres etc?
-         * Get latest highlights, especially from my social graph
-         * Basically the idea is to let people discover what to read?
-         */
+        public Task CreateBookReadingAsync(string accessToken, string bookId, Reading.ReadingState state, bool isPrivate = false, string closingRemark = null)
+        {
+            ReadingPost newReading= new ReadingPost();
+            
+            //newReading.AccessToken = accessToken;
+
+            newReading.Reading = new Reading();
+            newReading.Reading.State = state;
+            newReading.Reading.IsPrivate = isPrivate;
+            newReading.Reading.ClosingRemark = closingRemark;
+
+            NameValueCollection parameters = GetInitializedParameterCollection();
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
+            parameters.Add(BooksClient.BookId, bookId);
+
+            var bookReadingUrl = booksUriTemplates[BooksUriTemplateType.BookReadings].BindByName(this.readmillBaseUri, parameters);
+            return PostAsync<ReadingPost>(newReading, bookReadingUrl);
+
+        }
+
     }
 }

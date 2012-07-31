@@ -133,7 +133,7 @@ namespace Com.Readmill.Api.DataContracts
         [DataMember(Name = "state", EmitDefaultValue = false)]
         public ReadingState State;
 
-        [DataMember(Name = "private", EmitDefaultValue = false)]
+        [DataMember(Name = "private")]
         public bool IsPrivate;
 
         [DataMember(Name = "recommended", EmitDefaultValue = false)]
@@ -212,13 +212,24 @@ namespace Com.Readmill.Api.DataContracts
 
 
     /// <summary>
-    /// Needed for Put/Post requests
+    /// Needed for Put requests - Shouldn't be needed after API V2 with the change for flat structures
     /// </summary>
     [DataContract]
     public class ReadingUpdate
     {
         [DataMember(Name = "reading")]
         public ReadingUpdategram ReadingUpdategram;
+
+    }
+
+    /// <summary>
+    /// Needed for Post requests - Shouldn't be needed after API V2 with the change for flat structures
+    /// </summary>
+    [DataContract]
+    class ReadingPost
+    {
+        [DataMember(Name = "reading")]
+        public Reading Reading;
     }
     
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Com.Readmill.Api;
 using Com.Readmill.Api.DataContracts;
+using System.Threading.Tasks;
 
 namespace ReadmillWrapperTester
 {
@@ -42,7 +43,7 @@ namespace ReadmillWrapperTester
             User me = client.Users.GetOwnerAsync(this.accessToken).Result;   
 
             ReadingsQueryOptions options = new ReadingsQueryOptions();
-            options.CountValue = "3";
+            options.CountValue = "10";
 
             client.Users.GetUserReadings(me.Id, options).ContinueWith(
                 (getReadingsTask) =>
@@ -53,8 +54,6 @@ namespace ReadmillWrapperTester
                     
                     //Add more / stronger validations
                 });
-
-            //Reading reading = client.Users.GetUserReadings(me.Id, options).Result[0];
         }
 
         [TestMethod]
@@ -134,7 +133,37 @@ namespace ReadmillWrapperTester
         [TestMethod]
         public void TestAddBook()
         {
+            //Test only on staging?
+        }
 
+        [TestMethod]
+        public void TestCreateReading()
+        {
+            ReadmillClient client = new ReadmillClient(this.clientId);
+
+            BookMatchOptions options = new BookMatchOptions();
+            options.TitleValue = "Zen and the Art of Motorcycle Maintenance";
+            options.AuthorValue = "Robert M. Pirsig";
+
+            Book book = client.Books.GetBestMatchAsync(options).Result;
+
+            client.Books.CreateBookReadingAsync(this.accessToken, book.Id, Reading.ReadingState.Open).Wait();
+
+            //Validate and Reset
+            User me = client.Users.GetOwnerAsync(this.accessToken).Result;
+            List<Reading> myReadings = client.Users.GetUserReadings(me.Id, new ReadingsQueryOptions()).Result;
+            foreach (Reading r in myReadings)
+            {
+                if (r.Book.Title.Equals(options.TitleValue) && r.State == Reading.ReadingState.Open)
+                {
+                    //We found the reading. Now delete it.
+                    client.Readings.DeleteReadingAsync(this.accessToken, r.Id);
+                    return;
+                }
+            }
+
+            //We shouldn't be here - throw
+            throw new InternalTestFailureException("Validation or Deletion failed");
         }
     }
 }
