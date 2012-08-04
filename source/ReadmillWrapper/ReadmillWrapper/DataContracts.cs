@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace Com.Readmill.Api.DataContracts
 {
@@ -198,7 +200,6 @@ namespace Com.Readmill.Api.DataContracts
         public int CommentsCount;
     }
 
-
     /// <summary>
     /// This class exists due to a bug in Readmill API where the field is named differently for PUT requests
     /// </summary>
@@ -208,28 +209,6 @@ namespace Com.Readmill.Api.DataContracts
 
         [DataMember(Name = "is_private")]
         public bool IsPrivate;
-    }
-
-
-    /// <summary>
-    /// Needed for Put requests - Shouldn't be needed after API V2 with the change for flat structures
-    /// </summary>
-    [DataContract]
-    public class ReadingUpdate
-    {
-        [DataMember(Name = "reading")]
-        public ReadingUpdategram ReadingUpdategram;
-
-    }
-
-    /// <summary>
-    /// Needed for Post requests - Shouldn't be needed after API V2 with the change for flat structures
-    /// </summary>
-    [DataContract]
-    class ReadingPost
-    {
-        [DataMember(Name = "reading")]
-        public Reading Reading;
     }
 
     [DataContract]
@@ -302,5 +281,78 @@ namespace Com.Readmill.Api.DataContracts
 
         [DataMember(Name="comments_count")]
         public int CommentsCount;
-    }    
+    }
+
+    [DataContract]
+    public class Ping
+    {
+        /// <summary>
+        /// A unique identifier that groups pings together for a reading session.
+        /// </summary>
+        [DataMember(Name="identifier", IsRequired = true)]
+        public string SessionId;
+
+        /// <summary>
+        ///  Progress given as a float between 0.0 and 1.0.
+        /// </summary>
+        [DataMember(Name="progress", IsRequired = true)]
+        public float Progress;
+
+        /// <summary>
+        ///  Time since last ping, in seconds. (Optional)
+        /// </summary>
+        [DataMember(Name="duration", EmitDefaultValue=false)]
+        public int Duration;
+
+        /// <summary>
+        /// The time the ping was made, as an RFC3339 formatted string. (Optional)
+        /// </summary>
+        [DataMember(Name="occured_at", EmitDefaultValue=false)]
+        public string OccuredAt;
+
+        /// <summary>
+        /// The latitude of the location at the time of the ping as a float. (Optional)
+        /// </summary>
+        [DataMember(Name="lat", EmitDefaultValue=false)]
+        public float Latitude;
+
+        /// <summary>
+        /// The longitude of the location at the time of the ping as a float. (Optional)
+        /// </summary>
+        [DataMember(Name="lng", EmitDefaultValue=false)]
+        public float Longitude;
+    }
+    
+
+    //Non-public DataContracts (e.g. wrappers needed for Post / Put)
+
+    /// <summary>
+    /// Needed for Post requests - Shouldn't be needed after API V2 with the change for flat structures
+    /// </summary>
+    [DataContract]
+    class ReadingPost
+    {
+        [DataMember(Name = "reading")]
+        public Reading Reading;
+    }
+
+    /// <summary>
+    /// Needed for Put requests - Shouldn't be needed after API V2 with the change for flat structures
+    /// </summary>
+    [DataContract]
+    class ReadingUpdate
+    {
+        [DataMember(Name = "reading")]
+        public ReadingUpdategram ReadingUpdategram;
+
+    }
+
+    //Wrapper for Ping
+    [DataContract]
+    class ReadingPing
+    {
+        [DataMember(Name="ping")]
+        public Ping Ping;
+    }
+
 }

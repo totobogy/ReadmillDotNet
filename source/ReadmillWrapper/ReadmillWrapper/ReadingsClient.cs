@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using Com.Readmill.Api;
 using System.Threading.Tasks;
 using System.Security;
+using System.Xml;
 
 namespace Com.Readmill.Api
 {
@@ -22,13 +23,29 @@ namespace Com.Readmill.Api
         const string ReadingId = "ReadingId";
 
         //Uri Template Types
-        enum ReadingsUriTemplateType { PublicReadings, SingleReading };
+        enum ReadingsUriTemplateType { PublicReadings, SingleReading, ReadingPing, ReadingPeriods };
 
 
         #region Template Strings
         const string singleReadingTemplate = "/readings/{"
             + ReadingsClient.ReadingId
             + "}?client_id={"
+            + ReadmillConstants.ClientId
+            + "}&access_token={"
+            + ReadmillConstants.AccessToken
+            + "}";
+
+        const string readingPingTemplate = "/readings/{"
+            + ReadingsClient.ReadingId
+            + "}/pings?client_id={"
+            + ReadmillConstants.ClientId
+            + "}&access_token={"
+            + ReadmillConstants.AccessToken
+            + "}";
+
+        const string readingPeriodsTemplate = "/readings/{"
+            + ReadingsClient.ReadingId
+            + "}/periods?client_id={"
             + ReadmillConstants.ClientId
             + "}&access_token={"
             + ReadmillConstants.AccessToken
@@ -72,17 +89,16 @@ namespace Com.Readmill.Api
         {
             /*  ToDo:
              * ---------------------------------
-                /readings/#{id}/pings, POST
                 /readings/#{id}/periods, GET
                 /readings/#{id}/locations, GET
                 /readings/#{id}/highlights, GET, POST
                 /readings/#{id}/comments, GET, POST
              * 
              */
-
             readingsUriTemplates = new Dictionary<ReadingsUriTemplateType, UriTemplate>();
             readingsUriTemplates.Add(ReadingsUriTemplateType.PublicReadings, new UriTemplate(publicReadingsTemplate, true));
             readingsUriTemplates.Add(ReadingsUriTemplateType.SingleReading, new UriTemplate(singleReadingTemplate, true));
+            readingsUriTemplates.Add(ReadingsUriTemplateType.ReadingPing, new UriTemplate(readingPingTemplate, true));
         }
 
         /// <summary>
@@ -122,15 +138,18 @@ namespace Com.Readmill.Api
             return GetAsync<Reading>(readingsUrl);
         }
 
-        public Task UpdateReadingAsync(string accessToken, string readingId, ReadingUpdate updatedReading)
+        public Task UpdateReadingAsync(string accessToken, string readingId, ReadingUpdategram updatedReading)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
             parameters.Add(ReadingsClient.ReadingId, readingId);
 
+            ReadingUpdate wrappedUpdate = new ReadingUpdate();
+            wrappedUpdate.ReadingUpdategram = updatedReading;
+
             var readingUrl = readingsUriTemplates[ReadingsUriTemplateType.SingleReading].BindByName(this.readmillBaseUri, parameters);
 
-            return PutAsync<ReadingUpdate>(updatedReading, readingUrl);
+            return PutAsync<ReadingUpdate>(wrappedUpdate, readingUrl);
         }
 
         public Task DeleteReadingAsync(string acessToken, string readingId)
@@ -144,5 +163,87 @@ namespace Com.Readmill.Api
         }
 
 
+        public ReadingSession GetReadingSession(string accessToken, string readingId)
+        {
+            return new ReadingSession(accessToken, readingId, this);
+        }
+
+        public Task SendReadingPingAsync(string accessToken, string readingId, Ping ping)
+        {
+            NameValueCollection parameters = GetInitializedParameterCollection();
+
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
+            parameters.Add(ReadingsClient.ReadingId, readingId);
+
+            var pingUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingPing].BindByName(this.readmillBaseUri, parameters);
+
+            var wrappedPing = new ReadingPing();
+            wrappedPing.Ping = ping;
+
+            return PostAsync<ReadingPing>(wrappedPing, pingUrl);
+        }
+
+    }
+
+
+    public class ReadingSession
+    {
+        private string sessionId;
+        private string accessToken;
+        private string readingId;
+        private ReadingsClient client;
+
+        private DateTime lastPingTime;
+
+        public ReadingSession(string accessToken, string readingId, ReadingsClient readingsClient)
+        {
+            this.client = readingsClient;
+            this.accessToken = accessToken;
+            this.readingId = readingId;
+
+            this.sessionId = Guid.NewGuid().ToString();
+        }
+
+        public Task Ping(float progress, bool sendDuration = true, bool sendOccuredAt = true)
+        {
+            Ping ping = new Ping();
+            ping.SessionId = this.sessionId;
+
+            //ToDo: Shouldn't be less than last progress?
+            ping.Progress = progress;
+
+            if (sendOccuredAt)
+                ping.OccuredAt = XmlConvert.ToString(lastPingTime = DateTime.Now);
+
+            if (sendDuration)
+                ping.Duration = (DateTime.Now - lastPingTime).Seconds;
+
+            return this.client.SendReadingPingAsync(this.accessToken, this.readingId, ping);
+        }
+
+        public Task Ping(float progress, float latitude, float longitude, bool sendDuration = true, bool sendOccuredAt = true)
+        {
+            Ping ping = new Ping();
+            ping.SessionId = this.sessionId;
+
+            //ToDo: Shouldn't be less than last progress?
+            ping.Progress = progress;
+
+            ping.Latitude = latitude;
+            ping.Longitude = longitude;
+
+            if (sendOccuredAt)
+                ping.OccuredAt = XmlConvert.ToString(lastPingTime = DateTime.Now);
+
+            if (sendDuration)
+                ping.Duration = (DateTime.Now - lastPingTime).Seconds;
+
+            return this.client.SendReadingPingAsync(this.accessToken, this.readingId, ping);
+        }
+
+        public void Close()
+        {
+
+        }
     }
 }

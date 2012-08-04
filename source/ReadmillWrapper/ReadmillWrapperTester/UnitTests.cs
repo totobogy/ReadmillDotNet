@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Com.Readmill.Api;
 using Com.Readmill.Api.DataContracts;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace ReadmillWrapperTester
 {
@@ -43,13 +44,13 @@ namespace ReadmillWrapperTester
             User me = client.Users.GetOwnerAsync(this.accessToken).Result;   
 
             ReadingsQueryOptions options = new ReadingsQueryOptions();
-            options.CountValue = "10";
+            options.CountValue = "5";
 
             client.Users.GetUserReadings(me.Id, options).ContinueWith(
                 (getReadingsTask) =>
                 {
                     //Validations
-                    if (getReadingsTask.Result.Count != 3)
+                    if (getReadingsTask.Result.Count != 5)
                         throw new InternalTestFailureException("Expected 3 Readings. Retrieved: " + getReadingsTask.Result.Count);
                     
                     //Add more / stronger validations
@@ -68,7 +69,6 @@ namespace ReadmillWrapperTester
 
             if (readings.Count != 5)
                 throw new InternalTestFailureException("Expected 5 Readings. Got: " + readings.Count);
-
         }
 
         [TestMethod]
@@ -80,10 +80,8 @@ namespace ReadmillWrapperTester
             string readingId = "77987";
 
             //Put Test
-            ReadingUpdate testReading = new ReadingUpdate();
-            testReading.ReadingUpdategram = new ReadingUpdategram();
-            //testReading.ReadingUpdategram.State = Reading.ReadingState.Open;
-            testReading.ReadingUpdategram.IsPrivate = false;
+            ReadingUpdategram testReading = new ReadingUpdategram();
+            testReading.IsPrivate = false;
 
             try
             {
@@ -96,7 +94,7 @@ namespace ReadmillWrapperTester
             finally
             {
                 //Reset this reading to 'private' - Not full proof - what if this throws?
-                testReading.ReadingUpdategram.IsPrivate = true;
+                testReading.IsPrivate = true;
                 client.Readings.UpdateReadingAsync(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
             }
         }
@@ -137,7 +135,7 @@ namespace ReadmillWrapperTester
         }
 
         [TestMethod]
-        public void TestCreateReading()
+        public void TestCreatePingDeleteReading()
         {
             ReadmillClient client = new ReadmillClient(this.clientId);
 
@@ -156,7 +154,10 @@ namespace ReadmillWrapperTester
             {
                 if (r.Book.Title.Equals(options.TitleValue) && r.State == Reading.ReadingState.Open)
                 {
-                    //We found the reading. Now delete it.
+                    ReadingSession session = client.Readings.GetReadingSession(this.accessToken, r.Id);
+                    session.Ping((float)0.1, false, false).Wait();
+
+                    //We found the reading. Now delete it.            
                     client.Readings.DeleteReadingAsync(this.accessToken, r.Id);
                     return;
                 }
@@ -165,5 +166,7 @@ namespace ReadmillWrapperTester
             //We shouldn't be here - throw
             throw new InternalTestFailureException("Validation or Deletion failed");
         }
+
+        //Test Ping and Periods
     }
 }

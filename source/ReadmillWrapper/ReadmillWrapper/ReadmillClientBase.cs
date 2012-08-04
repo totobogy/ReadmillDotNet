@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Json;
 using System.IO;
 using System.Collections.Specialized;
 using System.Json;
+using System.Net;
 
 namespace Com.Readmill.Api
 {
@@ -26,7 +27,7 @@ namespace Com.Readmill.Api
         }
 
         protected Task PutAsync<T>(T readmillObject, Uri readmillUri)
-        {
+        {            
             DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
 
             //ToDo: Figure out a way to use stream safely
