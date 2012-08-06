@@ -44,7 +44,7 @@ namespace ReadmillWrapperTester
             User me = client.Users.GetOwnerAsync(this.accessToken).Result;   
 
             ReadingsQueryOptions options = new ReadingsQueryOptions();
-            options.CountValue = "5";
+            options.CountValue = 5;
 
             client.Users.GetUserReadings(me.Id, options).ContinueWith(
                 (getReadingsTask) =>
@@ -63,7 +63,7 @@ namespace ReadmillWrapperTester
             ReadmillClient client = new ReadmillClient(this.clientId);
 
             ReadingsQueryOptions options = new ReadingsQueryOptions();
-            options.CountValue = "5";
+            options.CountValue = 5;
 
             List<Reading> readings = client.Readings.GetReadingsAsync(options).Result;
 
@@ -165,6 +165,40 @@ namespace ReadmillWrapperTester
 
             //We shouldn't be here - throw
             throw new InternalTestFailureException("Validation or Deletion failed");
+        }
+
+        [TestMethod]
+        public void TestHighlights()
+        {
+            ReadmillClient client = new ReadmillClient(this.clientId);
+            //List<Highlight> highlights = new List<Highlight>();
+
+            SortedList<decimal, Highlight> highlights = new SortedList<decimal, Highlight>();
+
+            //Get a book
+            BookMatchOptions options = new BookMatchOptions();
+            options.AuthorValue = "Chad Fowler";//"Edward Rutherfurd";
+            options.TitleValue = "The Passionate Programmer";//"New York: The Novel";
+
+            Book book = client.Books.GetBestMatchAsync(options).Result;
+
+            ReadingsQueryOptions readingOptions = new ReadingsQueryOptions();
+            //Get all readings
+            List<Reading> readings = client.Books.GetBookReadingsAsync(book.Id, readingOptions).Result;
+            foreach (Reading reading in readings)
+            {
+                //Foreach reading, Get all Highlights
+                HighlightsQueryOptions highlightOptions = new HighlightsQueryOptions();
+                highlightOptions.CountValue = 100;
+
+                foreach (Highlight h in client.Readings.GetReadingHighlightsAsync(reading.Id, highlightOptions).Result)
+                {
+                    if(!highlights.ContainsKey(h.Locators.Position))
+                        highlights.Add(h.Locators.Position, h);
+                }
+            }
+
+            //Sort all highlights by position - how accurate?
         }
 
         //Test Ping and Periods

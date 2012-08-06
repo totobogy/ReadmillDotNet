@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Com.Readmill.Api
 {
-    public struct ReadingsQueryOptions
+    public class ReadingsQueryOptions
     {
         /// <summary>
         /// The first date to be included. (optional, range query)
@@ -23,7 +23,7 @@ namespace Com.Readmill.Api
         /// <summary>
         /// The number of results to return, defaults to 20, limited to 100. (optional)
         /// </summary>
-        public string CountValue { get; set; }
+        public int CountValue { get; set; }
         public const string Count = "count";
 
         //Order
@@ -81,7 +81,7 @@ namespace Com.Readmill.Api
         public const string Status = "status";
     }
 
-    public struct BooksQueryOptions
+    public class BooksQueryOptions
     {
         public const string SearchString = "search";
         public string SearchStringValue { get; set; }
@@ -90,7 +90,7 @@ namespace Com.Readmill.Api
         public int CountValue { get; set; }
     }
 
-    public struct BookMatchOptions
+    public class BookMatchOptions
     {
         /// <summary>
         /// Either BookMatchOptions.ISBNValue OR BOTH BookMatchOptions.TitleValue and BookMatchOptions.AuthorValue are required for a search
@@ -109,5 +109,27 @@ namespace Com.Readmill.Api
         /// </summary>
         public string ISBNValue { get; set; }
         public const string ISBN = "ISBN";
+    }
+
+    public class HighlightsQueryOptions
+    {
+        /// <summary>
+        /// The first date to be included. (optional, range query)
+        /// If only from is included with a range query, to is assumed to be higher than the highest id available.
+        /// </summary>
+        public string FromValue { get; set; }
+        public const string From = "from";
+
+        /// <summary>
+        /// The last date, not inclusive. (optional, range query)
+        /// </summary>
+        public string ToValue { get; set; }
+        public const string To = "to";
+
+        /// <summary>
+        /// The number of results to return, defaults to 20, limited to 100. (optional)
+        /// </summary>
+        public int CountValue { get; set; }
+        public const string Count = "count";
     }
 }

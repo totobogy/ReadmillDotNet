@@ -160,7 +160,7 @@ namespace Com.Readmill.Api
             parameters.Add(BooksClient.BookId, bookId);
             parameters.Add(ReadingsQueryOptions.From, options.FromValue);
             parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-            parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
+            parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
             parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
             parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
@@ -192,7 +192,7 @@ namespace Com.Readmill.Api
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
             parameters.Add(ReadingsQueryOptions.From, options.FromValue);
             parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-            parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
+            parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
             parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
             parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);

@@ -59,6 +59,7 @@
     <Compile Include="DataContracts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadingsClient.cs" />
+    <Compile Include="ReadingSession.cs" />
     <Compile Include="ReadingsQueryOptions.cs" />
     <Compile Include="ReadmillClient.cs" />
     <Compile Include="ReadmillClientBase.cs" />

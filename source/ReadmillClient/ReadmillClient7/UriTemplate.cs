@@ -24,8 +24,8 @@ namespace Com.Readmill.Api
         bool ignoreTrailingSlash;
         public string Template { get; private set; }
         
-        private const string parameterPattern = @"\{[a-z, A-Z, _]*\}";
-        private const string queryParameterPattern = @"[\?, &][a-z, A-Z, _]*=" + parameterPattern;
+        private const string parameterPattern = @"\{[a-z, A-Z, _, \[, \]]*\}";
+        private const string queryParameterPattern = @"[\?, &][a-z, A-Z, _, \[, \]]*=" + parameterPattern;
 
         public UriTemplate(string template, bool ignoreTrailingSlash)
         {

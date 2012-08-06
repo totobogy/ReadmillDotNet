@@ -23,7 +23,7 @@ namespace Com.Readmill.Api
         const string ReadingId = "ReadingId";
 
         //Uri Template Types
-        enum ReadingsUriTemplateType { PublicReadings, SingleReading, ReadingPing, ReadingPeriods };
+        enum ReadingsUriTemplateType { PublicReadings, SingleReading, ReadingPing, ReadingPeriods, ReadingHighlights };
 
 
         #region Template Strings
@@ -49,6 +49,20 @@ namespace Com.Readmill.Api
             + ReadmillConstants.ClientId
             + "}&access_token={"
             + ReadmillConstants.AccessToken
+            + "}";
+
+        const string readingHighlightsTemplate = "/readings/{"
+            + ReadingsClient.ReadingId
+            + "}/highlights?client_id={"
+            + ReadmillConstants.ClientId
+            + "}&access_token={"
+            + ReadmillConstants.AccessToken
+            + "}&from={"
+            + ReadingsQueryOptions.From
+            + "}&to={"
+            + ReadingsQueryOptions.To
+            + "}&count={"
+            + ReadingsQueryOptions.Count
             + "}";
 
         const string publicReadingsTemplate = "/readings?client_id={"
@@ -99,6 +113,7 @@ namespace Com.Readmill.Api
             readingsUriTemplates.Add(ReadingsUriTemplateType.PublicReadings, new UriTemplate(publicReadingsTemplate, true));
             readingsUriTemplates.Add(ReadingsUriTemplateType.SingleReading, new UriTemplate(singleReadingTemplate, true));
             readingsUriTemplates.Add(ReadingsUriTemplateType.ReadingPing, new UriTemplate(readingPingTemplate, true));
+            readingsUriTemplates.Add(ReadingsUriTemplateType.ReadingHighlights, new UriTemplate(readingHighlightsTemplate, true));
         }
 
         /// <summary>
@@ -112,7 +127,7 @@ namespace Com.Readmill.Api
 
             parameters.Add(ReadingsQueryOptions.From, options.FromValue);
             parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-            parameters.Add(ReadingsQueryOptions.Count, options.CountValue);
+            parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
             parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
             parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
@@ -162,6 +177,27 @@ namespace Com.Readmill.Api
             return DeleteAsync(readingUrl);
         }
 
+        public Task<List<Highlight>> GetReadingHighlightsAsync(string readingId, HighlightsQueryOptions options)
+        {
+            NameValueCollection parameters = GetInitializedParameterCollection();
+            parameters.Add(ReadingsClient.ReadingId, readingId);
+
+            parameters.Add(HighlightsQueryOptions.From, options.FromValue);
+            parameters.Add(HighlightsQueryOptions.To, options.ToValue);
+            parameters.Add(HighlightsQueryOptions.Count, options.CountValue.ToString());
+
+            //Remove extraneous parameters because Readmill doesn't like empty pairs
+            foreach (string key in parameters.AllKeys)
+            {
+                if (string.IsNullOrEmpty(parameters[key]))
+                    parameters.Remove(key);
+            }
+
+            var highlightsUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingHighlights].BindByName(this.readmillBaseUri, parameters);
+            return GetAsync<List<Highlight>>(highlightsUrl);
+
+        }
+
 
         public ReadingSession GetReadingSession(string accessToken, string readingId)
         {
@@ -183,67 +219,5 @@ namespace Com.Readmill.Api
             return PostAsync<ReadingPing>(wrappedPing, pingUrl);
         }
 
-    }
-
-
-    public class ReadingSession
-    {
-        private string sessionId;
-        private string accessToken;
-        private string readingId;
-        private ReadingsClient client;
-
-        private DateTime lastPingTime;
-
-        public ReadingSession(string accessToken, string readingId, ReadingsClient readingsClient)
-        {
-            this.client = readingsClient;
-            this.accessToken = accessToken;
-            this.readingId = readingId;
-
-            this.sessionId = Guid.NewGuid().ToString();
-        }
-
-        public Task Ping(float progress, bool sendDuration = true, bool sendOccuredAt = true)
-        {
-            Ping ping = new Ping();
-            ping.SessionId = this.sessionId;
-
-            //ToDo: Shouldn't be less than last progress?
-            ping.Progress = progress;
-
-            if (sendOccuredAt)
-                ping.OccuredAt = XmlConvert.ToString(lastPingTime = DateTime.Now);
-
-            if (sendDuration)
-                ping.Duration = (DateTime.Now - lastPingTime).Seconds;
-
-            return this.client.SendReadingPingAsync(this.accessToken, this.readingId, ping);
-        }
-
-        public Task Ping(float progress, float latitude, float longitude, bool sendDuration = true, bool sendOccuredAt = true)
-        {
-            Ping ping = new Ping();
-            ping.SessionId = this.sessionId;
-
-            //ToDo: Shouldn't be less than last progress?
-            ping.Progress = progress;
-
-            ping.Latitude = latitude;
-            ping.Longitude = longitude;
-
-            if (sendOccuredAt)
-                ping.OccuredAt = XmlConvert.ToString(lastPingTime = DateTime.Now);
-
-            if (sendDuration)
-                ping.Duration = (DateTime.Now - lastPingTime).Seconds;
-
-            return this.client.SendReadingPingAsync(this.accessToken, this.readingId, ping);
-        }
-
-        public void Close()
-        {
-
-        }
     }
 }
