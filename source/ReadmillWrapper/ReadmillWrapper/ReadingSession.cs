@@ -10,6 +10,7 @@ namespace Com.Readmill.Api
 {
     public class ReadingSession
     {
+        private bool isOpen;
         private string sessionId;
         private string accessToken;
         private string readingId;
@@ -25,10 +26,14 @@ namespace Com.Readmill.Api
             this.lastPingTime = DateTime.Now;
 
             this.sessionId = Guid.NewGuid().ToString();
+            this.isOpen = true;
         }
 
         public Task Ping(float progress, bool sendDuration = true, bool sendOccuredAt = true)
         {
+            if (!this.isOpen)
+                throw new InvalidOperationException("Session Closed.");
+
             Ping ping = new Ping();
             ping.SessionId = this.sessionId;
 
@@ -46,6 +51,9 @@ namespace Com.Readmill.Api
 
         public Task Ping(float progress, float latitude, float longitude, bool sendDuration = true, bool sendOccuredAt = true)
         {
+            if (!this.isOpen)
+                throw new InvalidOperationException("Session Closed.");
+
             Ping ping = new Ping();
             ping.SessionId = this.sessionId;
 
@@ -64,9 +72,29 @@ namespace Com.Readmill.Api
             return this.client.SendReadingPingAsync(this.accessToken, this.readingId, ping);
         }
 
+        public Task PostHighlightAsync(Highlight highlight)
+        {
+            if (!this.isOpen)
+                throw new InvalidOperationException("Session Closed.");
+
+            return client.PostReadingHighlightAsync(this.accessToken, this.readingId, highlight);
+        }
+
+        public Task PostReadingCommentAsync(string content)
+        {
+            if (!this.isOpen)
+                throw new InvalidOperationException("Session Closed.");
+
+            Comment comment = new Comment() { Content = content };
+            return client.PostReadingCommentAsync(this.accessToken, this.readingId, comment);
+        }
+        
         public void Close()
         {
-            //Cleanup?
+            this.isOpen = false;
+            this.accessToken = null;
+            this.sessionId = null;
+            this.client = null;
         }
     }
 }

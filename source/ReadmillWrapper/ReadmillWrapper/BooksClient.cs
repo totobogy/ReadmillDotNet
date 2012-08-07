@@ -67,7 +67,7 @@ namespace Com.Readmill.Api
             + "}&count={"
             + ReadingsQueryOptions.Count
             + "}&order={"
-            + ReadingsQueryOptions.Order
+            + ReadingsQueryOptions.OrderBy
             + "}&filter={"
             + ReadingsQueryOptions.Filter
             + "}&highlights_count[from]={"
@@ -156,12 +156,12 @@ namespace Com.Readmill.Api
         public Task<List<Reading>> GetBookReadingsAsync(string bookId, ReadingsQueryOptions options)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
-
             parameters.Add(BooksClient.BookId, bookId);
+
             parameters.Add(ReadingsQueryOptions.From, options.FromValue);
             parameters.Add(ReadingsQueryOptions.To, options.ToValue);
             parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
+            parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
             parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
@@ -193,7 +193,7 @@ namespace Com.Readmill.Api
             parameters.Add(ReadingsQueryOptions.From, options.FromValue);
             parameters.Add(ReadingsQueryOptions.To, options.ToValue);
             parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
+            parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
             parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);

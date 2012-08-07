@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{C089C8C0-30E0-4E22-80C0-CE093F111A43};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ReadmillClient7</RootNamespace>
-    <AssemblyName>ReadmillClient7</AssemblyName>
+    <RootNamespace>Com.Readmill.Api</RootNamespace>
+    <AssemblyName>ReadmillClient</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
     <TargetFrameworkProfile>WindowsPhone71</TargetFrameworkProfile>
@@ -60,7 +60,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadingsClient.cs" />
     <Compile Include="ReadingSession.cs" />
-    <Compile Include="ReadingsQueryOptions.cs" />
+    <Compile Include="QueryOptions.cs" />
     <Compile Include="ReadmillClient.cs" />
     <Compile Include="ReadmillClientBase.cs" />
     <Compile Include="ReadmillConstants.cs" />

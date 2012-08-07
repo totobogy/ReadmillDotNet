@@ -50,7 +50,7 @@ namespace PhoneApp1
             IDictionary<decimal, Highlight> highlights = new Dictionary<decimal, Highlight>();
 
             ReadingsQueryOptions readingOptions = new ReadingsQueryOptions() { CountValue = 100 };
-            HighlightsQueryOptions highlightOptions = new HighlightsQueryOptions() { CountValue = 100 };
+            RangeQueryOptions highlightOptions = new RangeQueryOptions() { CountValue = 100 };
 
             //Get all readings
             Task.Factory.StartNew(() =>

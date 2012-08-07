@@ -246,10 +246,10 @@ namespace Com.Readmill.Api.DataContracts
     [DataContract]
     public class Highlight
     {
-        [DataMember(Name = "id")]
+        [DataMember(Name = "id", EmitDefaultValue = false)]
         public string Id { get; set; }
 
-        [DataMember(Name="reading_id")]
+        [DataMember(Name = "reading_id", EmitDefaultValue = false)]
         public string ReadingId { get; set; }
 
         [DataMember(Name="position")]
@@ -258,28 +258,29 @@ namespace Com.Readmill.Api.DataContracts
         [DataMember(Name="content")]
         public string Content { get; set; }
 
-        [DataMember(Name="highlighted_at")]
+        //Date
+        [DataMember(Name = "highlighted_at", EmitDefaultValue = false)]
         public string HighlightedAt { get; set; }
 
-        [DataMember(Name="uri")]
+        [DataMember(Name = "uri", EmitDefaultValue = false)]
         public string Uri { get; set; }
 
-        [DataMember(Name="permalink")]
+        [DataMember(Name = "permalink", EmitDefaultValue = false)]
         public string Permalink { get; set; }
 
-        [DataMember(Name="permalink_url")]
+        [DataMember(Name = "permalink_url", EmitDefaultValue = false)]
         public string PermalinkUrl { get; set; }
 
-        [DataMember(Name="locators")]
+        [DataMember(Name = "locators", EmitDefaultValue = false)]
         public Locators Locators { get; set; }
 
-        [DataMember(Name="user")]
+        [DataMember(Name = "user", EmitDefaultValue = false)]
         public User User { get; set; }
 
-        [DataMember(Name="comments")]
+        [DataMember(Name = "comments", EmitDefaultValue = false)]
         public string Comments { get; set; }
 
-        [DataMember(Name="comments_count")]
+        [DataMember(Name = "comments_count", EmitDefaultValue = false)]
         public int CommentsCount { get; set; }
     }
 
@@ -322,6 +323,32 @@ namespace Com.Readmill.Api.DataContracts
         [DataMember(Name="lng", EmitDefaultValue=false)]
         public float Longitude { get; set; }
     }
+
+    [DataContract]
+    public class Comment
+    {
+        [DataMember(Name = "id", EmitDefaultValue = false)]
+        public string Id { get; set; }
+
+        [DataMember(Name = "user", EmitDefaultValue = false)]
+        public User User { get; set; }
+
+        [DataMember(Name = "reading_id", EmitDefaultValue = false)]
+        public string ReadingId { get; set; }
+
+        [DataMember(Name = "highlight_id", EmitDefaultValue = false)]
+        public string HighlightId { get; set; }
+
+        [DataMember(Name = "content")]
+        public string Content { get; set; }
+
+        //Date?
+        [DataMember(Name = "posted_at", EmitDefaultValue = false)]
+        public string PostedAt { get; set; }
+
+        [DataMember(Name = "uri", EmitDefaultValue = false)]
+        public string Uri { get; set; }
+    }
     
 
     //Non-public DataContracts (e.g. wrappers needed for Post / Put)
@@ -349,10 +376,24 @@ namespace Com.Readmill.Api.DataContracts
 
     //Wrapper for Ping
     [DataContract]
-    class ReadingPing
+    class WrappedPing
     {
         [DataMember(Name="ping")]
         public Ping Ping { get; set; }
+    }
+
+    [DataContract]
+    class WrappedHighlight
+    {
+        [DataMember (Name="highlight")]
+        public Highlight Highlight { get; set; }
+    }
+
+    [DataContract]
+    class WrappedComment
+    {
+        [DataMember(Name="comment")]
+        public Comment Comment { get; set; }
     }
 
 }

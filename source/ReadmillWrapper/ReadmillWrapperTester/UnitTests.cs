@@ -7,6 +7,7 @@ using Com.Readmill.Api;
 using Com.Readmill.Api.DataContracts;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Xml;
 
 namespace ReadmillWrapperTester
 {
@@ -114,7 +115,7 @@ namespace ReadmillWrapperTester
         }
 
         [TestMethod]
-        public void TestBestMatch()
+        public void TestGetBestMatch()
         {
             ReadmillClient client = new ReadmillClient(this.clientId);
 
@@ -135,7 +136,7 @@ namespace ReadmillWrapperTester
         }
 
         [TestMethod]
-        public void TestCreatePingDeleteReading()
+        public void TestReadingActions()
         {
             ReadmillClient client = new ReadmillClient(this.clientId);
 
@@ -157,6 +158,11 @@ namespace ReadmillWrapperTester
                     ReadingSession session = client.Readings.GetReadingSession(this.accessToken, r.Id);
                     session.Ping((float)0.1, false, false).Wait();
 
+                    Highlight testHighlight = new Highlight() { Content = "When one person suffers from a delusion, it is called insanity. When many people suffer from a delusion it is called a Religion." };
+                    session.PostHighlightAsync(testHighlight).Wait();
+
+                    session.Close();
+
                     //We found the reading. Now delete it.            
                     client.Readings.DeleteReadingAsync(this.accessToken, r.Id);
                     return;
@@ -168,7 +174,7 @@ namespace ReadmillWrapperTester
         }
 
         [TestMethod]
-        public void TestHighlights()
+        public void TestGetHighlights()
         {
             ReadmillClient client = new ReadmillClient(this.clientId);
             //List<Highlight> highlights = new List<Highlight>();
@@ -188,8 +194,7 @@ namespace ReadmillWrapperTester
             foreach (Reading reading in readings)
             {
                 //Foreach reading, Get all Highlights
-                HighlightsQueryOptions highlightOptions = new HighlightsQueryOptions();
-                highlightOptions.CountValue = 100;
+                RangeQueryOptions highlightOptions = new RangeQueryOptions() { CountValue = 100 };
 
                 foreach (Highlight h in client.Readings.GetReadingHighlightsAsync(reading.Id, highlightOptions).Result)
                 {
@@ -199,6 +204,27 @@ namespace ReadmillWrapperTester
             }
 
             //Sort all highlights by position - how accurate?
+        }
+
+        [TestMethod]
+        public void TestRangeQuery()
+        {
+            ReadmillClient client = new ReadmillClient(this.clientId);
+
+            ReadingsQueryOptions options = new ReadingsQueryOptions()
+                                           {
+                                               FromValue = XmlConvert.ToString(new DateTime(2012, 7, 1)),
+                                               ToValue = XmlConvert.ToString(new DateTime(2012, 7, 31)),
+                                               OrderByValue = "created_at"
+                                           };
+
+            List<Reading> jul2012Readings = client.Readings.GetReadingsAsync(options).Result;
+            foreach (Reading reading in jul2012Readings)
+            {
+                //There shouldn't be any reading not created in July 2012
+                Assert.IsTrue(DateTime.Parse(reading.CreatedAt) < new DateTime(2012, 8, 7));
+                Assert.IsTrue(DateTime.Parse(reading.CreatedAt) > new DateTime(2012, 6, 30));
+            }
         }
 
         //Test Ping and Periods

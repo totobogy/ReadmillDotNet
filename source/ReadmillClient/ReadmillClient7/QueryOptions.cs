@@ -2,32 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Com.Readmill.Api.DataContracts;
 
 namespace Com.Readmill.Api
 {
-    public class ReadingsQueryOptions
-    {
-        /// <summary>
-        /// The first date to be included. (optional, range query)
-        /// If only from is included with a range query, to is assumed to be higher than the highest id available.
-        /// </summary>
-        public string FromValue { get; set; }
-        public const string From = "from";
-
-        /// <summary>
-        /// The last date, not inclusive. (optional, range query)
-        /// </summary>
-        public string ToValue { get; set; }
-        public const string To = "to";
-
-        /// <summary>
-        /// The number of results to return, defaults to 20, limited to 100. (optional)
-        /// </summary>
-        public int CountValue { get; set; }
-        public const string Count = "count";
-
+    public class ReadingsQueryOptions: RangeQueryOptions
+    {        
         //Order
-        private string orderValueInternal;
+        /*private string orderValueInternal;
         public string OrderValueInternal { get { return orderValueInternal; } }
 
         public enum OrderOptions { TouchedAt_Desc, CreatedAt_Desc };
@@ -53,7 +35,7 @@ namespace Com.Readmill.Api
                 }
             }
         }
-        public const string Order = "order";
+        public const string Order = "order";*/
 
         /// <summary>
         /// Ways to filter the set. Valid options are followings (optional but requires access_token when used)
@@ -87,7 +69,7 @@ namespace Com.Readmill.Api
         public string SearchStringValue { get; set; }
 
         public const string Count = "count";
-        public int CountValue { get; set; }
+        public Nullable<int> CountValue { get; set; }
     }
 
     public class BookMatchOptions
@@ -111,7 +93,7 @@ namespace Com.Readmill.Api
         public const string ISBN = "ISBN";
     }
 
-    public class HighlightsQueryOptions
+    public class RangeQueryOptions
     {
         /// <summary>
         /// The first date to be included. (optional, range query)
@@ -129,7 +111,13 @@ namespace Com.Readmill.Api
         /// <summary>
         /// The number of results to return, defaults to 20, limited to 100. (optional)
         /// </summary>
-        public int CountValue { get; set; }
+        public Nullable<int> CountValue { get; set; }
         public const string Count = "count";
+
+        /// <summary>
+        /// A timestamp key eg "highlighted_at". (required when making a range query)
+        /// </summary>
+        public string OrderByValue { get; set; }
+        public const string OrderBy = "order";
     }
 }

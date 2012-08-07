@@ -23,7 +23,7 @@ namespace Com.Readmill.Api
         const string ReadingId = "ReadingId";
 
         //Uri Template Types
-        enum ReadingsUriTemplateType { PublicReadings, SingleReading, ReadingPing, ReadingPeriods, ReadingHighlights };
+        enum ReadingsUriTemplateType { PublicReadings, SingleReading, ReadingPing, ReadingPeriods, ReadingHighlights, ReadingComments };
 
 
         #region Template Strings
@@ -57,6 +57,20 @@ namespace Com.Readmill.Api
             + ReadingsQueryOptions.Count
             + "}";
 
+        const string readingCommentsTemplate = "/readings/{"
+            + ReadingsClient.ReadingId
+            + "}/comments?client_id={"
+            + ReadmillConstants.ClientId
+            + "}&access_token={"
+            + ReadmillConstants.AccessToken
+            + "}&from={"
+            + ReadingsQueryOptions.From
+            + "}&to={"
+            + ReadingsQueryOptions.To
+            + "}&count={"
+            + ReadingsQueryOptions.Count
+            + "}";
+
         const string readingPeriodsTemplate = "/readings/{"
             + ReadingsClient.ReadingId
             + "}/periods?client_id={"
@@ -74,7 +88,7 @@ namespace Com.Readmill.Api
             + "}&count={"
             + ReadingsQueryOptions.Count
             + "}&order={"
-            + ReadingsQueryOptions.Order
+            + ReadingsQueryOptions.OrderBy
             + "}&filter={"
             + ReadingsQueryOptions.Filter
             + "}&highlights_count[from]={"
@@ -105,8 +119,6 @@ namespace Com.Readmill.Api
              * ---------------------------------
                 /readings/#{id}/periods, GET
                 /readings/#{id}/locations, GET
-                /readings/#{id}/highlights, POST
-                /readings/#{id}/comments, GET, POST
              * 
              */
             readingsUriTemplates = new Dictionary<ReadingsUriTemplateType, UriTemplate>();
@@ -114,7 +126,7 @@ namespace Com.Readmill.Api
             readingsUriTemplates.Add(ReadingsUriTemplateType.SingleReading, new UriTemplate(singleReadingTemplate, true));
             readingsUriTemplates.Add(ReadingsUriTemplateType.ReadingPing, new UriTemplate(readingPingTemplate, true));
             readingsUriTemplates.Add(ReadingsUriTemplateType.ReadingHighlights, new UriTemplate(readingHighlightsTemplate, true));
-
+            readingsUriTemplates.Add(ReadingsUriTemplateType.ReadingComments, new UriTemplate(readingCommentsTemplate, true));
         }
 
         /// <summary>
@@ -129,7 +141,7 @@ namespace Com.Readmill.Api
             parameters.Add(ReadingsQueryOptions.From, options.FromValue);
             parameters.Add(ReadingsQueryOptions.To, options.ToValue);
             parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(ReadingsQueryOptions.Order, options.OrderValueInternal);
+            parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
             parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
             parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
@@ -170,29 +182,24 @@ namespace Com.Readmill.Api
             return PutAsync<ReadingUpdate>(wrappedUpdate, readingUrl);
         }
 
-        public Task DeleteReadingAsync(string acessToken, string readingId)
+        public Task DeleteReadingAsync(string accessToken, string readingId)
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
-            parameters.Add(ReadmillConstants.AccessToken, acessToken);
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
             parameters.Add(ReadingsClient.ReadingId, readingId);
 
             var readingUrl = readingsUriTemplates[ReadingsUriTemplateType.SingleReading].BindByName(this.readmillBaseUri, parameters);
             return DeleteAsync(readingUrl);
         }
-
-        public ReadingSession GetReadingSession(string accessToken, string readingId)
-        {
-            return new ReadingSession(accessToken, readingId, this);
-        }
-
-        public Task<List<Highlight>> GetReadingHighlightsAsync(string readingId, HighlightsQueryOptions options)
+        
+        public Task<List<Highlight>> GetReadingHighlightsAsync(string readingId, RangeQueryOptions options)
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
             parameters.Add(ReadingsClient.ReadingId, readingId);
 
-            parameters.Add(HighlightsQueryOptions.From, options.FromValue);
-            parameters.Add(HighlightsQueryOptions.To, options.ToValue);
-            parameters.Add(HighlightsQueryOptions.Count, options.CountValue.ToString());
+            parameters.Add(RangeQueryOptions.From, options.FromValue);
+            parameters.Add(RangeQueryOptions.To, options.ToValue);
+            parameters.Add(RangeQueryOptions.Count, options.CountValue.ToString());
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             IDictionary<string, string> tmpParams = new Dictionary<string, string>();
@@ -208,6 +215,59 @@ namespace Com.Readmill.Api
             
         }
 
+        public Task PostReadingHighlightAsync(string accessToken, string readingId, Highlight highlight)
+        {
+            IDictionary<string, string> parameters = GetInitializedParameterCollection();
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
+            parameters.Add(ReadingsClient.ReadingId, readingId);
+
+            //Wrap in InternalHighlight
+            var wrappedHighlight = new WrappedHighlight() { Highlight = highlight};
+
+            var highlightUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingHighlights].BindByName(this.readmillBaseUri, parameters);
+            return PostAsync<WrappedHighlight>(wrappedHighlight, highlightUrl);
+        }
+
+        public Task<List<Comment>> GetReadingCommentsAsync(string readingId, RangeQueryOptions options)
+        {
+            IDictionary<string, string> parameters = GetInitializedParameterCollection();
+            parameters.Add(ReadingsClient.ReadingId, readingId);
+
+            parameters.Add(RangeQueryOptions.From, options.FromValue);
+            parameters.Add(RangeQueryOptions.To, options.ToValue);
+            parameters.Add(RangeQueryOptions.Count, options.CountValue.ToString());
+
+            //Remove extraneous parameters because Readmill doesn't like empty pairs
+            IDictionary<string, string> tmpParams = new Dictionary<string, string>();
+            foreach (string key in parameters.Keys)
+            {
+                if (!string.IsNullOrEmpty(parameters[key]))
+                    tmpParams.Add(key, parameters[key]);
+            }
+            parameters = tmpParams;
+
+            var commentsUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingComments].BindByName(this.readmillBaseUri, parameters);
+            return GetAsync<List<Comment>>(commentsUrl);
+        }
+
+        public Task PostReadingCommentAsync(string accessToken, string readingId, Comment comment)
+        {
+            IDictionary<string, string> parameters = GetInitializedParameterCollection();
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
+            parameters.Add(ReadingsClient.ReadingId, readingId);
+
+            //Wrap in InternalHighlight
+            var wrappedComment = new WrappedComment() { Comment = comment };
+
+            var commentUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingHighlights].BindByName(this.readmillBaseUri, parameters);
+            return PostAsync<WrappedComment>(wrappedComment, commentUrl);
+        }
+
+        public ReadingSession GetReadingSession(string accessToken, string readingId)
+        {
+            return new ReadingSession(accessToken, readingId, this);
+        }
+
         public Task SendReadingPingAsync(string accessToken, string readingId, Ping ping)
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
@@ -217,10 +277,10 @@ namespace Com.Readmill.Api
 
             var pingUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingPing].BindByName(this.readmillBaseUri, parameters);
 
-            var wrappedPing = new ReadingPing();
+            var wrappedPing = new WrappedPing();
             wrappedPing.Ping = ping;
 
-            return PostAsync<ReadingPing>(wrappedPing, pingUrl);
+            return PostAsync<WrappedPing>(wrappedPing, pingUrl);
         }
 
     }
