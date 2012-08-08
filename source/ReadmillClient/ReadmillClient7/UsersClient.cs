@@ -126,13 +126,16 @@ namespace Com.Readmill.Api
 
             parameters.Add(UsersClient.UserId, userId);
 
-            parameters.Add(ReadingsQueryOptions.From, options.FromValue);
-            parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-            parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
-            parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            if (options != null)
+            {
+                parameters.Add(ReadingsQueryOptions.From, options.FromValue);
+                parameters.Add(ReadingsQueryOptions.To, options.ToValue);
+                parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
+                parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
+                parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             IDictionary<string, string> tmpParams = new Dictionary<string, string>();

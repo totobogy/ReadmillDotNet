@@ -29,7 +29,7 @@ namespace Com.Readmill.Api
             this.isOpen = true;
         }
 
-        public Task Ping(float progress, bool sendDuration = true, bool sendOccuredAt = true)
+        public Task PingAsync(float progress, bool sendDuration = true, bool sendOccuredAt = true)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");
@@ -37,19 +37,17 @@ namespace Com.Readmill.Api
             Ping ping = new Ping();
             ping.SessionId = this.sessionId;
 
-            //ToDo: Shouldn't be less than last progress?
-            ping.Progress = progress;
+            DateTime current = DateTime.Now;
+            if (sendDuration)
+                ping.Duration = (current - lastPingTime).Seconds;
 
             if (sendOccuredAt)
-                ping.OccuredAt = XmlConvert.ToString(lastPingTime = DateTime.Now);
+                ping.OccuredAt = XmlConvert.ToString(lastPingTime = current);
 
-            if (sendDuration)
-                ping.Duration = (DateTime.Now - lastPingTime).Seconds;
-
-            return this.client.SendReadingPingAsync(this.accessToken, this.readingId, ping);
+            return this.client.PostReadingPingAsync(this.accessToken, this.readingId, ping);
         }
 
-        public Task Ping(float progress, float latitude, float longitude, bool sendDuration = true, bool sendOccuredAt = true)
+        public Task PingAsync(float progress, float latitude, float longitude, bool sendDuration = true, bool sendOccuredAt = true)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");
@@ -69,10 +67,10 @@ namespace Com.Readmill.Api
             if (sendDuration)
                 ping.Duration = (DateTime.Now - lastPingTime).Seconds;
 
-            return this.client.SendReadingPingAsync(this.accessToken, this.readingId, ping);
+            return this.client.PostReadingPingAsync(this.accessToken, this.readingId, ping);
         }
 
-        public Task PostHighlightAsync(Highlight highlight)
+        public Task<string> PostHighlightAsync(Highlight highlight)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");
@@ -80,7 +78,7 @@ namespace Com.Readmill.Api
             return client.PostReadingHighlightAsync(this.accessToken, this.readingId, highlight);
         }
 
-        public Task PostReadingCommentAsync(string content)
+        public Task<string> PostReadingCommentAsync(string content)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");

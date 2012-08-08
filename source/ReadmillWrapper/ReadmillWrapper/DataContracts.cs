@@ -88,7 +88,7 @@ namespace Com.Readmill.Api.DataContracts
     [DataContract]
     public class Book
     {
-        [DataMember(Name = "id")]
+        [DataMember(Name = "id", EmitDefaultValue = false)]
         public string Id { get; set; }
 
         [DataMember(Name = "title")]
@@ -97,31 +97,31 @@ namespace Com.Readmill.Api.DataContracts
         [DataMember(Name = "author")]
         public string Author { get; set; }
 
-        [DataMember(Name = "isbn")]
+        [DataMember(Name = "isbn", EmitDefaultValue = false)]
         public string ISBN { get; set; }
 
-        [DataMember(Name = "story")]
+        [DataMember(Name = "story", EmitDefaultValue = false)]
         public string Story { get; set; }
 
-        [DataMember(Name = "published_at")]
+        [DataMember(Name = "published_at", EmitDefaultValue=false)]
         public string PublishedAt { get; set; }
 
-        [DataMember(Name = "language")]
+        [DataMember(Name = "language", EmitDefaultValue=false)]
         public string Language { get; set; }
 
-        [DataMember(Name = "permalink")]
+        [DataMember(Name = "permalink", EmitDefaultValue=false)]
         public string PermaLink { get; set; }
 
-        [DataMember(Name = "permalink_url")]
+        [DataMember(Name = "permalink_url", EmitDefaultValue=false)]
         public string PermalinkUrl { get; set; }
 
-        [DataMember(Name = "uri")]
+        [DataMember(Name = "uri", EmitDefaultValue=false)]
         public string Uri { get; set; }
 
-        [DataMember(Name = "cover_url")]
+        [DataMember(Name = "cover_url", EmitDefaultValue=false)]
         public string CoverUrl { get; set; }
 
-        [DataMember(Name = "assets")]
+        [DataMember(Name = "assets", EmitDefaultValue=false)]
         public BookAsset[] Assets { get; set; }
     }
 
@@ -297,13 +297,13 @@ namespace Com.Readmill.Api.DataContracts
         ///  Progress given as a float between 0.0 and 1.0.
         /// </summary>
         [DataMember(Name="progress", IsRequired = true)]
-        public float Progress { get; set; }
+        public Nullable<float> Progress { get; set; }
 
         /// <summary>
         ///  Time since last ping, in seconds. (Optional)
         /// </summary>
         [DataMember(Name="duration", EmitDefaultValue=false)]
-        public int Duration { get; set; }
+        public Nullable<int> Duration { get; set; }
 
         /// <summary>
         /// The time the ping was made, as an RFC3339 formatted string. (Optional)
@@ -315,13 +315,13 @@ namespace Com.Readmill.Api.DataContracts
         /// The latitude of the location at the time of the ping as a float. (Optional)
         /// </summary>
         [DataMember(Name="lat", EmitDefaultValue=false)]
-        public float Latitude { get; set; }
+        public Nullable<float> Latitude { get; set; }
 
         /// <summary>
         /// The longitude of the location at the time of the ping as a float. (Optional)
         /// </summary>
         [DataMember(Name="lng", EmitDefaultValue=false)]
-        public float Longitude { get; set; }
+        public Nullable<float> Longitude { get; set; }
     }
 
     [DataContract]
@@ -374,7 +374,7 @@ namespace Com.Readmill.Api.DataContracts
 
     }
 
-    //Wrapper for Ping
+    //Wrapper for PingAsync
     [DataContract]
     class WrappedPing
     {

@@ -110,8 +110,11 @@ namespace Com.Readmill.Api
         {
             IDictionary<string,string> parameters = GetInitializedParameterCollection();
 
-            parameters.Add(BooksQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(BooksQueryOptions.SearchString, options.SearchStringValue);
+            if (options != null)
+            {
+                parameters.Add(BooksQueryOptions.Count, options.CountValue.ToString());
+                parameters.Add(BooksQueryOptions.SearchString, options.SearchStringValue);
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             IDictionary<string, string> tmpParams = new Dictionary<string, string>();
@@ -139,9 +142,12 @@ namespace Com.Readmill.Api
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
-            parameters.Add(BookMatchOptions.ISBN, options.ISBNValue);
-            parameters.Add(BookMatchOptions.Title, options.TitleValue);
-            parameters.Add(BookMatchOptions.Author, options.AuthorValue);
+            if (options != null)
+            {
+                parameters.Add(BookMatchOptions.ISBN, options.ISBNValue);
+                parameters.Add(BookMatchOptions.Title, options.TitleValue);
+                parameters.Add(BookMatchOptions.Author, options.AuthorValue);
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             IDictionary<string, string> tmpParams = new Dictionary<string, string>();
@@ -157,18 +163,27 @@ namespace Com.Readmill.Api
 
         }
 
+        /// <summary>
+        /// Get readings associated with the specified book, excluding private readings
+        /// </summary>
+        /// <param name="bookId">Readmill Id of the book for which readings need to be retrieved</param>
+        /// <param name="?"></param>
+        /// <returns></returns>
         public Task<List<Reading>> GetBookReadingsAsync(string bookId, ReadingsQueryOptions options)
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
-            parameters.Add(BooksClient.BookId, bookId);
-            parameters.Add(ReadingsQueryOptions.From, options.FromValue);
-            parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-            parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
-            parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            if (options != null)
+            {
+                parameters.Add(BooksClient.BookId, bookId);
+                parameters.Add(ReadingsQueryOptions.From, options.FromValue);
+                parameters.Add(ReadingsQueryOptions.To, options.ToValue);
+                parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
+                parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
+                parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             IDictionary<string, string> tmpParams = new Dictionary<string, string>();
@@ -194,15 +209,18 @@ namespace Com.Readmill.Api
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
-            parameters.Add(BooksClient.BookId, bookId);
-            parameters.Add(ReadmillConstants.AccessToken, accessToken);
-            parameters.Add(ReadingsQueryOptions.From, options.FromValue);
-            parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-            parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
-            parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            if (options != null)
+            {
+                parameters.Add(BooksClient.BookId, bookId);
+                parameters.Add(ReadmillConstants.AccessToken, accessToken);
+                parameters.Add(ReadingsQueryOptions.From, options.FromValue);
+                parameters.Add(ReadingsQueryOptions.To, options.ToValue);
+                parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
+                parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
+                parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             IDictionary<string, string> tmpParams = new Dictionary<string, string>();
@@ -217,7 +235,7 @@ namespace Com.Readmill.Api
             return GetAsync<List<Reading>>(bookReadingsUrl);
         }
 
-        public Task AddBookAsync(string accessToken, Book newBook)
+        public Task<string> PostBookAsync(string accessToken, Book newBook)
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
@@ -227,7 +245,7 @@ namespace Com.Readmill.Api
             return PostAsync<Book>(newBook, booksUrl);
         }
 
-        public Task CreateBookReadingAsync(string accessToken, string bookId, Reading.ReadingState state, bool isPrivate = false, string closingRemark = null)
+        public Task<string> PostBookReadingAsync(string accessToken, string bookId, Reading.ReadingState state, bool isPrivate = false, string closingRemark = null)
         {
             ReadingPost newReading= new ReadingPost();
             

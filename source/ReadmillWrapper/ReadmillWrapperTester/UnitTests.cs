@@ -14,11 +14,6 @@ namespace ReadmillWrapperTester
     [TestClass]
     public class UnitTests
     {
-        //Client ID:3f2116709bb1f330084b9cd9f1045961
-        //Client Secret:0b8d3bdaacfa1797637bbb6791eb21dd
-        //Auth code=c34ab5591a8e5a715fc698b4c6a7fe12
-        //{"access_token":"cda8ddc466d23baa1cea25da55517fb5","expires_in":3155673599,"scope":"non-expiring"}
-
         string clientId = "3f2116709bb1f330084b9cd9f1045961";
         string accessToken = "cda8ddc466d23baa1cea25da55517fb5";
 
@@ -146,31 +141,30 @@ namespace ReadmillWrapperTester
 
             Book book = client.Books.GetBestMatchAsync(options).Result;
 
-            client.Books.CreateBookReadingAsync(this.accessToken, book.Id, Reading.ReadingState.Open).Wait();
+            string permalink = client.Books.PostBookReadingAsync(this.accessToken, book.Id, Reading.ReadingState.Open).Result;
 
-            //Validate and Reset
-            User me = client.Users.GetOwnerAsync(this.accessToken).Result;
-            List<Reading> myReadings = client.Users.GetUserReadings(me.Id, new ReadingsQueryOptions()).Result;
-            foreach (Reading r in myReadings)
+            
+            Reading r = client.Readings.GetAsync<Reading>(new Uri(permalink+"?client_id="+this.clientId)).Result;
+            try
             {
-                if (r.Book.Title.Equals(options.TitleValue) && r.State == Reading.ReadingState.Open)
-                {
-                    ReadingSession session = client.Readings.GetReadingSession(this.accessToken, r.Id);
-                    session.Ping((float)0.1, false, false).Wait();
+                ReadingSession session = client.Readings.GetReadingSession(this.accessToken, r.Id);
+                session.PingAsync((float)0.1).Wait();
+                //Thread.Sleep(5000);
+                session.PingAsync((float)0.12).Wait();
 
-                    Highlight testHighlight = new Highlight() { Content = "When one person suffers from a delusion, it is called insanity. When many people suffer from a delusion it is called a Religion." };
-                    session.PostHighlightAsync(testHighlight).Wait();
+                Highlight testHighlight = new Highlight() { Content = "When one person suffers from a delusion, it is called insanity. When many people suffer from a delusion it is called a Religion." };
+                session.PostHighlightAsync(testHighlight).Wait();
 
-                    session.Close();
+                string content = @"It’s a fascinating tale of a journey, both physically and metaphysically,
+                                       into the world of quality and values";
+                session.PostReadingCommentAsync(content).Wait();
 
-                    //We found the reading. Now delete it.            
-                    client.Readings.DeleteReadingAsync(this.accessToken, r.Id);
-                    return;
-                }
+                session.Close();
             }
-
-            //We shouldn't be here - throw
-            throw new InternalTestFailureException("Validation or Deletion failed");
+            finally
+            {
+                client.Readings.DeleteReadingAsync(this.accessToken, r.Id);
+            }
         }
 
         [TestMethod]
@@ -227,6 +221,6 @@ namespace ReadmillWrapperTester
             }
         }
 
-        //Test Ping and Periods
+        //Test PingAsync and Periods
     }
 }

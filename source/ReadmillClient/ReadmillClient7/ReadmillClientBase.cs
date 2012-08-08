@@ -28,66 +28,55 @@ namespace Com.Readmill.Api
         }
 
 
-        protected Task PutAsync<T>(T readmillObject, Uri readmillUri)
+        protected Task<string> PutAsync<T>(T readmillObject, Uri readmillUri)
         {
-            TaskCompletionSource<Stream> tcs = new TaskCompletionSource<Stream>();
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
+            req.Method = "PUT";
+            req.ContentType = "application/json";
 
-            WebClient client = new WebClient();
-
-            client.OpenWriteCompleted += (sender, args) =>
+            //should this also be 'Task-ified'
+            using (Stream stream = req.EndGetRequestStream(req.BeginGetRequestStream(null, null)))
             {
-                if (args.Error != null)
-                    tcs.SetException(args.Error);
-                else if (args.Cancelled)
-                    tcs.SetCanceled();
-                else tcs.SetResult(args.Result);
-            };
+                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+                ser.WriteObject(stream, readmillObject);
+            }
 
-            client.Headers["Content-Type"] = "application/json";
-            client.OpenWriteAsync(readmillUri, "PUT");
+            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
 
-            return tcs.Task.ContinueWith(
-                        (writeTask) =>
-                        {
-                            using (writeTask.Result)
-                            {
-                                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-                                ser.WriteObject(writeTask.Result, readmillObject);
-                            }
-                        });
-            
+            return t.ContinueWith(
+                (responseTask) =>
+                {
+                    using (responseTask.Result)
+                    {
+                        return responseTask.Result.Headers["Location"];
+                    }
+                });            
         }
 
 
-        protected Task PostAsync<T>(T readmillObject, Uri readmillUri)
+        protected Task<string> PostAsync<T>(T readmillObject, Uri readmillUri)
         {
-            TaskCompletionSource<Stream> tcs = new TaskCompletionSource<Stream>();
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
+            req.Method = "POST";
+            req.ContentType = "application/json";
 
-            WebClient client = new WebClient();
-
-            client.OpenWriteCompleted += (sender, args) =>
+            //should this also be 'Task-ified'
+            using (Stream stream = req.EndGetRequestStream(req.BeginGetRequestStream(null, null)))
             {
-                if (args.Error != null)
-                    tcs.SetException(args.Error);
-                else if (args.Cancelled)
-                    tcs.SetCanceled();
-                else tcs.SetResult(args.Result);
-            };
+                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+                ser.WriteObject(stream, readmillObject);
+            }
 
-            client.Headers["Content-Type"] = "application/json";
-            client.OpenWriteAsync(readmillUri);
+            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
 
-            //Is this any useful? The write is still happening in the callback?
-            return tcs.Task.ContinueWith(
-                        (writeTask) =>
-                        {
-                            using (writeTask.Result)
-                            {
-                                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-                                ser.WriteObject(writeTask.Result, readmillObject);
-                            }
-                        });
-                        
+            return t.ContinueWith(
+                (responseTask) =>
+                {
+                    using (responseTask.Result)
+                    {
+                        return responseTask.Result.Headers["Location"];
+                    }
+                });                         
         }
 
 
@@ -132,7 +121,10 @@ namespace Com.Readmill.Api
             return t.ContinueWith(
                 (deleteTask) =>
                 {
-                    return;
+                    using (deleteTask.Result)
+                    {
+                        return;
+                    }
                 });
         }
 

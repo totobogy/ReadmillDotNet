@@ -138,13 +138,16 @@ namespace Com.Readmill.Api
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
 
-            parameters.Add(ReadingsQueryOptions.From, options.FromValue);
-            parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-            parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-            parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
-            parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
-            parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            if (options != null)
+            {
+                parameters.Add(ReadingsQueryOptions.From, options.FromValue);
+                parameters.Add(ReadingsQueryOptions.To, options.ToValue);
+                parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
+                parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
+                parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
+                parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             foreach (string key in parameters.AllKeys)
@@ -166,7 +169,8 @@ namespace Com.Readmill.Api
             return GetAsync<Reading>(readingsUrl);
         }
 
-        public Task UpdateReadingAsync(string accessToken, string readingId, ReadingUpdategram updatedReading)
+        /// <returns>permalink to the updated resource</returns>
+        public Task<string> UpdateReadingAsync(string accessToken, string readingId, ReadingUpdategram updatedReading)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
@@ -195,9 +199,12 @@ namespace Com.Readmill.Api
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadingsClient.ReadingId, readingId);
 
-            parameters.Add(RangeQueryOptions.From, options.FromValue);
-            parameters.Add(RangeQueryOptions.To, options.ToValue);
-            parameters.Add(RangeQueryOptions.Count, options.CountValue.ToString());
+            if (options != null)
+            {
+                parameters.Add(RangeQueryOptions.From, options.FromValue);
+                parameters.Add(RangeQueryOptions.To, options.ToValue);
+                parameters.Add(RangeQueryOptions.Count, options.CountValue.ToString());
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             foreach (string key in parameters.AllKeys)
@@ -211,7 +218,8 @@ namespace Com.Readmill.Api
             
         }
 
-        public Task PostReadingHighlightAsync(string accessToken, string readingId, Highlight highlight)
+        /// <returns>permalink to the created resource</returns>
+        public Task<string> PostReadingHighlightAsync(string accessToken, string readingId, Highlight highlight)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
@@ -229,9 +237,12 @@ namespace Com.Readmill.Api
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadingsClient.ReadingId, readingId);
 
-            parameters.Add(RangeQueryOptions.From, options.FromValue);
-            parameters.Add(RangeQueryOptions.To, options.ToValue);
-            parameters.Add(RangeQueryOptions.Count, options.CountValue.ToString());
+            if (options != null)
+            {
+                parameters.Add(RangeQueryOptions.From, options.FromValue);
+                parameters.Add(RangeQueryOptions.To, options.ToValue);
+                parameters.Add(RangeQueryOptions.Count, options.CountValue.ToString());
+            }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             foreach (string key in parameters.AllKeys)
@@ -244,7 +255,8 @@ namespace Com.Readmill.Api
             return GetAsync<List<Comment>>(commentsUrl);
         }
 
-        public Task PostReadingCommentAsync(string accessToken, string readingId, Comment comment)
+        /// <returns>permalink to the created resource</returns>
+        public Task<string> PostReadingCommentAsync(string accessToken, string readingId, Comment comment)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
@@ -253,7 +265,7 @@ namespace Com.Readmill.Api
             //Wrap in InternalHighlight
             var wrappedComment = new WrappedComment() { Comment = comment };
 
-            var commentUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingHighlights].BindByName(this.readmillBaseUri, parameters);
+            var commentUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingComments].BindByName(this.readmillBaseUri, parameters);
             return PostAsync<WrappedComment>(wrappedComment, commentUrl);
         }
 
@@ -262,7 +274,8 @@ namespace Com.Readmill.Api
             return new ReadingSession(accessToken, readingId, this);
         }
 
-        public Task SendReadingPingAsync(string accessToken, string readingId, Ping ping)
+        /// <returns>permalink to the created resource</returns>
+        public Task<string> PostReadingPingAsync(string accessToken, string readingId, Ping ping)
         {
             NameValueCollection parameters = GetInitializedParameterCollection();
 

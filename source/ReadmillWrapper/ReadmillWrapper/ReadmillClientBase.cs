@@ -26,9 +26,31 @@ namespace Com.Readmill.Api
             LoadTemplates();
         }
 
-        protected Task PutAsync<T>(T readmillObject, Uri readmillUri)
-        {            
-            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+        protected Task<string> PutAsync<T>(T readmillObject, Uri readmillUri)
+        {
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
+            req.Method = "PUT";
+            req.ContentType = "application/json";
+
+            //should this also be 'Task-ified'
+            using (Stream stream = req.EndGetRequestStream(req.BeginGetRequestStream(null, null)))
+            {
+                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+                ser.WriteObject(stream, readmillObject);
+            }
+
+            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
+
+            return t.ContinueWith(
+                (responseTask) =>
+                {
+                    using (responseTask.Result)
+                    {
+                        return responseTask.Result.Headers["Location"];
+                    }
+                });
+
+            /*DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
 
             //ToDo: Figure out a way to use stream safely
             MemoryStream m = new MemoryStream();
@@ -44,41 +66,41 @@ namespace Com.Readmill.Api
                     try
                     {
                         requestTask.Result.EnsureSuccessStatusCode();
+                        return requestTask.Result.Headers.Location;
                     }
                     finally
                     {
                         m.Dispose();
                     }
-                });
+                });*/
         }
 
-        protected Task PostAsync<T>(T readmillObject, Uri readmillUri)
+        protected Task<string> PostAsync<T>(T readmillObject, Uri readmillUri)
         {
-            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
+            req.Method = "POST";
+            req.ContentType = "application/json";
 
-            //ToDo: Figure out a way to use stream safely
-            MemoryStream m = new MemoryStream();
-            ser.WriteObject(m, readmillObject);
-            m.Position = 0;
+            //should this also be 'Task-ified'
+            using (Stream stream = req.EndGetRequestStream(req.BeginGetRequestStream(null, null)))
+            {
+                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+                ser.WriteObject(stream, readmillObject);
+            }
 
-            StreamContent content = new StreamContent(m);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
 
-            return httpClient.PostAsync(readmillUri, content).ContinueWith(
-                (requestTask) =>
+            return t.ContinueWith(
+                (responseTask) =>
                 {
-                    try
+                    using (responseTask.Result)
                     {
-                        requestTask.Result.EnsureSuccessStatusCode();
+                        return responseTask.Result.Headers["Location"];
                     }
-                    finally
-                    {
-                        m.Dispose();
-                    }
-                });
+                });            
         }
 
-        protected Task<T> GetAsync<T>(Uri readmillUri)
+        public Task<T> GetAsync<T>(Uri readmillUri)
         {
             Task<Task<T>> task = httpClient.GetAsync(readmillUri).ContinueWith(
                 (requestTask) =>

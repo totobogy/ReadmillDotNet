@@ -88,7 +88,7 @@ namespace Com.Readmill.Api.DataContracts
     [DataContract]
     public class Book
     {
-        [DataMember(Name = "id")]
+        [DataMember(Name = "id", EmitDefaultValue = false)]
         public string Id { get; set; }
 
         [DataMember(Name = "title")]
@@ -97,31 +97,31 @@ namespace Com.Readmill.Api.DataContracts
         [DataMember(Name = "author")]
         public string Author { get; set; }
 
-        [DataMember(Name = "isbn")]
+        [DataMember(Name = "isbn", EmitDefaultValue = false)]
         public string ISBN { get; set; }
 
-        [DataMember(Name = "story")]
+        [DataMember(Name = "story", EmitDefaultValue = false)]
         public string Story { get; set; }
 
-        [DataMember(Name = "published_at")]
+        [DataMember(Name = "published_at", EmitDefaultValue = false)]
         public string PublishedAt { get; set; }
 
-        [DataMember(Name = "language")]
+        [DataMember(Name = "language", EmitDefaultValue = false)]
         public string Language { get; set; }
 
-        [DataMember(Name = "permalink")]
+        [DataMember(Name = "permalink", EmitDefaultValue = false)]
         public string PermaLink { get; set; }
 
-        [DataMember(Name = "permalink_url")]
+        [DataMember(Name = "permalink_url", EmitDefaultValue = false)]
         public string PermalinkUrl { get; set; }
 
-        [DataMember(Name = "uri")]
+        [DataMember(Name = "uri", EmitDefaultValue = false)]
         public string Uri { get; set; }
 
-        [DataMember(Name = "cover_url")]
+        [DataMember(Name = "cover_url", EmitDefaultValue = false)]
         public string CoverUrl { get; set; }
 
-        [DataMember(Name = "assets")]
+        [DataMember(Name = "assets", EmitDefaultValue = false)]
         public BookAsset[] Assets { get; set; }
     }
 
