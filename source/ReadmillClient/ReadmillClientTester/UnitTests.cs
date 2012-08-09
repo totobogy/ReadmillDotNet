@@ -121,11 +121,14 @@ namespace ReadmillWrapperTester
             ReadmillClient client = new ReadmillClient(this.clientId);
 
             BooksQueryOptions options = new BooksQueryOptions();
-            options.CountValue = 5;
+            options.CountValue = 50;
 
             List<Book> books = client.Books.GetBooksAsync(options).Result;
 
-            if (books.Count != 5)
+            foreach (Book book in books)
+                Console.WriteLine(book.Title + " by " + book.Author);
+
+            if (books.Count != 50)
                 throw new InternalTestFailureException("Expected 5 Books. Got: " + books.Count);
         }
 

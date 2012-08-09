@@ -45,7 +45,7 @@
     <Reference Include="System.Servicemodel" />
     <Reference Include="System.Servicemodel.Web" />
     <Reference Include="System.Threading.Tasks.WP71">
-      <HintPath>..\..\ReadmillWrapper\packages\System.Threading.Tasks.3.0.1\lib\sl4-wp71\System.Threading.Tasks.WP71.dll</HintPath>
+      <HintPath>..\packages\System.Threading.Tasks.3.0.1\lib\sl4-wp71\System.Threading.Tasks.WP71.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="system" />
