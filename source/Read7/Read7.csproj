@@ -116,7 +116,7 @@
     <Content Include="Toolkit.Content\ApplicationBar.Select.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ReadmillClient\ReadmillClient7\ReadmillClient7.csproj">
+    <ProjectReference Include="..\ReadmillClient\ReadmillClientWP71\ReadmillClient7.csproj">
       <Project>{14BA4D6B-B25D-4B9C-B4EF-884FABABC446}</Project>
       <Name>ReadmillClient7</Name>
     </ProjectReference>
