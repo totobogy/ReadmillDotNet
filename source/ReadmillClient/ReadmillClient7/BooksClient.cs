@@ -102,11 +102,11 @@ namespace Com.Readmill.Api
         }
 
         /// <summary>
-        /// Retrieves a list of readings.
+        /// Retrieves a list of books.
         /// </summary>
-        /// <param name="options">Query options for retrieving the readings</param>
+        /// <param name="options">Query options for retrieving the books</param>
         /// <returns></returns>
-        public Task<List<Book>> GetBooksAsync(BooksQueryOptions options)
+        public Task<List<Book>> GetBooksAsync(BooksQueryOptions options = null)
         {
             IDictionary<string,string> parameters = GetInitializedParameterCollection();
 
@@ -142,12 +142,12 @@ namespace Com.Readmill.Api
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
-            if (options != null)
-            {
+            //if (options != null)
+            //{
                 parameters.Add(BookMatchOptions.ISBN, options.ISBNValue);
                 parameters.Add(BookMatchOptions.Title, options.TitleValue);
                 parameters.Add(BookMatchOptions.Author, options.AuthorValue);
-            }
+            //}
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
             IDictionary<string, string> tmpParams = new Dictionary<string, string>();
@@ -164,55 +164,19 @@ namespace Com.Readmill.Api
         }
 
         /// <summary>
-        /// Get readings associated with the specified book, excluding private readings
+        /// Get readings associated with the specified book
         /// </summary>
         /// <param name="bookId">Readmill Id of the book for which readings need to be retrieved</param>
         /// <param name="?"></param>
         /// <returns></returns>
-        public Task<List<Reading>> GetBookReadingsAsync(string bookId, ReadingsQueryOptions options)
+        public Task<List<Reading>> GetBookReadingsAsync(string bookId, ReadingsQueryOptions options = null, string accessToken = null)
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
+            parameters.Add(BooksClient.BookId, bookId);
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
 
             if (options != null)
             {
-                parameters.Add(BooksClient.BookId, bookId);
-                parameters.Add(ReadingsQueryOptions.From, options.FromValue);
-                parameters.Add(ReadingsQueryOptions.To, options.ToValue);
-                parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());
-                parameters.Add(ReadingsQueryOptions.OrderBy, options.OrderByValue);
-                parameters.Add(ReadingsQueryOptions.HighlightsCountFrom, options.HighlightsCountFromValue);
-                parameters.Add(ReadingsQueryOptions.HighlightsCountTo, options.HighlightsCountToValue);
-                parameters.Add(ReadingsQueryOptions.Status, options.StatusValue);
-            }
-
-            //Remove extraneous parameters because Readmill doesn't like empty pairs
-            IDictionary<string, string> tmpParams = new Dictionary<string, string>();
-            foreach (string key in parameters.Keys)
-            {
-                if (!string.IsNullOrEmpty(parameters[key]))
-                    tmpParams.Add(key, parameters[key]);
-            }
-            parameters = tmpParams;
-
-            var bookReadingsUrl = booksUriTemplates[BooksUriTemplateType.BookReadings].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<List<Reading>>(bookReadingsUrl);
-        }
-
-        /// <summary>
-        /// Get readings associated with the specified book, including private readings
-        /// </summary>
-        /// <param name="accessToken">Access Token</param>
-        /// <param name="bookId">Readmill Id of the book for which readings need to be retrieved</param>
-        /// <param name="?"></param>
-        /// <returns></returns>
-        public Task<List<Reading>> GetBookReadingsAsync(string accessToken, string bookId, ReadingsQueryOptions options)
-        {
-            IDictionary<string, string> parameters = GetInitializedParameterCollection();
-
-            if (options != null)
-            {
-                parameters.Add(BooksClient.BookId, bookId);
-                parameters.Add(ReadmillConstants.AccessToken, accessToken);
                 parameters.Add(ReadingsQueryOptions.From, options.FromValue);
                 parameters.Add(ReadingsQueryOptions.To, options.ToValue);
                 parameters.Add(ReadingsQueryOptions.Count, options.CountValue.ToString());

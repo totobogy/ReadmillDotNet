@@ -56,7 +56,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BooksClient.cs" />
+    <Compile Include="CommentsClient.cs" />
     <Compile Include="DataContracts.cs" />
+    <Compile Include="HighlightsClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadingsClient.cs" />
     <Compile Include="ReadingSession.cs" />

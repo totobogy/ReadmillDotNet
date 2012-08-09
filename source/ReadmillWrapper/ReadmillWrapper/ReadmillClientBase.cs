@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.Http;
+//using System.Net.Http;
 using System.Runtime.Serialization.Json;
 using System.IO;
 using System.Collections.Specialized;
-using System.Json;
+//using System.Json;
 using System.Net;
+using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace Com.Readmill.Api
 {
@@ -17,14 +19,15 @@ namespace Com.Readmill.Api
         protected Uri readmillBaseUri =  new Uri(ReadmillConstants.ReadmillBaseUrl);
         protected string ClientId { get; set; }
 
-        HttpClient httpClient;
+        //HttpClient httpClient;
 
         public ReadmillClientBase(string clientId)
         {
             this.ClientId = clientId;
-            httpClient = new HttpClient();
+            //httpClient = new HttpClient();
             LoadTemplates();
         }
+
 
         protected Task<string> PutAsync<T>(T readmillObject, Uri readmillUri)
         {
@@ -48,32 +51,9 @@ namespace Com.Readmill.Api
                     {
                         return responseTask.Result.Headers["Location"];
                     }
-                });
-
-            /*DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-
-            //ToDo: Figure out a way to use stream safely
-            MemoryStream m = new MemoryStream();
-            ser.WriteObject(m, readmillObject);
-            m.Position = 0;
-
-            StreamContent content = new StreamContent(m);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-            return httpClient.PutAsync(readmillUri, content).ContinueWith(
-                (requestTask) =>
-                {
-                    try
-                    {
-                        requestTask.Result.EnsureSuccessStatusCode();
-                        return requestTask.Result.Headers.Location;
-                    }
-                    finally
-                    {
-                        m.Dispose();
-                    }
-                });*/
+                });            
         }
+
 
         protected Task<string> PostAsync<T>(T readmillObject, Uri readmillUri)
         {
@@ -97,48 +77,79 @@ namespace Com.Readmill.Api
                     {
                         return responseTask.Result.Headers["Location"];
                     }
-                });            
+                });                         
         }
 
-        public Task<T> GetAsync<T>(Uri readmillUri)
+
+        protected Task<T> GetAsync<T>(Uri readmillUri)
         {
-            Task<Task<T>> task = httpClient.GetAsync(readmillUri).ContinueWith(
-                (requestTask) =>
+            TaskCompletionSource<Stream> tcs = new TaskCompletionSource<Stream>();
+
+            WebClient client = new WebClient();
+
+            client.OpenReadCompleted += (sender, args) =>
                 {
-                    // Get HTTP response from completed task. 
-                    HttpResponseMessage response = requestTask.Result;
+                    if (args.Error != null)
+                        tcs.SetException(args.Error);
+                    else if (args.Cancelled)
+                        tcs.SetCanceled();
+                    else tcs.SetResult(args.Result);
+                };
 
-                    // Check that response was successful or throw exception 
-                    response.EnsureSuccessStatusCode();
+            client.OpenReadAsync(readmillUri);
 
-                    //Read as stream
-                    return (response.Content.ReadAsStreamAsync().ContinueWith(
+            return tcs.Task.ContinueWith(
                         (readTask) =>
                         {
                             using (readTask.Result)
                             {
                                 DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-                                return (T)ser.ReadObject(readTask.Result);
+                                T obj = (T)ser.ReadObject(readTask.Result);
+                                return obj;
                             }
-                        }));
-                });
-
-            return task.Unwrap();
+                        });
 
         }
+
+        /// <summary>
+        /// Helper method to Get a resource based on permalink uri (e.g. returned by a previous Post call)
+        /// </summary>
+        /// <typeparam name="T">Readmill Resource type</typeparam>
+        /// <param name="permalink">Permalink of the resource</param>
+        /// <param name="accessToken">Needed if the resource is private</param>
+        /// <returns></returns>
+        public Task<T> GetFromPermalinkAsync<T>(string permalink, string accessToken = null)
+        {
+            string readmillUri = permalink + "?client_id=" + this.ClientId;
+
+            if (accessToken != null)
+                readmillUri = readmillUri + "&access_token=" + accessToken;
+
+            return GetAsync<T>(new Uri(readmillUri));
+        }
+
 
         protected Task DeleteAsync(Uri readmillUri)
         {
-            return httpClient.DeleteAsync(readmillUri).ContinueWith(
+            HttpWebRequest req = (HttpWebRequest) WebRequest.Create(readmillUri);
+            req.Method = "DELETE";
+
+            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
+
+            return t.ContinueWith(
                 (deleteTask) =>
                 {
-                    deleteTask.Result.EnsureSuccessStatusCode();
+                    using (deleteTask.Result)
+                    {
+                        return;
+                    }
                 });
         }
 
-        protected NameValueCollection GetInitializedParameterCollection()
+
+        protected IDictionary<string,string> GetInitializedParameterCollection()
         {
-            NameValueCollection uriParameterCollection = new NameValueCollection();
+            IDictionary<string, string> uriParameterCollection = new Dictionary<string, string>();
             uriParameterCollection.Add(ReadmillConstants.ClientId, this.ClientId);
 
             return uriParameterCollection;

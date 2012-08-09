@@ -51,9 +51,6 @@
     <Compile Include="UnitTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ReadmillWrapper\ReadmillClient.csproj">
       <Project>{4D03D9E9-E6E2-4372-9D36-060C943C1E8C}</Project>
       <Name>ReadmillClient</Name>

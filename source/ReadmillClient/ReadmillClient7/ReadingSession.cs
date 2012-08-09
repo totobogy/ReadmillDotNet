@@ -29,27 +29,26 @@ namespace Com.Readmill.Api
             this.isOpen = true;
         }
 
-        public Task PingAsync(float progress, bool sendDuration = true, bool sendOccuredAt = true)
+        public Task PingAsync(double progress, bool sendDuration = true, bool sendOccuredAt = true)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");
 
             Ping ping = new Ping();
             ping.SessionId = this.sessionId;
-
-            //ToDo: Shouldn't be less than last progress?
             ping.Progress = progress;
 
-            if (sendOccuredAt)
-                ping.OccuredAt = XmlConvert.ToString(lastPingTime = DateTime.Now);
-
+            DateTime current = DateTime.Now;
             if (sendDuration)
-                ping.Duration = (DateTime.Now - lastPingTime).Seconds;
+                ping.Duration = (current - lastPingTime).Seconds;
+
+            if (sendOccuredAt)
+                ping.OccuredAt = XmlConvert.ToString(lastPingTime = current);
 
             return this.client.PostReadingPingAsync(this.accessToken, this.readingId, ping);
         }
 
-        public Task PingAsync(float progress, float latitude, float longitude, bool sendDuration = true, bool sendOccuredAt = true)
+        public Task PingAsync(double progress, double latitude, double longitude, bool sendDuration = true, bool sendOccuredAt = true)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");
@@ -89,10 +88,11 @@ namespace Com.Readmill.Api
             Comment comment = new Comment() { Content = content };
             return client.PostReadingCommentAsync(this.accessToken, this.readingId, comment);
         }
-
+        
         public void Close()
         {
             this.isOpen = false;
+            this.accessToken = null;
             this.sessionId = null;
             this.client = null;
         }

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Net.Http;
+//using System.Net.Http;
 using System.Runtime.Serialization.Json;
 using Com.Readmill.Api.DataContracts;
 using System.Collections.Specialized;
 using Com.Readmill.Api;
 using System.Threading.Tasks;
 using System.Security;
+
 
 namespace Com.Readmill.Api
 {
@@ -90,7 +91,7 @@ namespace Com.Readmill.Api
         /// <returns>representation of the user corresponding to the authentication token</returns>
         public Task<User> GetOwnerAsync(string accessToken)
         {
-            NameValueCollection parameters = GetInitializedParameterCollection();
+            IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
 
@@ -106,7 +107,7 @@ namespace Com.Readmill.Api
         /// <returns></returns>
         public Task<User> GetUserByIdAsync(string userId)
         {
-            NameValueCollection parameters = GetInitializedParameterCollection();
+            IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
             parameters.Add(UsersClient.UserId, userId);
 
@@ -119,11 +120,12 @@ namespace Com.Readmill.Api
         /// <param name="userId">Readmill user-id of the user whose readings you want to retrieve</param>
         /// <param name="options">Query options for retrieving the readings</param>
         /// <returns></returns>
-        public Task<List<Reading>> GetUserReadings(string userId, ReadingsQueryOptions options)
+        public Task<List<Reading>> GetUserReadings(string userId, ReadingsQueryOptions options = null, string accessToken = null)
         {
-            NameValueCollection parameters = GetInitializedParameterCollection();
+            IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
             parameters.Add(UsersClient.UserId, userId);
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
 
             if (options != null)
             {
@@ -137,11 +139,13 @@ namespace Com.Readmill.Api
             }
 
             //Remove extraneous parameters because Readmill doesn't like empty pairs
-            foreach (string key in parameters.AllKeys)
+            IDictionary<string, string> tmpParams = new Dictionary<string, string>();
+            foreach (string key in parameters.Keys)
             {
-                if (string.IsNullOrEmpty(parameters[key]))
-                    parameters.Remove(key);
+                if (!string.IsNullOrEmpty(parameters[key]))
+                    tmpParams.Add(key, parameters[key]);
             }
+            parameters = tmpParams;
 
             var readingsUrl = userUriTemplates[UsersUriTemplateType.UserReadings].BindByName(this.readmillBaseUri, parameters);
             return GetAsync<List<Reading>>(readingsUrl);

@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-//using System.Web;
-//using System.Net.Http;
-//using System.Json;
-//using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization.Json;
 using System.Runtime.Serialization;
 using System.IO;
 using System.Threading;
@@ -63,7 +60,32 @@ namespace Com.Readmill.Api
 
                 return booksClient;
             }
-        }   
+        }
+
+        HighlightsClient highlightsClient;
+        public HighlightsClient Highlights
+        {
+            get
+            {
+                if (this.highlightsClient == null)
+                    highlightsClient = new HighlightsClient(this.ClientId);
+
+                return highlightsClient;
+            }
+        }
+
+        CommentsClient commentsClient;
+        public CommentsClient Comments
+        {
+            get
+            {
+                if (this.commentsClient == null)
+                    commentsClient = new CommentsClient(this.ClientId);
+
+                return commentsClient;
+            }
+        }
+
     }
     
 }

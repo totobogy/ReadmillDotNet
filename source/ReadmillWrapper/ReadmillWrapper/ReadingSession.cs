@@ -29,13 +29,14 @@ namespace Com.Readmill.Api
             this.isOpen = true;
         }
 
-        public Task PingAsync(float progress, bool sendDuration = true, bool sendOccuredAt = true)
+        public Task PingAsync(double progress, bool sendDuration = true, bool sendOccuredAt = true)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");
 
             Ping ping = new Ping();
             ping.SessionId = this.sessionId;
+            ping.Progress = progress;
 
             DateTime current = DateTime.Now;
             if (sendDuration)
@@ -47,7 +48,7 @@ namespace Com.Readmill.Api
             return this.client.PostReadingPingAsync(this.accessToken, this.readingId, ping);
         }
 
-        public Task PingAsync(float progress, float latitude, float longitude, bool sendDuration = true, bool sendOccuredAt = true)
+        public Task PingAsync(double progress, double latitude, double longitude, bool sendDuration = true, bool sendOccuredAt = true)
         {
             if (!this.isOpen)
                 throw new InvalidOperationException("Session Closed.");
@@ -61,11 +62,12 @@ namespace Com.Readmill.Api
             ping.Latitude = latitude;
             ping.Longitude = longitude;
 
-            if (sendOccuredAt)
-                ping.OccuredAt = XmlConvert.ToString(lastPingTime = DateTime.Now);
-
+            DateTime current = DateTime.Now;
             if (sendDuration)
-                ping.Duration = (DateTime.Now - lastPingTime).Seconds;
+                ping.Duration = (current - lastPingTime).Seconds;
+
+            if (sendOccuredAt)
+                ping.OccuredAt = XmlConvert.ToString(lastPingTime = current);
 
             return this.client.PostReadingPingAsync(this.accessToken, this.readingId, ping);
         }

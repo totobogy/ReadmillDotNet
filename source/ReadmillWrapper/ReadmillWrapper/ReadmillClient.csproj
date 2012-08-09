@@ -43,14 +43,6 @@
       <HintPath>..\packages\System.Json.4.0.20126.16343\lib\net40\System.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Net.Http.2.0.20505.0\lib\net40\System.Net.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Net.Http.2.0.20505.0\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
@@ -61,7 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BooksClient.cs" />
+    <Compile Include="CommentsClient.cs" />
     <Compile Include="DataContracts.cs" />
+    <Compile Include="HighlightsClient.cs" />
     <Compile Include="QueryOptions.cs" />
     <Compile Include="ReadingsClient.cs" />
     <Compile Include="ReadingSession.cs" />
@@ -70,9 +64,6 @@
     <Compile Include="ReadmillClientBase.cs" />
     <Compile Include="ReadmillConstants.cs" />
     <Compile Include="UsersClient.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

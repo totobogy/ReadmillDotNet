@@ -14,19 +14,25 @@ namespace ReadmillWrapperTester
     [TestClass]
     public class UnitTests
     {
-        string clientId = "3f2116709bb1f330084b9cd9f1045961";
-        string accessToken = "cda8ddc466d23baa1cea25da55517fb5";
+        //Provide your Client-Id. This is just a dummy.
+        string clientId = "3f211blahblahblah";
+
+        //Provide a valid the oauth access Token (e.g. a non-expiring token)
+        string accessToken = "cda8blahblahblah";
 
         [TestMethod]
         public void TestGetOwner()
         {
+            //Replace this with your Full Name
+            string myFullName = "Tushar Malhotra";
+
             ReadmillClient client = new ReadmillClient(this.clientId);
 
             client.Users.GetOwnerAsync(this.accessToken).ContinueWith(
                 (getUserTask) =>
                 {
-                    if (!(getUserTask.Result.FullName == "Tushar Malhotra"))
-                        throw new InternalTestFailureException("Expected FullName: Tushar Malhotra. Retrieved: " + getUserTask.Result.FullName);
+                    if (!(getUserTask.Result.FullName == myFullName))
+                        throw new InternalTestFailureException("Expected fullName does not match Retrieved: " + getUserTask.Result.FullName);
 
                     //ToDo: Add more / stronger validations     
                 });         
@@ -35,19 +41,19 @@ namespace ReadmillWrapperTester
         [TestMethod]
         public void TestGetUserReadings()
         {
+            //Modify this variable according to your own data before running
+            int expectedReadingCount = 6;
+
             ReadmillClient client = new ReadmillClient(this.clientId);
 
             User me = client.Users.GetOwnerAsync(this.accessToken).Result;   
 
-            ReadingsQueryOptions options = new ReadingsQueryOptions();
-            options.CountValue = 5;
-
-            client.Users.GetUserReadings(me.Id, options).ContinueWith(
+            client.Users.GetUserReadings(me.Id, accessToken:accessToken).ContinueWith(
                 (getReadingsTask) =>
                 {
                     //Validations
-                    if (getReadingsTask.Result.Count != 5)
-                        throw new InternalTestFailureException("Expected 3 Readings. Retrieved: " + getReadingsTask.Result.Count);
+                    if (getReadingsTask.Result.Count != expectedReadingCount)
+                        throw new InternalTestFailureException("Expected" + expectedReadingCount + "readings. Retrieved: " + getReadingsTask.Result.Count);
                     
                     //Add more / stronger validations
                 });
@@ -58,24 +64,38 @@ namespace ReadmillWrapperTester
         {
             ReadmillClient client = new ReadmillClient(this.clientId);
 
-            ReadingsQueryOptions options = new ReadingsQueryOptions();
-            options.CountValue = 5;
+            ReadingsQueryOptions options = new ReadingsQueryOptions() { CountValue = 30 };
 
             List<Reading> readings = client.Readings.GetReadingsAsync(options).Result;
 
-            if (readings.Count != 5)
-                throw new InternalTestFailureException("Expected 5 Readings. Got: " + readings.Count);
+            foreach (Reading r in readings)
+            {
+                //Periods
+                List<Period> sessions = client.Readings.GetReadingPeriodsAsync(r.Id).Result;
+                Console.WriteLine("Reading {0} has {1} sessions.", r.Id, sessions.Count);
+
+                //Locaions
+                List<Location> locations = client.Readings.GetReadingLocationsAsync(r.Id).Result;
+                Console.WriteLine("Reading {0} has {1} locations.", r.Id, locations.Count);
+            }
+
+            if (readings.Count != 30)
+                throw new InternalTestFailureException("Expected 30 Readings. Got: " + readings.Count);
         }
 
         [TestMethod]
         public void TestUpdateReading()
         {
-            ReadmillClient client = new ReadmillClient(this.clientId);
+            /*
+             * Uncomment the below code and modify it for one of your own readings suitably
+             * e.g. The simplest way is to create a private reading and set readingId to its id
+             */
 
-            //Reading id for "Why the lucky stiff's Poignant"
+            /*ReadmillClient client = new ReadmillClient(this.clientId);
+
+            //Reading-id for my reading od "Why the lucky stiff's Poignant Guide to Ruby"
             string readingId = "77987";
 
-            //Put Test
             ReadingUpdategram testReading = new ReadingUpdategram();
             testReading.IsPrivate = false;
 
@@ -92,7 +112,7 @@ namespace ReadmillWrapperTester
                 //Reset this reading to 'private' - Not full proof - what if this throws?
                 testReading.IsPrivate = true;
                 client.Readings.UpdateReadingAsync(this.accessToken, readingId, testReading).Wait(TimeSpan.FromMinutes(1));
-            }
+            }*/
         }
 
         [TestMethod]
@@ -130,6 +150,9 @@ namespace ReadmillWrapperTester
             //Test only on staging?
         }
 
+        /// <summary>
+        /// Less of a test, more of a sample
+        /// </summary>
         [TestMethod]
         public void TestReadingActions()
         {
@@ -141,16 +164,17 @@ namespace ReadmillWrapperTester
 
             Book book = client.Books.GetBestMatchAsync(options).Result;
 
+            //Create a new reading and retrieve it using the permalink
             string permalink = client.Books.PostBookReadingAsync(this.accessToken, book.Id, Reading.ReadingState.Open).Result;
+            Reading r = client.Readings.GetFromPermalinkAsync<Reading>(permalink).Result;
 
-            
-            Reading r = client.Readings.GetAsync<Reading>(new Uri(permalink+"?client_id="+this.clientId)).Result;
             try
             {
+                //Create a new Reading Session
                 ReadingSession session = client.Readings.GetReadingSession(this.accessToken, r.Id);
-                session.PingAsync((float)0.1).Wait();
-                //Thread.Sleep(5000);
-                session.PingAsync((float)0.12).Wait();
+                session.PingAsync(0.1, 52.53826, 13.41268).Wait();
+                Thread.Sleep(5000);
+                session.PingAsync(0.12, 52.53826, 13.41268).Wait();
 
                 Highlight testHighlight = new Highlight() { Content = "When one person suffers from a delusion, it is called insanity. When many people suffer from a delusion it is called a Religion." };
                 session.PostHighlightAsync(testHighlight).Wait();
@@ -163,15 +187,18 @@ namespace ReadmillWrapperTester
             }
             finally
             {
+                //Comment this line or set a breakpoint here if you want to check the Reading on Readmill
                 client.Readings.DeleteReadingAsync(this.accessToken, r.Id);
             }
         }
 
+        /// <summary>
+        /// Less of a test, more of a sample
+        /// </summary>
         [TestMethod]
         public void TestGetHighlights()
         {
             ReadmillClient client = new ReadmillClient(this.clientId);
-            //List<Highlight> highlights = new List<Highlight>();
 
             SortedList<decimal, Highlight> highlights = new SortedList<decimal, Highlight>();
 
@@ -185,9 +212,10 @@ namespace ReadmillWrapperTester
             ReadingsQueryOptions readingOptions = new ReadingsQueryOptions();
             //Get all readings
             List<Reading> readings = client.Books.GetBookReadingsAsync(book.Id, readingOptions).Result;
+            
             foreach (Reading reading in readings)
             {
-                //Foreach reading, Get all Highlights
+                //Foreach reading, Get all (100 latest) Highlights
                 RangeQueryOptions highlightOptions = new RangeQueryOptions() { CountValue = 100 };
 
                 foreach (Highlight h in client.Readings.GetReadingHighlightsAsync(reading.Id, highlightOptions).Result)
@@ -197,7 +225,7 @@ namespace ReadmillWrapperTester
                 }
             }
 
-            //Sort all highlights by position - how accurate?
+            //Now do something with the sorted list of highlights. E.g. Print a summary of the book
         }
 
         [TestMethod]
@@ -220,7 +248,5 @@ namespace ReadmillWrapperTester
                 Assert.IsTrue(DateTime.Parse(reading.CreatedAt) > new DateTime(2012, 6, 30));
             }
         }
-
-        //Test PingAsync and Periods
     }
 }

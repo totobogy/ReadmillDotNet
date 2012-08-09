@@ -10,6 +10,7 @@ using System.Collections.Specialized;
 //using System.Json;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace Com.Readmill.Api
 {
@@ -80,7 +81,7 @@ namespace Com.Readmill.Api
         }
 
 
-        public Task<T> GetAsync<T>(Uri readmillUri)
+        protected Task<T> GetAsync<T>(Uri readmillUri)
         {
             TaskCompletionSource<Stream> tcs = new TaskCompletionSource<Stream>();
 
@@ -108,6 +109,23 @@ namespace Com.Readmill.Api
                             }
                         });
 
+        }
+
+        /// <summary>
+        /// Helper method to Get a resource based on permalink uri (e.g. returned by a previous Post call)
+        /// </summary>
+        /// <typeparam name="T">Readmill Resource type</typeparam>
+        /// <param name="permalink">Permalink of the resource</param>
+        /// <param name="accessToken">Needed of the resource is private</param>
+        /// <returns></returns>
+        public Task<T> GetFromPermalinkAsync<T>(string permalink, string accessToken = null)
+        {
+            string readmillUri = permalink + "?client_id=" + this.ClientId;
+
+            if (accessToken != null)
+                readmillUri = readmillUri + "&access_token=" + accessToken;
+
+            return GetAsync<T>(new Uri(readmillUri));
         }
 
 

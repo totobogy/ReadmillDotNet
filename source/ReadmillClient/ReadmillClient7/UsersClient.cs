@@ -120,11 +120,12 @@ namespace Com.Readmill.Api
         /// <param name="userId">Readmill user-id of the user whose readings you want to retrieve</param>
         /// <param name="options">Query options for retrieving the readings</param>
         /// <returns></returns>
-        public Task<List<Reading>> GetUserReadings(string userId, ReadingsQueryOptions options)
+        public Task<List<Reading>> GetUserReadings(string userId, ReadingsQueryOptions options = null, string accessToken = null)
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
             parameters.Add(UsersClient.UserId, userId);
+            parameters.Add(ReadmillConstants.AccessToken, accessToken);
 
             if (options != null)
             {
