@@ -23,18 +23,21 @@ namespace PhoneApp1
         public BookDetailsPage()
         {
             InitializeComponent();
+
+            Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
+
+            this.LayoutRoot.DataContext = book;
+
+            ContentPanel.DataContext = book;
+
+            var gl = GestureService.GetGestureListener(this);
+            gl.Flick += new EventHandler<Microsoft.Phone.Controls.FlickGestureEventArgs>(gl_Flick);
+
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);
-            Book book = (Book) PhoneApplicationService.Current.State["SelectedBook"];
-
-            ContentPanel.DataContext = book;            
-
-            var gl = GestureService.GetGestureListener(this);
-            gl.Flick +=new EventHandler<Microsoft.Phone.Controls.FlickGestureEventArgs>(gl_Flick);
-
+            base.OnNavigatedTo(e);            
         }
 
         private void gl_Flick(object sender, Microsoft.Phone.Controls.GestureEventArgs e)

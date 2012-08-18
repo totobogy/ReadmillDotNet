@@ -1,17 +1,17 @@
 ﻿<phone:PhoneApplicationPage 
-    x:Class="PhoneApp1.MainPage"
+    x:Class="PhoneApp1.MyReadingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
     xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="768"
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
-    SupportedOrientations="PortraitOrLandscape" Orientation="Portrait"
-    shell:SystemTray.IsVisible="True" Name="Read7" xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit">
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    mc:Ignorable="d" d:DesignHeight="768" d:DesignWidth="480"
+    shell:SystemTray.IsVisible="True">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
@@ -23,23 +23,22 @@
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
             <TextBlock x:Name="ApplicationTitle" Text="READ 7" Style="{StaticResource PhoneTextNormalStyle}"/>
-            <TextBlock x:Name="PageTitle" Text="being read now..." Margin="10,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
+            <TextBlock x:Name="PageTitle" Text="my readings" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Margin="12,127,12,0" Grid.RowSpan="2">
-            <ListBox Height="515" HorizontalAlignment="Left" Margin="0,120,0,0" Name="booksList" VerticalAlignment="Top" Width="456" Loaded="booksList_Loaded" DoubleTap="booksList_DoubleTap" Tap="booksList_Tap">
+        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
+            <ListBox Height="521" HorizontalAlignment="Left" Name="myReadingsList" VerticalAlignment="Top" Width="456">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Width="420" Margin="10,15,10,15" >
-                            <Image Source="{Binding CoverUrl}" Width="66"/>
-                            <TextBlock Text="{Binding Title}" Width="354" TextWrapping="Wrap" Padding="20" FontSize="26"/>
+                        <StackPanel Orientation="Horizontal" Width="456" Margin="10" >
+                            <Image Source="{Binding Book.CoverUrl}" Width="66"/>
+                            <TextBlock Text="{Binding Book.Title}" Width="390" TextWrapping="Wrap" Padding="20" FontSize="26"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <toolkit:PhoneTextBox Hint="search title or author" Height="64" HorizontalAlignment="Left" Name="searchBox" VerticalAlignment="Top" Width="388" BorderThickness="0" Padding="1,0,0,0" AcceptsReturn="False" KeyUp="searchBox_KeyUp" FontSize="26" Margin="0,6,0,0" />
-            <toolkit:PerformanceProgressBar Height="94" HorizontalAlignment="Left" Margin="98,136,0,0" Name="booksProgressBar" VerticalAlignment="Top" Width="234" />
+            <Button Content="create a new reading..." Height="106" HorizontalAlignment="Left" Margin="0,527,0,0" Name="button1" VerticalAlignment="Top" Width="450" />
         </Grid>
     </Grid>
  

@@ -17,26 +17,51 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Media.Imaging;
 using Microsoft.Phone.Shell;
+using System.IO.IsolatedStorage;
+using System.IO;
+using System.Runtime.Serialization.Json;
 
 namespace PhoneApp1
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        ReadmillClient client;
+        private ReadmillClient client;
+        private DataContractJsonSerializer ser;
 
         // Constructor
         public MainPage()
         {
             InitializeComponent();
+            this.Loaded += new RoutedEventHandler(MainPage_Loaded);
 
-            booksList.Items.Add(new ListBoxItem()
+            //Show progress bar
+            booksProgressBar.IsIndeterminate = true;
+            booksProgressBar.Visibility = System.Windows.Visibility.Visible;
+
+            //try loading user access token
+            //ToDo: Handle when the token is not valid - this will only be detected at API call time
+            ser = new DataContractJsonSerializer(typeof(AccessToken));
+            using (var store = IsolatedStorageFile.GetUserStoreForApplication())
             {
-                Content = new TextBlock() 
-                { TextAlignment = System.Windows.TextAlignment.Center, 
-                    FontSize = 26, Padding = new Thickness(20), Text = "loading books..." }
-            });
+                try
+                {
+                    using (var stream = new
+                                        IsolatedStorageFileStream("token.ser",
+                                                                    FileMode.Open,
+                                                                    FileAccess.Read,
+                                                                    store))
+                    {
+                        AppConstants.Token = (AccessToken)ser.ReadObject(stream);
+                    }
+                }
+                catch (IsolatedStorageException ex)
+                {
+                    //no-op: we'll ask for authorization when page loads
+                }
+            }
+            
 
-            client = new ReadmillClient("3f2116709bb1f330084b9cd9f1045961");
+            client = new ReadmillClient(AppConstants.ClientId);
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             IDictionary<string, Book> readableBooks = new Dictionary<string, Book>();
@@ -47,18 +72,30 @@ namespace PhoneApp1
             //Task<List<Book>> booksTask = client.Books.GetBooksAsync(booksOptions);
             Task<List<Reading>> readingsTask = client.Readings.GetReadingsAsync(readingsOptions);
 
+            //Task<List<Highlight>> getTask = client.Highlights.GetHighlightsAsync();
+
             readingsTask.ContinueWith(task =>
             {
                 foreach (Reading r in task.Result)
                 {
-                   if(!readableBooks.ContainsKey(r.Book.Id))
-                    readableBooks.Add(r.Book.Id, r.Book);
+                    if (!readableBooks.ContainsKey(r.Book.Id))
+                        readableBooks.Add(r.Book.Id, r.Book);
                 }
 
-                booksList.Items.RemoveAt(0);
-                booksList.ItemsSource = readableBooks.Values; //filterTask.Result;               
+                //hide progress-bar
+                booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
+                booksList.ItemsSource = readableBooks.Values;
+
             }, uiTaskScheduler);
 
+        }
+        
+        void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {            
+            //If this is the first time the app is being run, show log-in screen
+            if (AppConstants.Token == null)
+                NavigationService.Navigate(new Uri("/LogInPage.xaml", UriKind.Relative));
         }
 
         private void booksList_Loaded(object sender, RoutedEventArgs e)
@@ -81,6 +118,7 @@ namespace PhoneApp1
             PhoneApplicationService.Current.State.Add("SelectedBook", selectedBook);
 
             NavigationService.Navigate(new Uri("/BookDetailsPage.xaml", UriKind.Relative));
+            //NavigationService.Navigate(new Uri("/LogInPage.xaml", UriKind.Relative));
         }
 
         private void searchBox_KeyUp(object sender, KeyEventArgs e)
