@@ -9,11 +9,18 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Com.Readmill.Api.DataContracts;
+using System.Threading.Tasks;
+using Com.Readmill.Api;
 
 namespace PhoneApp1.ViewModels
 {
     public class BookDetailsViewModel
     {
+        private ReadmillClient client;
+
+        //used to represnt this user's reading of this book
+        private Reading bookReading;
+
         public Book SelectedBook { get; private set; }
 
         public string DisplayTitle
@@ -42,7 +49,32 @@ namespace PhoneApp1.ViewModels
 
         public BookDetailsViewModel(Book selectedBook)
         {
+            this.client = new ReadmillClient(AppConstants.ClientId);
             this.SelectedBook = selectedBook;
         }
+
+        public Task LikeBookAsync()
+        {
+            //if reading already exists, update?
+            return
+                client.Books.PostBookReadingAsync
+                (AppConstants.Token.Token,
+                    SelectedBook.Id,
+                    Reading.ReadingState.Interesting).ContinueWith(task =>
+                        {
+                            string readingLink = task.Result;
+                            bookReading = client.Readings.GetFromPermalinkAsync<Reading>(readingLink, AppConstants.Token.Token).Result;
+                        });
+        }
+
+        public Task UnlikeBookAsync()
+        {
+            if (bookReading == null)
+                throw new InvalidOperationException("Reading not set for this book for this user");
+            return 
+                client.Readings.DeleteReadingAsync(AppConstants.Token.Token, bookReading.Id);
+        }
+
+        //Is Liked?
     }
 }

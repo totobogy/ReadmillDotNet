@@ -15,29 +15,21 @@ using Com.Readmill.Api.DataContracts;
 using System.Threading.Tasks;
 using Microsoft.Phone.Shell;
 using System.Threading;
+using PhoneApp1.ViewModels;
 
 namespace PhoneApp1
 {
     public partial class ReadingPage : PhoneApplicationPage
     {
+        BookHighlightsViewModel bookHighlightsVM;
+
         public ReadingPage()
         {
             InitializeComponent();
 
-            var gl = GestureService.GetGestureListener(this);
-            gl.Flick += new EventHandler<Microsoft.Phone.Controls.FlickGestureEventArgs>(gl_Flick);
-
             Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
-            bookTitlePanel.DataContext = book;
-            bookTitle.Text = book.Title + "\nby " + book.Author;
-
-            /*
-             * Live Tile?
-            ShellTile appTile = ShellTile.ActiveTiles.First();
-            StandardTileData appTileUpdate = new StandardTileData();
-            appTileUpdate.BackBackgroundImage = new Uri(book.CoverUrl, UriKind.Absolute);
-            appTile.Update(appTileUpdate);
-            */
+            bookHighlightsVM = new BookHighlightsViewModel(book);
+            this.DataContext = bookHighlightsVM;
 
             //show progress bar
             highlightsProgressBar.IsIndeterminate = true;
@@ -45,36 +37,12 @@ namespace PhoneApp1
 
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-            ReadmillClient client = new ReadmillClient(AppConstants.ClientId);
-            IDictionary<decimal, Highlight> highlights = new Dictionary<decimal, Highlight>();
-            ReadingsQueryOptions readingOptions = new ReadingsQueryOptions() { CountValue = 100 };
-            RangeQueryOptions highlightOptions = new RangeQueryOptions() { CountValue = 100 };
-
-            //Get all readings
-            Task.Factory.StartNew(() =>
-            {
-                List<Reading> readings = client.Books.GetBookReadingsAsync(book.Id, readingOptions).Result;
-
-                foreach (Reading reading in readings)
+            bookHighlightsVM.LoadBookHighlightsAsync().ContinueWith(displayList =>
                 {
-                    //foreach reading, Get all Highlights
-                    foreach (Highlight h in client.Readings.GetReadingHighlightsAsync(reading.Id, highlightOptions).Result)
-                    {
-                        //ToDo: Better heuristics? Remove duplicates?
-                        if(h.Content.Length >= 20)
-                            if (!highlights.ContainsKey(h.Locators.Position))
-                                highlights.Add(h.Locators.Position, h);
-                    }
-                }
-
-                Task.Factory.StartNew(() =>
-                {
-                    List<Highlight> h = highlights.Values.ToList<Highlight>();
-                    
                     //hide progress bar
                     highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
 
-                    if (h.Count <= 0)
+                    if (bookHighlightsVM.BookHighlights.Count <= 0)
                     {
                         highlightsListBox.Items.Add(new ListBoxItem()
                         {
@@ -89,13 +57,12 @@ namespace PhoneApp1
                     }
                     else
                     {
-                        highlightsListBox.ItemsSource = from highlight in h
+                        //ToDo: sorting should be in VM
+                        highlightsListBox.ItemsSource = from highlight in bookHighlightsVM.BookHighlights
                                                         orderby highlight.Position
                                                         select highlight;
                     }
-                    
-                }, CancellationToken.None, TaskCreationOptions.None, uiTaskScheduler);
-            });           
+                }, uiTaskScheduler);            
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -103,7 +70,7 @@ namespace PhoneApp1
             base.OnNavigatedTo(e);            
         }
 
-        private void gl_Flick(object sender, Microsoft.Phone.Controls.GestureEventArgs e)
+        /*private void gl_Flick(object sender, Microsoft.Phone.Controls.GestureEventArgs e)
         {
             if (((FrameworkElement)e.OriginalSource).Parent != ContentPanel
                 && ((FrameworkElement)e.OriginalSource).Parent != TitlePanel)
@@ -111,7 +78,7 @@ namespace PhoneApp1
 
             NavigationService.Navigate(new Uri("/MyReadingsPage.xaml", UriKind.Relative));
 
-        }
+        }*/
 
         private void Like_Click(object sender, RoutedEventArgs e)
         {

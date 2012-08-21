@@ -21,12 +21,13 @@ namespace PhoneApp1
 {
     public partial class BookDetailsPage : PhoneApplicationPage
     {
+        BookDetailsViewModel bookDetailsVM;
         public BookDetailsPage()
         {
             InitializeComponent();
 
             Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
-            BookDetailsViewModel bookDetailsVM = new BookDetailsViewModel(book);
+            bookDetailsVM = new BookDetailsViewModel(book);
 
             this.DataContext = bookDetailsVM;
 
@@ -52,15 +53,26 @@ namespace PhoneApp1
         {
             //Mark book as interesting, show in My Books
             ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
             if (likeBookButton.Text == "like")
             {
-                likeBookButton.Text = "unlike";
-                likeBookButton.IconUri = new Uri("/icons/favs.png", UriKind.Relative);
+                bookDetailsVM.LikeBookAsync().ContinueWith(
+                    task =>
+                    {
+                        likeBookButton.Text = "unlike";
+                        likeBookButton.IconUri = new Uri("/icons/favs.png", UriKind.Relative);
+                    }, uiTaskScheduler);
+                
             }
             else
             {
-                likeBookButton.Text = "like";
-                likeBookButton.IconUri = new Uri("/icons/addTofavs.png", UriKind.Relative);
+                bookDetailsVM.UnlikeBookAsync().ContinueWith(
+                    task =>
+                    {
+                        likeBookButton.Text = "like";
+                        likeBookButton.IconUri = new Uri("/icons/addTofavs.png", UriKind.Relative);
+                    }, uiTaskScheduler);
             }
         }
 

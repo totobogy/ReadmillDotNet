@@ -19,12 +19,9 @@ namespace Com.Readmill.Api
         protected Uri readmillBaseUri =  new Uri(ReadmillConstants.ReadmillBaseUrl);
         protected string ClientId { get; set; }
 
-        //HttpClient httpClient;
-
         public ReadmillClientBase(string clientId)
         {
             this.ClientId = clientId;
-            //httpClient = new HttpClient();
             LoadTemplates();
         }
 
@@ -35,23 +32,27 @@ namespace Com.Readmill.Api
             req.Method = "PUT";
             req.ContentType = "application/json";
 
-            //should this also be 'Task-ified'
-            using (Stream stream = req.EndGetRequestStream(req.BeginGetRequestStream(null, null)))
-            {
-                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-                ser.WriteObject(stream, readmillObject);
-            }
-
-            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
-
-            return t.ContinueWith(
-                (responseTask) =>
+            Task<Stream> s = Task<Stream>.Factory.FromAsync(req.BeginGetRequestStream, req.EndGetRequestStream, null);
+            return s.ContinueWith(
+                streamTask =>
                 {
-                    using (responseTask.Result)
+                    using (Stream stream = streamTask.Result)
                     {
-                        return responseTask.Result.Headers["Location"];
+                        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+                        ser.WriteObject(stream, readmillObject);
                     }
-                });            
+
+                    Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
+
+                    return t.ContinueWith(
+                        (responseTask) =>
+                        {
+                            using (responseTask.Result)
+                            {
+                                return responseTask.Result.Headers["Location"];
+                            }
+                        });
+                }).Unwrap();            
         }
 
 
@@ -61,23 +62,27 @@ namespace Com.Readmill.Api
             req.Method = "POST";
             req.ContentType = "application/json";
 
-            //should this also be 'Task-ified'
-            using (Stream stream = req.EndGetRequestStream(req.BeginGetRequestStream(null, null)))
-            {
-                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
-                ser.WriteObject(stream, readmillObject);
-            }
-
-            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
-
-            return t.ContinueWith(
-                (responseTask) =>
+            Task<Stream> s = Task<Stream>.Factory.FromAsync(req.BeginGetRequestStream, req.EndGetRequestStream, null);
+            return s.ContinueWith(
+                streamTask =>
                 {
-                    using (responseTask.Result)
+                    using (Stream stream = streamTask.Result)
                     {
-                        return responseTask.Result.Headers["Location"];
+                        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
+                        ser.WriteObject(stream, readmillObject);
                     }
-                });                         
+
+                    Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
+
+                    return t.ContinueWith(
+                        (responseTask) =>
+                        {
+                            using (responseTask.Result)
+                            {
+                                return responseTask.Result.Headers["Location"];
+                            }
+                        });                
+                }).Unwrap();                     
         }
 
 
@@ -116,7 +121,7 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <typeparam name="T">Readmill Resource type</typeparam>
         /// <param name="permalink">Permalink of the resource</param>
-        /// <param name="accessToken">Needed if the resource is private</param>
+        /// <param name="accessToken">Needed of the resource is private</param>
         /// <returns></returns>
         public Task<T> GetFromPermalinkAsync<T>(string permalink, string accessToken = null)
         {

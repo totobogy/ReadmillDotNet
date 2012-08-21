@@ -15,10 +15,10 @@ namespace ReadmillWrapperTester
     public class UnitTests
     {
         //Provide your Client-Id. This is just a dummy.
-        string clientId = "3f211blahblahblah";
+        string clientId = "3f2116XXXX";
 
         //Provide a valid the oauth access Token (e.g. a non-expiring token)
-        string accessToken = "cda8blahblahblah";
+        string accessToken = "cda8XXXX";
 
         [TestMethod]
         public void TestGetOwner()

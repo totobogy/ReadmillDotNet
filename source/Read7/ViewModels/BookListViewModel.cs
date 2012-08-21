@@ -80,8 +80,6 @@ namespace PhoneApp1.ViewModels
 
         public Task LoadRecentlyReadBooksAsync()
         {
-            //TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
             BooksQueryOptions booksOptions = new BooksQueryOptions() { CountValue = 25 };
             ReadingsQueryOptions readingsOptions = new ReadingsQueryOptions() { CountValue = 25 };
 
@@ -98,7 +96,6 @@ namespace PhoneApp1.ViewModels
                 BookList = readableBooks.Values;
                 ListState = State.RecentlyRead;
             });
-
         }
 
         public Task SearchBooksAsync(string searchString)
