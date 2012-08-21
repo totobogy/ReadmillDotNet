@@ -23,22 +23,17 @@
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
             <TextBlock x:Name="ApplicationTitle" Text="READ 7" Style="{StaticResource PhoneTextNormalStyle}"/>
-            <TextBlock x:Name="PageTitle" Text="my readings" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
+            <TextBlock x:Name="PageTitle" Text="my collections" Margin="10,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-            <ListBox Height="521" HorizontalAlignment="Left" Name="myReadingsList" VerticalAlignment="Top" Width="456">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Width="456" Margin="10" >
-                            <Image Source="{Binding Book.CoverUrl}" Width="66"/>
-                            <TextBlock Text="{Binding Book.Title}" Width="390" TextWrapping="Wrap" Padding="20" FontSize="26"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <Button Content="create a new reading..." Height="106" HorizontalAlignment="Left" Margin="0,527,0,0" Name="button1" VerticalAlignment="Top" Width="450" />
+            <TextBlock Height="61" HorizontalAlignment="Left" Margin="12,26,0,0" Name="textBlock1" Text="books" VerticalAlignment="Top" Width="290" FontSize="40" />
+            <TextBlock FontSize="40" Height="61" HorizontalAlignment="Left" Margin="12,319,0,0" Name="textBlock2" Text="highlights" VerticalAlignment="Top" Width="290" />
+            <Grid Height="134" HorizontalAlignment="Left" Margin="12,90,0,0" Name="booksGrid" VerticalAlignment="Top" Width="427" />
+            <Border BorderBrush="Silver" BorderThickness="1" Height="176" HorizontalAlignment="Left" Margin="10,381,0,0" Name="highlightBorder" VerticalAlignment="Top" Width="429" />
+            <Button Content="all..." Height="59" HorizontalAlignment="Left" Margin="0,230,0,0" Name="allBooksButton" VerticalAlignment="Top" Width="110" FontSize="18" />
+            <Button Content="all..." FontSize="18" Height="59" HorizontalAlignment="Left" Margin="0,563,0,0" Name="allHighlightsButton" VerticalAlignment="Top" Width="110" />
         </Grid>
     </Grid>
  

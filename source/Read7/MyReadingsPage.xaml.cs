@@ -22,16 +22,6 @@ namespace PhoneApp1
         {
             InitializeComponent();
 
-            myReadingsList.Items.Add(new ListBoxItem()
-            {
-                Content = new TextBlock()
-                {
-                    TextAlignment = System.Windows.TextAlignment.Center,
-                    FontSize = 26,
-                    Padding = new Thickness(20),
-                    Text = "loading your readings..."
-                }
-            });
 
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             IDictionary<string, Book> readableBooks = new Dictionary<string, Book>();
@@ -45,8 +35,8 @@ namespace PhoneApp1
                                                     accessToken: AppConstants.Token.Token).ContinueWith(
                                                     getReadings =>
                                                     {
-                                                        myReadingsList.Items.RemoveAt(0);
-                                                        myReadingsList.ItemsSource = getReadings.Result;
+                                                        //myReadingsList.Items.RemoveAt(0);
+                                                        //myReadingsList.ItemsSource = getReadings.Result;
 
                                                     }, uiTaskScheduler);
 

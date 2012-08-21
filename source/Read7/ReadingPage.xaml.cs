@@ -31,6 +31,14 @@ namespace PhoneApp1
             bookTitlePanel.DataContext = book;
             bookTitle.Text = book.Title + "\nby " + book.Author;
 
+            /*
+             * Live Tile?
+            ShellTile appTile = ShellTile.ActiveTiles.First();
+            StandardTileData appTileUpdate = new StandardTileData();
+            appTileUpdate.BackBackgroundImage = new Uri(book.CoverUrl, UriKind.Absolute);
+            appTile.Update(appTileUpdate);
+            */
+
             //show progress bar
             highlightsProgressBar.IsIndeterminate = true;
             highlightsProgressBar.Visibility = System.Windows.Visibility.Visible;
@@ -52,8 +60,10 @@ namespace PhoneApp1
                     //foreach reading, Get all Highlights
                     foreach (Highlight h in client.Readings.GetReadingHighlightsAsync(reading.Id, highlightOptions).Result)
                     {
-                        if (!highlights.ContainsKey(h.Locators.Position))
-                            highlights.Add(h.Locators.Position, h);
+                        //ToDo: Better heuristics? Remove duplicates?
+                        if(h.Content.Length >= 20)
+                            if (!highlights.ContainsKey(h.Locators.Position))
+                                highlights.Add(h.Locators.Position, h);
                     }
                 }
 
@@ -109,6 +119,43 @@ namespace PhoneApp1
             likeButton.Content = "unlike";
 
             string highlightId = (string) likeButton.Tag;
+
+            //Like on readmill
+        }
+
+        private void fullscreenButton_Click(object sender, EventArgs e)
+        {
+            ApplicationBarIconButton fullScreenButton = sender as ApplicationBarIconButton;
+            if (fullScreenButton.Text == "fullscreen")
+            {
+                TitlePanel.Visibility = System.Windows.Visibility.Collapsed;
+                bookTitlePanel.Visibility = System.Windows.Visibility.Collapsed;
+                fullScreenButton.Text = "collapse";
+                fullScreenButton.IconUri = new Uri("/icons/appbar.arrow.collapsed.png", UriKind.Relative);
+            }
+            else
+            {
+                TitlePanel.Visibility = System.Windows.Visibility.Visible;
+                bookTitlePanel.Visibility = System.Windows.Visibility.Visible;
+                fullScreenButton.Text = "fullscreen";
+                fullScreenButton.IconUri = new Uri("/icons/appbar.fullscreen.png", UriKind.Relative);
+            }
+        }
+
+        private void likeBookButton_Click(object sender, EventArgs e)
+        {
+            //Mark book as interesting, show in My Books
+            ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
+            if (likeBookButton.Text == "like book")
+            {
+                likeBookButton.Text = "unlike book";
+                likeBookButton.IconUri = new Uri("/icons/favs.png", UriKind.Relative);
+            }
+            else
+            {
+                likeBookButton.Text = "like book";
+                likeBookButton.IconUri = new Uri("/icons/addTofavs.png", UriKind.Relative);
+            }
         }
     }
 }

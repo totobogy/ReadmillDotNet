@@ -14,6 +14,7 @@ using Microsoft.Phone.Shell;
 using Com.Readmill.Api.DataContracts;
 using Com.Readmill.Api;
 using System.Threading.Tasks;
+using PhoneApp1.ViewModels;
 
 
 namespace PhoneApp1
@@ -25,14 +26,12 @@ namespace PhoneApp1
             InitializeComponent();
 
             Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
+            BookDetailsViewModel bookDetailsVM = new BookDetailsViewModel(book);
 
-            this.LayoutRoot.DataContext = book;
+            this.DataContext = bookDetailsVM;
 
-            ContentPanel.DataContext = book;
-
-            var gl = GestureService.GetGestureListener(this);
-            gl.Flick += new EventHandler<Microsoft.Phone.Controls.FlickGestureEventArgs>(gl_Flick);
-
+            //var gl = GestureService.GetGestureListener(this);
+            //gl.Flick += new EventHandler<Microsoft.Phone.Controls.FlickGestureEventArgs>(gl_Flick);
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -40,13 +39,34 @@ namespace PhoneApp1
             base.OnNavigatedTo(e);            
         }
 
-        private void gl_Flick(object sender, Microsoft.Phone.Controls.GestureEventArgs e)
+        /*private void gl_Flick(object sender, Microsoft.Phone.Controls.GestureEventArgs e)
         {
             if (e.OriginalSource == bookStory)
                 return;
 
             NavigationService.Navigate(new Uri("/ReadingPage.xaml", UriKind.Relative));
 
+        }*/
+
+        private void likeBook_Click(object sender, EventArgs e)
+        {
+            //Mark book as interesting, show in My Books
+            ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
+            if (likeBookButton.Text == "like")
+            {
+                likeBookButton.Text = "unlike";
+                likeBookButton.IconUri = new Uri("/icons/favs.png", UriKind.Relative);
+            }
+            else
+            {
+                likeBookButton.Text = "like";
+                likeBookButton.IconUri = new Uri("/icons/addTofavs.png", UriKind.Relative);
+            }
+        }
+
+        private void roveHighlights_Click(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/ReadingPage.xaml", UriKind.Relative));
         }
     }
 }

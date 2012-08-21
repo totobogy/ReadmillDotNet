@@ -22,13 +22,13 @@
 
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
-            <TextBlock x:Name="ApplicationTitle" Text="READ7" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock x:Name="ApplicationTitle" Text="READ 7" Style="{StaticResource PhoneTextNormalStyle}"/>
             <TextBlock x:Name="PageTitle" Text="sign in" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-            <phone:WebBrowser HorizontalAlignment="Left" Name="readmillBrowser" VerticalAlignment="Top" Height="639" Width="456" BorderThickness="0,0,10,10" Navigating="readmillBrowser_Navigating" />
+            <phone:WebBrowser HorizontalAlignment="Left" Name="readmillBrowser" VerticalAlignment="Top" Height="602" Width="430" BorderThickness="0,0,10,10" Navigating="readmillBrowser_Navigating" Margin="9,20,0,0" />
         </Grid>
     </Grid>
  

@@ -20,27 +20,31 @@ using Microsoft.Phone.Shell;
 using System.IO.IsolatedStorage;
 using System.IO;
 using System.Runtime.Serialization.Json;
+using PhoneApp1.ViewModels;
 
 namespace PhoneApp1
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        private ReadmillClient client;
-        private DataContractJsonSerializer ser;
+        BookListViewModel bookListVM;
 
-        // Constructor
         public MainPage()
         {
             InitializeComponent();
             this.Loaded += new RoutedEventHandler(MainPage_Loaded);
+            this.BackKeyPress += new EventHandler<System.ComponentModel.CancelEventArgs>(MainPage_BackKeyPress);
 
-            //Show progress bar
-            booksProgressBar.IsIndeterminate = true;
-            booksProgressBar.Visibility = System.Windows.Visibility.Visible;
+            //If the token is not found, we route to the login-page on load
+            TryInitializeAccessToken();
+            
+            bookListVM = new BookListViewModel();
+            this.DataContext = bookListVM;                   
+        }
 
-            //try loading user access token
+        private void TryInitializeAccessToken()
+        {
             //ToDo: Handle when the token is not valid - this will only be detected at API call time
-            ser = new DataContractJsonSerializer(typeof(AccessToken));
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(AccessToken));
             using (var store = IsolatedStorageFile.GetUserStoreForApplication())
             {
                 try
@@ -59,53 +63,61 @@ namespace PhoneApp1
                     //no-op: we'll ask for authorization when page loads
                 }
             }
-            
-
-            client = new ReadmillClient(AppConstants.ClientId);
-            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-            IDictionary<string, Book> readableBooks = new Dictionary<string, Book>();
-
-            BooksQueryOptions booksOptions = new BooksQueryOptions() { CountValue = 100 };
-            ReadingsQueryOptions readingsOptions = new ReadingsQueryOptions() { CountValue = 100 };
-
-            //Task<List<Book>> booksTask = client.Books.GetBooksAsync(booksOptions);
-            Task<List<Reading>> readingsTask = client.Readings.GetReadingsAsync(readingsOptions);
-
-            //Task<List<Highlight>> getTask = client.Highlights.GetHighlightsAsync();
-
-            readingsTask.ContinueWith(task =>
-            {
-                foreach (Reading r in task.Result)
-                {
-                    if (!readableBooks.ContainsKey(r.Book.Id))
-                        readableBooks.Add(r.Book.Id, r.Book);
-                }
-
-                //hide progress-bar
-                booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
-
-                booksList.ItemsSource = readableBooks.Values;
-
-            }, uiTaskScheduler);
-
         }
         
         void MainPage_Loaded(object sender, RoutedEventArgs e)
-        {            
+        {
             //If this is the first time the app is being run, show log-in screen
             if (AppConstants.Token == null)
                 NavigationService.Navigate(new Uri("/LogInPage.xaml", UriKind.Relative));
         }
 
-        private void booksList_Loaded(object sender, RoutedEventArgs e)
+        void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            //We shouldn't exit the page, except from RecentlyRead state
+            if (bookListVM.ListState != BookListViewModel.State.RecentlyRead)
+            {
+                e.Cancel = true;
 
+                //Load RecentlyRead instead
+
+                //Show progress bar if the list is empty
+                if (bookListVM.ListState == BookListViewModel.State.Unloaded)
+                {
+                    booksProgressBar.IsIndeterminate = true;
+                    booksProgressBar.Visibility = System.Windows.Visibility.Visible;
+                }
+
+                TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                bookListVM.LoadRecentlyReadBooksAsync().ContinueWith(displayList =>
+                {
+                    //hide progress-bar
+                    if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
+                        booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
+                    booksList.ItemsSource = bookListVM.BookList;
+                }, uiTaskScheduler);   
+            }
         }
 
-        private void booksList_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void booksList_Loaded(object sender, RoutedEventArgs e)
         {
+            if (bookListVM.ListState == BookListViewModel.State.Unloaded)
+            {
+                //Show progress bar
+                booksProgressBar.IsIndeterminate = true;
+                booksProgressBar.Visibility = System.Windows.Visibility.Visible; 
 
+                TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                bookListVM.LoadRecentlyReadBooksAsync().ContinueWith(displayList =>
+                {
+                    //hide progress-bar
+                    if(booksProgressBar.Visibility == System.Windows.Visibility.Visible)
+                        booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
+                    booksList.ItemsSource = bookListVM.BookList;
+                }, uiTaskScheduler);   
+            }
         }
 
         private void booksList_Tap(object sender, System.Windows.Input.GestureEventArgs e)
@@ -127,20 +139,10 @@ namespace PhoneApp1
             { 
                 TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-                //IDictionary<string, Book> readableBooks = new Dictionary<string, Book>();
-
-                BooksQueryOptions booksOptions = new BooksQueryOptions() { SearchStringValue = searchBox.Text, CountValue = 100 };
-                //ReadingsQueryOptions readingsOptions = new ReadingsQueryOptions() { CountValue = 100 };
-
-                Task<List<Book>> booksTask = client.Books.GetBooksAsync(booksOptions);
-                //Task<List<Reading>> readingsTask = client.Readings.GetReadingsAsync(readingsOptions);
-
-                booksTask.ContinueWith(task =>
+                bookListVM.SearchBooksAsync(searchBox.Text).ContinueWith(task =>
                 {
-                    //booksList.Items.RemoveAt(0);
-                    booksList.ItemsSource = task.Result; //readableBooks.Values; //filterTask.Result;
+                    booksList.ItemsSource = bookListVM.BookList;
                     booksList.Focus();
-
                 }, uiTaskScheduler);
             }
         }

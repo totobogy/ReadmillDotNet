@@ -10,7 +10,7 @@
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
-    SupportedOrientations="PortraitOrLandscape" Orientation="Portrait"
+    SupportedOrientations="Portrait" Orientation="Portrait"
     shell:SystemTray.IsVisible="True" Name="Read7" xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -23,12 +23,12 @@
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
             <TextBlock x:Name="ApplicationTitle" Text="READ 7" Style="{StaticResource PhoneTextNormalStyle}"/>
-            <TextBlock x:Name="PageTitle" Text="being read now..." Margin="10,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
+            <TextBlock x:Name="PageTitle" Text="{Binding BookListTitle}" Margin="10,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Margin="12,127,12,0" Grid.RowSpan="2">
-            <ListBox Height="515" HorizontalAlignment="Left" Margin="0,120,0,0" Name="booksList" VerticalAlignment="Top" Width="456" Loaded="booksList_Loaded" DoubleTap="booksList_DoubleTap" Tap="booksList_Tap">
+            <ListBox Height="515" HorizontalAlignment="Left" Margin="0,120,0,0" Name="booksList" VerticalAlignment="Top" Width="456" Loaded="booksList_Loaded" Tap="booksList_Tap">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Width="420" Margin="10,15,10,15" >

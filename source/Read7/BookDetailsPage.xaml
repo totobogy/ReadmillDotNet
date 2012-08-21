@@ -10,7 +10,7 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
-    mc:Ignorable="d" d:DesignHeight="768" d:DesignWidth="480"
+    mc:Ignorable="d" d:DesignHeight="696" d:DesignWidth="480"
     shell:SystemTray.IsVisible="True">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -33,24 +33,19 @@
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
             <Image Source="{Binding CoverUrl}" Height="229" HorizontalAlignment="Left" Margin="10,6,0,0" Name="bookCover" Stretch="Fill" VerticalAlignment="Top" Width="160" />
-            <TextBlock Text="{Binding Title}" FontSize="24" Height="229" HorizontalAlignment="Left" Margin="176,6,0,0" Name="bookTitle" VerticalAlignment="Top" Width="251" TextWrapping="Wrap" Padding="10,0,10,10" />
-            <TextBlock Text="{Binding Author}" FontSize="22" Height="46" HorizontalAlignment="Left" Margin="10,241,0,0" Name="bookAuthor" VerticalAlignment="Top" Width="417" TextWrapping="Wrap" Padding="0,10,10,10" />
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10,311,29,44">
+            <TextBlock FontSize="24" Text="{Binding DisplayTitle}" Height="229" HorizontalAlignment="Left" Margin="176,6,0,0" Name="bookTitle" VerticalAlignment="Top" Width="251" TextWrapping="Wrap" Padding="10,0,10,10" />
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10,267,29,6">
                 <TextBlock Text="{Binding Story}" FontSize="22" HorizontalAlignment="Left" Name="bookStory" VerticalAlignment="Top" Width="414" Padding="0,10,10,10" TextWrapping="Wrap" />
             </ScrollViewer>           
         </Grid>
     </Grid>
  
     <!--Sample code showing usage of ApplicationBar-->
-    <!--<phone:PhoneApplicationPage.ApplicationBar>
+    <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton IconUri="/Images/appbar_button1.png" Text="Button 1"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/appbar_button2.png" Text="Button 2"/>
-            <shell:ApplicationBar.MenuItems>
-                <shell:ApplicationBarMenuItem Text="MenuItem 1"/>
-                <shell:ApplicationBarMenuItem Text="MenuItem 2"/>
-            </shell:ApplicationBar.MenuItems>
+            <shell:ApplicationBarIconButton IconUri="/icons/addTofavs.png" Text="like" x:Name="likeBook" Click="likeBook_Click" />
+            <shell:ApplicationBarIconButton IconUri="/icons/appbar.book.open.png" Text="highlights" x:Name="roveHighlights" Click="roveHighlights_Click" />
         </shell:ApplicationBar>
-    </phone:PhoneApplicationPage.ApplicationBar>-->
+    </phone:PhoneApplicationPage.ApplicationBar>
 
 </phone:PhoneApplicationPage>
