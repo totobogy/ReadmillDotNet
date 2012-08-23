@@ -40,6 +40,49 @@ namespace PhoneApp1
             base.OnNavigatedTo(e);            
         }
 
+        private void likeBook_Click(object sender, EventArgs e)
+        {
+            //Mark book as interesting, show in My Books
+            ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            if (likeBookButton.Text == AppStrings.LikeBookButton)
+            {
+                bookDetailsVM.LikeBookAsync().ContinueWith(
+                        task =>
+                        {
+                            if (task.IsFaulted)
+                            {
+                                MessageBox.Show(AppStrings.CouldNotLikeBook);
+                                task.Exception.Handle((ex) =>
+                                    {
+                                        return true;
+                                    });
+                            }
+                            else
+                            {
+                                likeBookButton.Text = AppStrings.UnlikeBookButton;
+                                likeBookButton.IconUri = new Uri("/icons/appbar.heart.png", UriKind.Relative);
+                            }
+                        }, uiTaskScheduler);                
+            }
+            else
+            {
+                bookDetailsVM.UnlikeBookAsync().ContinueWith(
+                    task =>
+                    {
+                        likeBookButton.Text = AppStrings.LikeBookButton;
+                        likeBookButton.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
+                    }, uiTaskScheduler);
+            }
+        }
+
+        private void roveHighlights_Click(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/Views/ReadingPage.xaml", UriKind.Relative));
+        }
+
+
         /*private void gl_Flick(object sender, Microsoft.Phone.Controls.GestureEventArgs e)
         {
             if (e.OriginalSource == bookStory)
@@ -48,37 +91,5 @@ namespace PhoneApp1
             NavigationService.Navigate(new Uri("/ReadingPage.xaml", UriKind.Relative));
 
         }*/
-
-        private void likeBook_Click(object sender, EventArgs e)
-        {
-            //Mark book as interesting, show in My Books
-            ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
-            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-            if (likeBookButton.Text == "like")
-            {
-                bookDetailsVM.LikeBookAsync().ContinueWith(
-                    task =>
-                    {
-                        likeBookButton.Text = "unlike";
-                        likeBookButton.IconUri = new Uri("/icons/favs.png", UriKind.Relative);
-                    }, uiTaskScheduler);
-                
-            }
-            else
-            {
-                bookDetailsVM.UnlikeBookAsync().ContinueWith(
-                    task =>
-                    {
-                        likeBookButton.Text = "like";
-                        likeBookButton.IconUri = new Uri("/icons/addTofavs.png", UriKind.Relative);
-                    }, uiTaskScheduler);
-            }
-        }
-
-        private void roveHighlights_Click(object sender, EventArgs e)
-        {
-            NavigationService.Navigate(new Uri("/ReadingPage.xaml", UriKind.Relative));
-        }
     }
 }

@@ -41,7 +41,7 @@ namespace PhoneApp1.ViewModels
             } 
         }
 
-        public enum State { Unloaded, RecentlyRead, SearchResult};
+        public enum State { Disconnected, Unloaded, RecentlyRead, SearchResult};
         private State listState;
         public State ListState
         {
@@ -73,7 +73,7 @@ namespace PhoneApp1.ViewModels
 
         public BookListViewModel()
         {
-            client = new ReadmillClient(AppConstants.ClientId);
+            client = new ReadmillClient(AppContext.ClientId);
             readableBooks = new Dictionary<string, Book>();
             ListState = State.Unloaded;
         }

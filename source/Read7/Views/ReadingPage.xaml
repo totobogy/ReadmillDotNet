@@ -64,12 +64,12 @@
         </Grid.RowDefinitions>
 
         <!--TitlePanel contains the name of the application and page title-->
-        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
+        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="15,17,0,28">
             <TextBlock x:Name="ApplicationTitle" Text="READ 7 / book highlights" Style="{StaticResource PhoneTextNormalStyle}" Width="486" Margin="10,0" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
+        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="15,0,12,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -78,7 +78,7 @@
                 <Image Source="{Binding CoverUrl}" Width="66" Margin="10,0,0,0"></Image>
                 <TextBlock Text="{Binding DisplayTitle}" FontSize="24" Padding="10" Name="bookTitle" Width="378" TextWrapping="Wrap" />
             </StackPanel>
-            <ListBox Grid.Row="1" HorizontalAlignment="Left" Name="highlightsListBox" Margin="0,10,0,10" VerticalAlignment="Top" Width="456" ItemContainerStyle="{StaticResource ListBoxItemStyleNoHighlight}">
+            <ListBox  VirtualizingStackPanel.VirtualizationMode="Recycling" Grid.Row="1" HorizontalAlignment="Left" Name="highlightsListBox" Margin="0,10,0,10" VerticalAlignment="Top" Width="456" ItemContainerStyle="{StaticResource ListBoxItemStyleNoHighlight}">
                 <!--ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel/>

@@ -48,10 +48,10 @@ namespace PhoneApp1
                         {
                             Content = new TextBlock()
                             {
-                                TextWrapping = System.Windows.TextWrapping.Wrap, //TextAlignment = System.Windows.TextAlignment.Center,
+                                TextWrapping = System.Windows.TextWrapping.Wrap,
                                 FontSize = 24,
                                 Padding = new Thickness(10, 30, 10, 10),
-                                Text = "sorry, no one seems to have highlighted this book yet."
+                                Text = AppStrings.NoHighlights
                             }
                         });
                     }
@@ -83,28 +83,40 @@ namespace PhoneApp1
         private void Like_Click(object sender, RoutedEventArgs e)
         {
             Button likeButton = (Button)sender;
-            likeButton.Content = "unlike";
+            string highlightId = (string)likeButton.Tag;
 
-            string highlightId = (string) likeButton.Tag;
+            if (likeButton.Content == AppStrings.LikeHighlightButton)
+            {
+                //Like on readmill
 
-            //Like on readmill
+                //toggle state to 'unlike'
+                likeButton.Content = AppStrings.UnlikeHighlightButton;
+            }
+            else
+            {
+                //unlike on readmill
+
+                //toggle state to 'like'
+                likeButton.Content = AppStrings.LikeHighlightButton;
+            }
+
         }
 
         private void fullscreenButton_Click(object sender, EventArgs e)
         {
             ApplicationBarIconButton fullScreenButton = sender as ApplicationBarIconButton;
-            if (fullScreenButton.Text == "fullscreen")
+            if (fullScreenButton.Text == AppStrings.FullScreenButton)
             {
                 TitlePanel.Visibility = System.Windows.Visibility.Collapsed;
                 bookTitlePanel.Visibility = System.Windows.Visibility.Collapsed;
-                fullScreenButton.Text = "collapse";
+                fullScreenButton.Text = AppStrings.CollapseFullScreenButton;
                 fullScreenButton.IconUri = new Uri("/icons/appbar.arrow.collapsed.png", UriKind.Relative);
             }
             else
             {
                 TitlePanel.Visibility = System.Windows.Visibility.Visible;
                 bookTitlePanel.Visibility = System.Windows.Visibility.Visible;
-                fullScreenButton.Text = "fullscreen";
+                fullScreenButton.Text = AppStrings.FullScreenButton;
                 fullScreenButton.IconUri = new Uri("/icons/appbar.fullscreen.png", UriKind.Relative);
             }
         }
@@ -113,14 +125,14 @@ namespace PhoneApp1
         {
             //Mark book as interesting, show in My Books
             ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
-            if (likeBookButton.Text == "like book")
+            if (likeBookButton.Text == AppStrings.LikeBookButton)
             {
-                likeBookButton.Text = "unlike book";
+                likeBookButton.Text = AppStrings.UnlikeBookButton;
                 likeBookButton.IconUri = new Uri("/icons/favs.png", UriKind.Relative);
             }
             else
             {
-                likeBookButton.Text = "like book";
+                likeBookButton.Text = AppStrings.LikeBookButton;
                 likeBookButton.IconUri = new Uri("/icons/addTofavs.png", UriKind.Relative);
             }
         }

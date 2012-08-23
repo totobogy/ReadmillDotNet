@@ -25,7 +25,7 @@ namespace PhoneApp1.ViewModels
 
         public BookHighlightsViewModel(Book selectedBook): base(selectedBook)
         {
-            client = new ReadmillClient(AppConstants.ClientId);
+            client = new ReadmillClient(AppContext.ClientId);
         }
 
         public Task LoadBookHighlightsAsync()

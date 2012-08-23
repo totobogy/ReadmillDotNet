@@ -25,17 +25,17 @@ namespace PhoneApp1
         public LogInPage()
         {
             InitializeComponent();
-            readmillBrowser.Navigate(new Uri(AppConstants.AuthUri));
+            readmillBrowser.Navigate(new Uri(AppContext.Constants.AuthUri));
         }
 
         private void readmillBrowser_Navigating(object sender, NavigatingEventArgs e)
         {
             Uri redirectUri = e.Uri;
-            if (redirectUri.AbsoluteUri.StartsWith(AppConstants.RedirectUri))
+            if (redirectUri.AbsoluteUri.StartsWith(AppContext.Constants.RedirectUri))
             {
                 //ToDo: Handle "Deny" and "Back"
                 string authCode = redirectUri.Query.Split(new string[] { "?code=" }, StringSplitOptions.RemoveEmptyEntries)[0];
-                string tokenUri = AppConstants.TokenUri + authCode;
+                string tokenUri = AppContext.Constants.TokenUri + authCode;
 
                 HttpWebRequest req = WebRequest.CreateHttp(tokenUri);
                 req.Method = "POST";
@@ -48,7 +48,7 @@ namespace PhoneApp1
                         using (HttpWebResponse response = (HttpWebResponse)req.EndGetResponse(result))
                         {
                             DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(AccessToken));
-                            AppConstants.Token = (AccessToken)ser.ReadObject(response.GetResponseStream());
+                            AppContext.AccessToken = (AccessToken)ser.ReadObject(response.GetResponseStream());
 
                             //Save token for next time
                             using (var store = IsolatedStorageFile.GetUserStoreForApplication())
@@ -58,7 +58,7 @@ namespace PhoneApp1
                                                                                    FileAccess.Write,
                                                                                    store))
                                 {
-                                    ser.WriteObject(stream, AppConstants.Token);
+                                    ser.WriteObject(stream, AppContext.AccessToken);
                                 }
                             }
                         }

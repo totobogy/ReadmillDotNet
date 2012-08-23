@@ -26,13 +26,13 @@ namespace PhoneApp1
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             IDictionary<string, Book> readableBooks = new Dictionary<string, Book>();
 
-            ReadmillClient client = new ReadmillClient(AppConstants.ClientId);
+            ReadmillClient client = new ReadmillClient(AppContext.ClientId);
 
-            Task<User> task = client.Users.GetOwnerAsync(AppConstants.Token.Token);
+            Task<User> task = client.Users.GetOwnerAsync(AppContext.AccessToken.Token);
             task.ContinueWith(getMe =>
                 {
                     client.Users.GetUserReadings(getMe.Result.Id,
-                                                    accessToken: AppConstants.Token.Token).ContinueWith(
+                                                    accessToken: AppContext.AccessToken.Token).ContinueWith(
                                                     getReadings =>
                                                     {
                                                         //myReadingsList.Items.RemoveAt(0);

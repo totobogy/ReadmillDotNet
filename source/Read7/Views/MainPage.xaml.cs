@@ -55,7 +55,7 @@ namespace PhoneApp1
                                                                     FileAccess.Read,
                                                                     store))
                     {
-                        AppConstants.Token = (AccessToken)ser.ReadObject(stream);
+                        AppContext.AccessToken = (AccessToken)ser.ReadObject(stream);
                     }
                 }
                 catch (IsolatedStorageException ex)
@@ -68,8 +68,11 @@ namespace PhoneApp1
         void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
             //If this is the first time the app is being run, show log-in screen
-            if (AppConstants.Token == null)
-                NavigationService.Navigate(new Uri("/LogInPage.xaml", UriKind.Relative));
+            if (!AppContext.IsConnected)
+                MessageBox.Show(AppStrings.NotConnectedMsg, AppStrings.NotConnectedMsgTitle, MessageBoxButton.OK);
+
+            if (AppContext.AccessToken == null)
+                NavigationService.Navigate(new Uri("/Views/LogInPage.xaml", UriKind.Relative));
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
@@ -129,8 +132,7 @@ namespace PhoneApp1
 
             PhoneApplicationService.Current.State.Add("SelectedBook", selectedBook);
 
-            NavigationService.Navigate(new Uri("/BookDetailsPage.xaml", UriKind.Relative));
-            //NavigationService.Navigate(new Uri("/LogInPage.xaml", UriKind.Relative));
+            NavigationService.Navigate(new Uri("/Views/BookDetailsPage.xaml", UriKind.Relative));
         }
 
         private void searchBox_KeyUp(object sender, KeyEventArgs e)

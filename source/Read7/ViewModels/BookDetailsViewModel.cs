@@ -49,8 +49,11 @@ namespace PhoneApp1.ViewModels
 
         public BookDetailsViewModel(Book selectedBook)
         {
-            this.client = new ReadmillClient(AppConstants.ClientId);
+            this.client = new ReadmillClient(AppContext.ClientId);
             this.SelectedBook = selectedBook;
+
+            //find out if a reading exists for this book
+
         }
 
         public Task LikeBookAsync()
@@ -58,12 +61,12 @@ namespace PhoneApp1.ViewModels
             //if reading already exists, update?
             return
                 client.Books.PostBookReadingAsync
-                (AppConstants.Token.Token,
-                    SelectedBook.Id,
+                (AppContext.AccessToken.Token,
+                  SelectedBook.Id,
                     Reading.ReadingState.Interesting).ContinueWith(task =>
                         {
                             string readingLink = task.Result;
-                            bookReading = client.Readings.GetFromPermalinkAsync<Reading>(readingLink, AppConstants.Token.Token).Result;
+                            bookReading = client.Readings.GetFromPermalinkAsync<Reading>(readingLink, AppContext.AccessToken.Token).Result;
                         });
         }
 
@@ -71,10 +74,10 @@ namespace PhoneApp1.ViewModels
         {
             if (bookReading == null)
                 throw new InvalidOperationException("Reading not set for this book for this user");
-            return 
-                client.Readings.DeleteReadingAsync(AppConstants.Token.Token, bookReading.Id);
+            return
+                client.Readings.DeleteReadingAsync(AppContext.AccessToken.Token, bookReading.Id);
         }
 
-        //Is Liked?
+        // Is liked?
     }
 }
