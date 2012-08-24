@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +10,10 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Phone.Net.NetworkInformation;
+using Com.Readmill.Api.DataContracts;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Com.Readmill.Api;
 
 
 namespace PhoneApp1
@@ -34,5 +39,92 @@ namespace PhoneApp1
                 return NetworkInterface.GetIsNetworkAvailable();
             }
         }
+        
+        public static AuthenticatedUser CurrentUser
+        {
+            get
+            {
+                return AuthenticatedUser.CurrentUser;
+            }
+        }
+
+    }
+
+    public sealed class AuthenticatedUser
+    {
+        private ReadmillClient client;
+
+        private static readonly AuthenticatedUser user = new AuthenticatedUser();
+        private AuthenticatedUser()
+        {
+            client = new ReadmillClient(AppContext.ClientId);
+            
+            //collectedHighlights = new Dictionary<string, Highlight>();
+        }
+
+        public static AuthenticatedUser CurrentUser
+        {
+            get
+            {
+                return user;
+            }
+        }
+
+        private User me;
+        private IDictionary<string, Book> collectedBooks;
+        private IDictionary<string, Highlight> collectedHighlights;
+
+        public Task<User> GetMe(bool forceRefresh = false)
+        {
+            if (forceRefresh || me == null)
+            {
+                return client.Users.GetOwnerAsync(AppContext.AccessToken.Token);
+            }
+            else
+            {
+                return Task.Factory.StartNew(() =>
+                {
+                    return me;
+                });
+            }
+        }
+
+        public Task<List<Book>> LoadCollectedBooksAsync(bool forceRefresh = false)
+        {
+            if (forceRefresh || collectedBooks == null)
+            {
+                collectedBooks = new Dictionary<string, Book>();
+
+                Task<List<Reading>> r = GetMe().ContinueWith(me =>
+                {
+                    return
+                        client.Users.GetUserReadings(me.Result.Id, accessToken: AppContext.AccessToken.Token);
+                }).Unwrap();
+
+                return r.ContinueWith(t =>
+                {
+                    foreach (Reading reading in t.Result)
+                    {
+                        collectedBooks.Add(reading.Book.Id, reading.Book);
+                    }
+
+                    return collectedBooks.Values.ToList();
+                });
+            }
+            else
+            {
+                return Task.Factory.StartNew(() =>
+                {
+                    return collectedBooks.Values.ToList();
+                });
+            }
+
+        }
+
+
+        //Save CollectedHighlights
+        //Save CollectedBooks (2)
+        //Load from disk   
+
     }
 }

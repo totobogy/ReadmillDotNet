@@ -124,6 +124,15 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to there are no books in your collection yet.
+        /// </summary>
+        internal static string NoCollectedBooksMsg {
+            get {
+                return ResourceManager.GetString("NoCollectedBooksMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to sorry, no one seems to have highlighted this book yet..
         /// </summary>
         internal static string NoHighlights {

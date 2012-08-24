@@ -106,7 +106,7 @@
     <!--Sample code showing usage of ApplicationBar-->
     <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton IconUri="/icons/addTofavs.png" Text="like book" Click="likeBookButton_Click" />
+            <shell:ApplicationBarIconButton IconUri="/icons/appbar.heart.outline.png" Text="like book" Click="likeBookButton_Click" />
             <shell:ApplicationBarIconButton IconUri="/icons/appbar.fullscreen.png" Text="fullscreen" Click="fullscreenButton_Click" />
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>

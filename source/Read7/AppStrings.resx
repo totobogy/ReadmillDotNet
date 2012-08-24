@@ -138,6 +138,9 @@
   <data name="LikeHighlightButton" xml:space="preserve">
     <value>like</value>
   </data>
+  <data name="NoCollectedBooksMsg" xml:space="preserve">
+    <value>there are no books in your collection yet</value>
+  </data>
   <data name="NoHighlights" xml:space="preserve">
     <value>sorry, no one seems to have highlighted this book yet.</value>
   </data>

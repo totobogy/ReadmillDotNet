@@ -12,6 +12,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
+using System.Runtime.Serialization.Json;
+using System.IO.IsolatedStorage;
+using System.IO;
 
 namespace PhoneApp1
 {
@@ -57,6 +60,52 @@ namespace PhoneApp1
                 PhoneApplicationService.Current.UserIdleDetectionMode = IdleDetectionMode.Disabled;
             }
 
+            RootFrame.Navigating += new NavigatingCancelEventHandler(RootFrame_Navigating);
+
+        }
+
+        void RootFrame_Navigating(object sender, NavigatingCancelEventArgs e)
+        {
+            if (e.Uri.ToString().Contains("/Home.xaml") != true)
+                return;
+
+            if (TryRetrieveStoredAccessToken())
+                return;
+
+            e.Cancel = true;
+            RootFrame.Dispatcher.BeginInvoke(delegate
+            {
+                RootFrame.Navigate(new Uri("/Views/LogInPage.xaml", UriKind.Relative));
+            });
+
+        }
+
+        private bool TryRetrieveStoredAccessToken()
+        {
+            //ToDo: Handle when the token is not valid - this will only be detected at API call time
+            //Right Now we only support non-expiring tokens, but user can still revoke access
+
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(AccessToken));
+            using (var store = IsolatedStorageFile.GetUserStoreForApplication())
+            {
+                try
+                {
+                    using (var stream = new
+                                        IsolatedStorageFileStream("token.ser",
+                                                                    FileMode.Open,
+                                                                    FileAccess.Read,
+                                                                    store))
+                    {
+                        AppContext.AccessToken = (AccessToken)ser.ReadObject(stream);
+                        return true;
+                    }
+                }
+                catch (IsolatedStorageException ex)
+                {
+                    //no-op: we'll ask for authorization when page loads
+                    return false;
+                }
+            }
         }
 
         // Code to execute when the application is launching (eg, from Start)

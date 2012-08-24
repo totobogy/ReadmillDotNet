@@ -1,0 +1,59 @@
+﻿<phone:PhoneApplicationPage 
+    x:Class="PhoneApp1.Views.Home"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:controls="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="800"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait"  Orientation="Portrait"
+    shell:SystemTray.IsVisible="False" 
+    xmlns:delay="clr-namespace:Delay;assembly=PhonePerformance"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit">
+
+    <!--LayoutRoot contains the root grid where all other page content is placed-->
+    <Grid x:Name="LayoutRoot">
+        <controls:Panorama Title="read rover" Margin="0,-58,0,12">
+            <!--Panorama item one-->
+            <controls:PanoramaItem Name="booksPanoramaItem" Header="just read">
+                <Grid>
+                    <ListBox  VirtualizingStackPanel.VirtualizationMode="Recycling" Height="auto" HorizontalAlignment="Left" Margin="0,88,0,10" Name="booksList" VerticalAlignment="Top" Width="418" Loaded="booksList_Loaded" Tap="booksList_Tap">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Width="418" MaxHeight="100" Margin="10,10,10,20" >
+                                    <Image Source="{Binding CoverUrl}" Width="66" />
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Title}" Width="352" TextTrimming="WordEllipsis" TextWrapping="Wrap" Padding="20" FontSize="26"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <toolkit:PhoneTextBox Hint="search book or author..." Height="64" HorizontalAlignment="Left" Name="searchBox" VerticalAlignment="Top" Width="380" BorderThickness="0" Padding="1,0,0,0" AcceptsReturn="False" KeyUp="searchBox_KeyUp" FontSize="26" Margin="0" />
+                    <toolkit:PerformanceProgressBar Height="94" HorizontalAlignment="Left" Margin="88,100,0,0" Name="booksProgressBar" VerticalAlignment="Top" Width="234" />
+                </Grid>
+            </controls:PanoramaItem>
+
+            <!--Panorama item two-->
+            <controls:PanoramaItem Name="collectionsPanoramaItem" Header="collections">
+                <Grid Name="collectionsGrid" Loaded="collectionsGrid_Loaded">
+                    <TextBlock FontSize="26" Height="40" HorizontalAlignment="Left" Margin="10,461,0,0" Name="textBlock2" Text="all highlights..." VerticalAlignment="Top" Width="290" />
+                    <Border BorderBrush="Silver" BorderThickness="0" Height="176" HorizontalAlignment="Left" Margin="10,282,0,0" Name="highlightBorder" VerticalAlignment="Top" Width="366" />
+                    <toolkit:HubTile Title="{Binding Title}" Message="{Binding Author}" Source="{Binding CoverUrl}" Background="{StaticResource PhoneAccentBrush}" Height="173" HorizontalAlignment="Left" Margin="10,9,0,0" Name="bookTile1" VerticalAlignment="Top" Width="173" Tap="bookTile_Tap" />
+                    <toolkit:HubTile Title="{Binding Title}" Message="{Binding Author}" Source="{Binding CoverUrl}" Height="173" HorizontalAlignment="Left" Margin="203,9,0,0" Name="bookTile2" VerticalAlignment="Top" Width="173" Tap="bookTile_Tap" />
+                    <TextBlock FontSize="26" Height="40" HorizontalAlignment="Left" Margin="10,194,0,0" Name="textBlock1" Text="all books..." VerticalAlignment="Top" Width="290" />
+                </Grid>
+            </controls:PanoramaItem>
+
+            <controls:PanoramaItem Header="about">
+                <Grid/>
+            </controls:PanoramaItem>
+        </controls:Panorama>
+    </Grid>
+
+    <!--Panorama-based applications should not show an ApplicationBar-->
+
+</phone:PhoneApplicationPage>

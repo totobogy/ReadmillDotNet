@@ -85,7 +85,7 @@ namespace PhoneApp1
             Button likeButton = (Button)sender;
             string highlightId = (string)likeButton.Tag;
 
-            if (likeButton.Content == AppStrings.LikeHighlightButton)
+            if ((string)likeButton.Content == AppStrings.LikeHighlightButton)
             {
                 //Like on readmill
 
@@ -124,16 +124,38 @@ namespace PhoneApp1
         private void likeBookButton_Click(object sender, EventArgs e)
         {
             //Mark book as interesting, show in My Books
+            //Mark book as interesting, show in My Books
             ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
             if (likeBookButton.Text == AppStrings.LikeBookButton)
             {
-                likeBookButton.Text = AppStrings.UnlikeBookButton;
-                likeBookButton.IconUri = new Uri("/icons/favs.png", UriKind.Relative);
+                bookHighlightsVM.LikeBookAsync().ContinueWith(
+                        task =>
+                        {
+                            if (task.IsFaulted)
+                            {
+                                MessageBox.Show(AppStrings.CouldNotLikeBook);
+                                task.Exception.Handle((ex) =>
+                                {
+                                    return true;
+                                });
+                            }
+                            else
+                            {
+                                likeBookButton.Text = AppStrings.UnlikeBookButton;
+                                likeBookButton.IconUri = new Uri("/icons/appbar.heart.png", UriKind.Relative);
+                            }
+                        }, uiTaskScheduler);
             }
             else
             {
-                likeBookButton.Text = AppStrings.LikeBookButton;
-                likeBookButton.IconUri = new Uri("/icons/addTofavs.png", UriKind.Relative);
+                bookHighlightsVM.UnlikeBookAsync().ContinueWith(
+                    task =>
+                    {
+                        likeBookButton.Text = AppStrings.LikeBookButton;
+                        likeBookButton.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
+                    }, uiTaskScheduler);
             }
         }
     }

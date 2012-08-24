@@ -57,6 +57,12 @@
     </Reference>
     <Reference Include="Microsoft.Phone.Interop" />
     <Reference Include="Microsoft.Xna.Framework" />
+    <Reference Include="PhonePerformance">
+      <HintPath>packages\PhonePerformance.1.2.1\lib\sl4-windowsphone71\PhonePerformance.dll</HintPath>
+    </Reference>
+    <Reference Include="ReadmillClient, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\ReadmillClient.0.2.0.0\lib\sl4-wp71\ReadmillClient.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Servicemodel" />
     <Reference Include="System.Servicemodel.Web" />
@@ -69,6 +75,7 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Xml" />
     <Reference Include="mscorlib.extensions" />
+    <Reference Include="System.Xml.Serialization" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
@@ -80,8 +87,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AppStrings.resx</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\CollectionsViewModel.cs" />
     <Compile Include="Views\BookDetailsPage.xaml.cs">
       <DependentUpon>BookDetailsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Home.xaml.cs">
+      <DependentUpon>Home.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\LogInPage.xaml.cs">
       <DependentUpon>LogInPage.xaml</DependentUpon>
@@ -106,6 +117,10 @@
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
     <Page Include="Views\BookDetailsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Home.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -166,12 +181,6 @@
     <Resource Include="Toolkit.Content\ApplicationBar.Check.png" />
     <Resource Include="Toolkit.Content\ApplicationBar.Delete.png" />
     <Resource Include="Toolkit.Content\ApplicationBar.Select.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ReadmillClient\ReadmillClientWP71\ReadmillClient7.csproj">
-      <Project>{14BA4D6B-B25D-4B9C-B4EF-884FABABC446}</Project>
-      <Name>ReadmillClient7</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AppStrings.resx">
