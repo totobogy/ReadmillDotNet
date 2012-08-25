@@ -66,7 +66,7 @@ namespace PhoneApp1
 
         void RootFrame_Navigating(object sender, NavigatingCancelEventArgs e)
         {
-            if (e.Uri.ToString().Contains("/Home.xaml") != true)
+            if (e.Uri.ToString().Contains("/Views/Home.xaml") != true)
                 return;
 
             if (TryRetrieveStoredAccessToken())
@@ -145,6 +145,10 @@ namespace PhoneApp1
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
+            //Aggregate Exception
+            //Thread Abort
+            //Null Ref
+
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 // An unhandled exception has occurred; break into the debugger

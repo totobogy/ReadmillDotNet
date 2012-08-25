@@ -142,6 +142,15 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to there is no description or story available for this book yet..
+        /// </summary>
+        internal static string NoStoryMsg {
+            get {
+                return ResourceManager.GetString("NoStoryMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are not connected to internet. App functionality is limited in the offline mode. For full access please connect to the network and restart the application..
         /// </summary>
         internal static string NotConnectedMsg {

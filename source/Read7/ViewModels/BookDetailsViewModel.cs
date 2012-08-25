@@ -53,29 +53,60 @@ namespace PhoneApp1.ViewModels
             this.SelectedBook = selectedBook;
 
             //find out if a reading exists for this book
+        }
 
+        public Task<bool> IsCollectedAsync()
+        {
+            return
+                AppContext.CurrentUser.HasBook(SelectedBook.Id);
         }
 
         public Task LikeBookAsync()
         {
             //if reading already exists, update?
             return
-                client.Books.PostBookReadingAsync
-                (AppContext.AccessToken.Token,
-                  SelectedBook.Id,
-                    Reading.ReadingState.Interesting).ContinueWith(task =>
+                IsCollectedAsync().ContinueWith(isCollected =>
+                    {
+                        if (!isCollected.Result)
                         {
-                            string readingLink = task.Result;
-                            bookReading = client.Readings.GetFromPermalinkAsync<Reading>(readingLink, AppContext.AccessToken.Token).Result;
-                        });
+                            client.Books.PostBookReadingAsync
+                            (AppContext.AccessToken.Token,
+                              SelectedBook.Id,
+                                Reading.ReadingState.Interesting).ContinueWith(task =>
+                                    {
+                                        string readingLink = task.Result;
+
+                                        bookReading = client.Readings.GetFromPermalinkAsync<Reading>(readingLink, AppContext.AccessToken.Token).Result;
+                                    });
+                        }
+                    });
         }
 
         public Task UnlikeBookAsync()
         {
             if (bookReading == null)
-                throw new InvalidOperationException("Reading not set for this book for this user");
-            return
-                client.Readings.DeleteReadingAsync(AppContext.AccessToken.Token, bookReading.Id);
+            {
+                //this could happen if the book was already liked from before
+                return IsCollectedAsync().ContinueWith(isCollected =>
+                    {
+                        if (isCollected.Result)
+                        {
+                            bookReading = AppContext.CurrentUser.GetReadingForBook(SelectedBook.Id);
+                            
+                            return
+                                client.Readings.DeleteReadingAsync(AppContext.AccessToken.Token, bookReading.Id);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Reading not set for this book for this user");
+                        }
+                    });
+            }
+            else
+            {
+                return
+                    client.Readings.DeleteReadingAsync(AppContext.AccessToken.Token, bookReading.Id);
+            }
         }
 
         // Is liked?

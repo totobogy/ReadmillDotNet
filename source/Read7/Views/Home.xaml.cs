@@ -31,9 +31,6 @@ namespace PhoneApp1.Views
             this.Loaded += new RoutedEventHandler(HomePage_Loaded);
             this.BackKeyPress += new EventHandler<System.ComponentModel.CancelEventArgs>(HomePage_BackKeyPress);
 
-            //If the token is not found, we route to the login-page on load
-            //TryInitializeAccessToken();
-
             bookListVM = new BookListViewModel();
             booksPanoramaItem.DataContext = bookListVM;
 
@@ -41,14 +38,24 @@ namespace PhoneApp1.Views
             collectionsPanoramaItem.DataContext = collectionsVM;
         }
 
+        protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            string navigatedUri = e.Uri.ToString();
+            if (navigatedUri.Contains("from_login=true"))
+            {
+                //Remove login page(s) from back-stack
+                while(NavigationService.CanGoBack)
+                    NavigationService.RemoveBackEntry();
+            }
+        }
+
         void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            //If this is the first time the app is being run, show log-in screen
+            //ToDo: Not connected - handle better?
             if (!AppContext.IsConnected)
                 MessageBox.Show(AppStrings.NotConnectedMsg, AppStrings.NotConnectedMsgTitle, MessageBoxButton.OK);
-
-            if (AppContext.AccessToken == null)
-                NavigationService.Navigate(new Uri("/Views/LogInPage.xaml", UriKind.Relative));
         }
 
         void HomePage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
@@ -133,7 +140,7 @@ namespace PhoneApp1.Views
             //Load Books and Tiles
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             
-            collectionsVM.LoadCollectedBooksAsync().ContinueWith(task =>
+            collectionsVM.LoadCollectedBooksAsync(true).ContinueWith(task =>
             {
                 if (collectionsVM.CollectedBooks != null && collectionsVM.CollectedBooks.Count > 0)
                 {
@@ -164,6 +171,23 @@ namespace PhoneApp1.Views
             }, uiTaskScheduler);
 
             //Load Highlights
+            List<string> ids = AppContext.CurrentUser.TryLoadCollectedHighlightsList(true);
+            if (ids == null)
+                highlightTextBlock.Text = "No highlights collected yet.";
+            else
+            {
+                collectionsVM.LoadCollectedHighlightsAsync(ids, true).ContinueWith(
+                    task =>
+                    {
+                        if (collectionsVM.CollectedHighlights != null && collectionsVM.CollectedHighlights.Count > 0)
+                        {
+                            Random randomGen = new Random();
+                            int i = randomGen.Next(collectionsVM.CollectedHighlights.Count);
+
+                            highlightTextBlock.DataContext = collectionsVM.CollectedHighlights[i];
+                        }
+                    },uiTaskScheduler);
+            }
         }
 
         private void bookTile_Tap(object sender, System.Windows.Input.GestureEventArgs e)
@@ -178,6 +202,12 @@ namespace PhoneApp1.Views
             PhoneApplicationService.Current.State.Add("SelectedBook", selectedBook);
 
             NavigationService.Navigate(new Uri("/Views/BookDetailsPage.xaml", UriKind.Relative));
+        }
+
+        private void booksList_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+            //workaround for jumpy / jerky listbox scrolling - don't know the reason
+            this.Focus();
         }
     }
 }

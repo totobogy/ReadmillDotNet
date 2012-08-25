@@ -22,7 +22,7 @@
             <!--Panorama item one-->
             <controls:PanoramaItem Name="booksPanoramaItem" Header="just read">
                 <Grid>
-                    <ListBox  VirtualizingStackPanel.VirtualizationMode="Recycling" Height="auto" HorizontalAlignment="Left" Margin="0,88,0,10" Name="booksList" VerticalAlignment="Top" Width="418" Loaded="booksList_Loaded" Tap="booksList_Tap">
+                    <ListBox  VirtualizingStackPanel.VirtualizationMode="Recycling" Height="412" HorizontalAlignment="Left" Margin="0,88,0,0" Name="booksList" VerticalAlignment="Top" Width="418" Loaded="booksList_Loaded" Tap="booksList_Tap" ManipulationCompleted="booksList_ManipulationCompleted">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Width="418" MaxHeight="100" Margin="10,10,10,20" >
@@ -40,16 +40,22 @@
             <!--Panorama item two-->
             <controls:PanoramaItem Name="collectionsPanoramaItem" Header="collections">
                 <Grid Name="collectionsGrid" Loaded="collectionsGrid_Loaded">
-                    <TextBlock FontSize="26" Height="40" HorizontalAlignment="Left" Margin="10,461,0,0" Name="textBlock2" Text="all highlights..." VerticalAlignment="Top" Width="290" />
-                    <Border BorderBrush="Silver" BorderThickness="0" Height="176" HorizontalAlignment="Left" Margin="10,282,0,0" Name="highlightBorder" VerticalAlignment="Top" Width="366" />
-                    <toolkit:HubTile Title="{Binding Title}" Message="{Binding Author}" Source="{Binding CoverUrl}" Background="{StaticResource PhoneAccentBrush}" Height="173" HorizontalAlignment="Left" Margin="10,9,0,0" Name="bookTile1" VerticalAlignment="Top" Width="173" Tap="bookTile_Tap" />
-                    <toolkit:HubTile Title="{Binding Title}" Message="{Binding Author}" Source="{Binding CoverUrl}" Height="173" HorizontalAlignment="Left" Margin="203,9,0,0" Name="bookTile2" VerticalAlignment="Top" Width="173" Tap="bookTile_Tap" />
-                    <TextBlock FontSize="26" Height="40" HorizontalAlignment="Left" Margin="10,194,0,0" Name="textBlock1" Text="all books..." VerticalAlignment="Top" Width="290" />
+                    <TextBlock FontSize="22" Height="40" HorizontalAlignment="Left" Margin="10,461,0,0" Name="textBlock2" Text="all highlights..." VerticalAlignment="Top" Width="290" />
+                    <Border Background="{StaticResource PhoneAccentBrush}" BorderBrush="Silver" BorderThickness="0" Height="176" HorizontalAlignment="Left" Margin="10,282,0,0" Name="highlightBorder" VerticalAlignment="Top" Width="366">
+                        <TextBlock TextTrimming="WordEllipsis" TextWrapping="Wrap" Height="156" Name="highlightTextBlock" Text="{Binding Content}" FontSize="24" Padding="5,15,15,15" TextAlignment="Left" Margin="5" Width="346" />
+                    </Border>
+                    <toolkit:HubTile Foreground="{StaticResource PhoneForegroundBrush}" Source="{Binding CoverUrl}" Title="{Binding Title}" Message="{Binding Author}" Background="{StaticResource PhoneAccentBrush}" Height="173" HorizontalAlignment="Left" Margin="10,9,0,0" Name="bookTile1" VerticalAlignment="Top" Width="173" Tap="bookTile_Tap" />
+                    <toolkit:HubTile Foreground="{StaticResource PhoneForegroundBrush}" Source="{Binding CoverUrl}" Title="{Binding Title}" Message="{Binding Author}" Height="173" HorizontalAlignment="Left" Margin="203,9,0,0" Name="bookTile2" VerticalAlignment="Top" Width="173" Tap="bookTile_Tap" />
+                    <TextBlock FontSize="22" Height="40" HorizontalAlignment="Left" Margin="10,194,0,0" Name="textBlock1" Text="all books..." VerticalAlignment="Top" Width="290" />
                 </Grid>
             </controls:PanoramaItem>
 
             <controls:PanoramaItem Header="about">
-                <Grid/>
+                <Grid>
+                    <TextBlock Height="210" HorizontalAlignment="Left" Margin="10,10,0,0" Name="textBlock3" Text="Read Rover lets you explore the reading landscape, discover books and readers and collect word treasures along the way. Read Rover is made for Readmill." VerticalAlignment="Top" Width="401" TextWrapping="Wrap" FontSize="26" Padding="10" />
+                    <TextBlock Height="68" HorizontalAlignment="Left" Margin="10,220,10,0" Name="textBlock4" Text="(c) 2012 totobogy" VerticalAlignment="Top" Width="405" Padding="10" FontSize="24" />
+                    <TextBlock Height="36" HorizontalAlignment="Left" Margin="10,270,0,0" Name="textBlock5" Text="Version 0.1.0.0" VerticalAlignment="Top" Width="207" Padding="10,0,10,10" FontSize="22" />
+                </Grid>
             </controls:PanoramaItem>
         </controls:Panorama>
     </Grid>

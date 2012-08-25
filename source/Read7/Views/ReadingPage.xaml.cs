@@ -67,27 +67,40 @@ namespace PhoneApp1
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);            
+            base.OnNavigatedTo(e);
+
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            bookHighlightsVM.IsCollectedAsync().ContinueWith(
+                has =>
+                {
+                    ApplicationBarIconButton button = this.ApplicationBar.Buttons[0] as ApplicationBarIconButton;
+
+                    if (has.Result)
+                    {
+                        button.Text = AppStrings.UnlikeBookButton;
+                        button.IconUri = new Uri("/icons/appbar.heart.png", UriKind.Relative);
+                    }
+                    else
+                    {
+                        button.Text = AppStrings.LikeBookButton;
+                        button.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
+                    }
+                }, uiTaskScheduler);
         }
-
-        /*private void gl_Flick(object sender, Microsoft.Phone.Controls.GestureEventArgs e)
-        {
-            if (((FrameworkElement)e.OriginalSource).Parent != ContentPanel
-                && ((FrameworkElement)e.OriginalSource).Parent != TitlePanel)
-                return;
-
-            NavigationService.Navigate(new Uri("/MyReadingsPage.xaml", UriKind.Relative));
-
-        }*/
 
         private void Like_Click(object sender, RoutedEventArgs e)
         {
             Button likeButton = (Button)sender;
             string highlightId = (string)likeButton.Tag;
 
+            //Can't we live with data context?
+            Highlight highlight = (Highlight) likeButton.DataContext;
+
             if ((string)likeButton.Content == AppStrings.LikeHighlightButton)
             {
-                //Like on readmill
+                //ToDo: Like on readmill
+                AppContext.CurrentUser.CollectHighlight(highlight);
 
                 //toggle state to 'unlike'
                 likeButton.Content = AppStrings.UnlikeHighlightButton;
@@ -95,6 +108,7 @@ namespace PhoneApp1
             else
             {
                 //unlike on readmill
+                AppContext.CurrentUser.RemoveHighlight(highlightId);
 
                 //toggle state to 'like'
                 likeButton.Content = AppStrings.LikeHighlightButton;
@@ -158,5 +172,38 @@ namespace PhoneApp1
                     }, uiTaskScheduler);
             }
         }
+
+        //ToDo: This is probably too expensive if we have too many highlights?
+        private void LikeButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            Button likeButton = (Button)sender;
+            string highlightId = (string)likeButton.Tag;
+
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            AppContext.CurrentUser.HasHighlight(highlightId).ContinueWith(
+                has =>
+                {
+                    if (has.Result)
+                        likeButton.Content = AppStrings.UnlikeHighlightButton;
+                    else
+                        likeButton.Content = AppStrings.LikeHighlightButton;
+                }, uiTaskScheduler);
+        }
+
+        private void PhoneApplicationPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            //Try Saving Liked Highlights
+            AppContext.CurrentUser.TrySaveCollectedHighlightsLocally();
+
+            //Save Book? - Later
+        }
+
+        private void highlightsListBox_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+            //workaround for jumpy listbox bug - not sure why it works!
+            this.Focus();
+        }
+
     }
 }

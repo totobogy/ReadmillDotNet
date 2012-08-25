@@ -144,6 +144,9 @@
   <data name="NoHighlights" xml:space="preserve">
     <value>sorry, no one seems to have highlighted this book yet.</value>
   </data>
+  <data name="NoStoryMsg" xml:space="preserve">
+    <value>there is no description or story available for this book yet.</value>
+  </data>
   <data name="NotConnectedMsg" xml:space="preserve">
     <value>You are not connected to internet. App functionality is limited in the offline mode. For full access please connect to the network and restart the application.</value>
   </data>

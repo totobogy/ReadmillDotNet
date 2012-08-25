@@ -31,6 +31,10 @@ namespace PhoneApp1
 
             this.DataContext = bookDetailsVM;
 
+            if (string.IsNullOrEmpty(bookDetailsVM.Story))
+            {
+                bookStory.Text = AppStrings.NoStoryMsg;
+            }
             //var gl = GestureService.GetGestureListener(this);
             //gl.Flick += new EventHandler<Microsoft.Phone.Controls.FlickGestureEventArgs>(gl_Flick);
         }
@@ -80,6 +84,28 @@ namespace PhoneApp1
         private void roveHighlights_Click(object sender, EventArgs e)
         {
             NavigationService.Navigate(new Uri("/Views/ReadingPage.xaml", UriKind.Relative));
+        }
+
+        private void PhoneApplicationPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            bookDetailsVM.IsCollectedAsync().ContinueWith(
+                has =>
+                {
+                    ApplicationBarIconButton button = this.ApplicationBar.Buttons[0] as ApplicationBarIconButton;
+
+                    if (has.Result)
+                    {                       
+                        button.Text = AppStrings.UnlikeBookButton;
+                        button.IconUri = new Uri("/icons/appbar.heart.png", UriKind.Relative);
+                    }
+                    else
+                    {
+                        button.Text = AppStrings.LikeBookButton;
+                        button.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
+                    }
+                }, uiTaskScheduler);
         }
 
 

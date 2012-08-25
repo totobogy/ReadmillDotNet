@@ -34,64 +34,26 @@ namespace PhoneApp1.ViewModels
 
             CollectedBooks = new List<Book>();
             CollectedHighlights = new List<Highlight>();
-
-            //LoadCollectedBooksAsync();
-
-            //readableBooks = new Dictionary<string, Book>();
-            //ListState = State.Unloaded;
         }
 
-        public Task LoadCollectedBooksAsync()
+        public Task LoadCollectedBooksAsync(bool forceRefresh)
         { 
             return 
-                AppContext.CurrentUser.LoadCollectedBooksAsync().ContinueWith(loadTask =>
+                AppContext.CurrentUser.LoadCollectedBooksAsync(forceRefresh).ContinueWith(
+                loadTask =>
                 {
                     CollectedBooks = loadTask.Result;
                 });
         }
 
-        public List<string> TryLoadCollectedHighlightsList()
+        public Task LoadCollectedHighlightsAsync(List<string> highlightIds, bool forceRefresh)
         {
-            //Load highlights from the saved file
-            using (var store = IsolatedStorageFile.GetUserStoreForApplication())
-            {
-                try
+            return
+                AppContext.CurrentUser.LoadCollectedHighlightsAsync(highlightIds, forceRefresh).ContinueWith(
+                loadTask =>
                 {
-                    using (var stream = new
-                                        IsolatedStorageFileStream("CollectedHighlights.xml",
-                                                                    FileMode.Open,
-                                                                    FileAccess.Read,
-                                                                    store))
-                    {
-                        XmlSerializer ser = new XmlSerializer(typeof(List<string>));
-                        return (List<string>)ser.Deserialize(stream);
-                    }
-                }
-                catch (IsolatedStorageException ex)
-                {
-                    //no-op
-                    return null;
-                }
-            }
-        }
-
-        public Task LoadCollectedHighlightsAsync(List<string> highlightIds)
-        {
-            if (highlightIds != null)
-            {
-                return Task.Factory.StartNew(() =>
-                    {
-                        foreach (string id in highlightIds)
-                        {
-                            Highlight h = 
-                                client.Highlights.GetHighlightByIdAsync(id, AppContext.AccessToken.Token).Result;
-
-                            CollectedHighlights.Add(h);
-                        }
-                    });
-            }
-            else
-                return null;
+                    CollectedHighlights = loadTask.Result;
+                });
         }
     }
 }

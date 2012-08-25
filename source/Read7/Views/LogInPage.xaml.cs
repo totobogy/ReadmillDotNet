@@ -66,7 +66,8 @@ namespace PhoneApp1
                         Task.Factory.StartNew(() =>
                         {
                             e.Cancel = true;
-                            NavigationService.Navigate(new Uri("/Home.xaml?from_login=true", UriKind.Relative));
+
+                            NavigationService.Navigate(new Uri("/Views/Home.xaml?from_login=true", UriKind.Relative));
                         
                         }, CancellationToken.None, TaskCreationOptions.None, uiTaskScheduler);
 

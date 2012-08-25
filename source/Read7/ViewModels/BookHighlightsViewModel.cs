@@ -34,6 +34,7 @@ namespace PhoneApp1.ViewModels
             
             ReadingsQueryOptions readingOptions = new ReadingsQueryOptions() { CountValue = 100 };
             RangeQueryOptions highlightOptions = new RangeQueryOptions() { CountValue = 100 };
+            //int hCount = 0;
 
             //Get all readings
             return Task.Factory.StartNew(() =>
@@ -48,7 +49,10 @@ namespace PhoneApp1.ViewModels
                         //ToDo: Better heuristics? Remove duplicates?
                         if (h.Content.Length >= 20)
                             if (!highlights.ContainsKey(h.Locators.Position))
+                            {
                                 highlights.Add(h.Locators.Position, h);
+                                //hCount++;
+                            }
                     }
                 }
 
