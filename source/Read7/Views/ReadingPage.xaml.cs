@@ -23,6 +23,8 @@ namespace PhoneApp1
     {
         BookHighlightsViewModel bookHighlightsVM;
 
+        CancellationTokenSource cancelLoadHighlights;
+
         public ReadingPage()
         {
             InitializeComponent();
@@ -35,10 +37,23 @@ namespace PhoneApp1
             highlightsProgressBar.IsIndeterminate = true;
             highlightsProgressBar.Visibility = System.Windows.Visibility.Visible;
 
+            //only enable app-bar when highlights have loaded to avoid problems
+            ApplicationBar.IsVisible = false;
+
+
+            cancelLoadHighlights = new CancellationTokenSource();
+
+
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-            bookHighlightsVM.LoadBookHighlightsAsync().ContinueWith(displayList =>
+            bookHighlightsVM.LoadBookHighlightsAsync(cancelLoadHighlights.Token).ContinueWith(displayList =>
                 {
+                    //Is this the right thing to do?
+                    cancelLoadHighlights.Token.Register(() =>
+                        {
+                            throw new OperationCanceledException(cancelLoadHighlights.Token);
+                        }, true);
+
                     //hide progress bar
                     highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
 
@@ -62,7 +77,11 @@ namespace PhoneApp1
                                                         orderby highlight.Position
                                                         select highlight;
                     }
-                }, uiTaskScheduler);            
+
+                    //Show App-bar now 
+                    ApplicationBar.IsVisible = true;
+
+                }, cancelLoadHighlights.Token, TaskContinuationOptions.NotOnCanceled, uiTaskScheduler);            
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -94,24 +113,61 @@ namespace PhoneApp1
             Button likeButton = (Button)sender;
             string highlightId = (string)likeButton.Tag;
 
-            //Can't we live with data context?
+            //diable untill we are ready to process input again
+            likeButton.IsEnabled = false;
+
             Highlight highlight = (Highlight) likeButton.DataContext;
 
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             if ((string)likeButton.Content == AppStrings.LikeHighlightButton)
             {
-                //ToDo: Like on readmill
-                AppContext.CurrentUser.CollectHighlight(highlight);
+                //                
+                bookHighlightsVM.LikeHighlightAsync(highlightId).ContinueWith(
+                    task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            MessageBox.Show(
+                                AppStrings.LikeReadmillHighlightFailed,
+                                AppStrings.LikeFailedTitle, MessageBoxButton.OK);
 
-                //toggle state to 'unlike'
-                likeButton.Content = AppStrings.UnlikeHighlightButton;
+                            throw task.Exception;
+                        }
+
+                        //should allow this to throw?
+                        AppContext.CurrentUser.TryCollectHighlight(highlight);
+
+                        //toggle state to 'unlike'
+                        likeButton.Content = AppStrings.UnlikeHighlightButton;
+                        likeButton.IsEnabled = true;
+
+                    }, CancellationToken.None, TaskContinuationOptions.None, uiTaskScheduler);
+                
             }
             else
-            {
-                //unlike on readmill
-                AppContext.CurrentUser.RemoveHighlight(highlightId);
+            {               
+                //unlike on readmill first -to be consistent with likeBook
+                bookHighlightsVM.UnlikeHighlightAsync(highlightId).ContinueWith(
+                    task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            MessageBox.Show(
+                            AppStrings.UnlikeReadmillHighlightFailed,
+                            AppStrings.UnlikeFailedTitle, MessageBoxButton.OK);
 
-                //toggle state to 'like'
-                likeButton.Content = AppStrings.LikeHighlightButton;
+                            throw task.Exception;
+                        }
+
+                        //remove locally, if present in collection? or should allow to throw
+                        AppContext.CurrentUser.TryRemoveHighlight(highlightId);
+
+                        //toggle state to 'like'
+                        likeButton.Content = AppStrings.LikeHighlightButton;
+                        likeButton.IsEnabled = true;
+
+                    }, CancellationToken.None, TaskContinuationOptions.None, uiTaskScheduler);
+
             }
 
         }
@@ -138,8 +194,11 @@ namespace PhoneApp1
         private void likeBookButton_Click(object sender, EventArgs e)
         {
             //Mark book as interesting, show in My Books
-            //Mark book as interesting, show in My Books
             ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
+
+            //disable unless we have processed the operation
+            likeBookButton.IsEnabled = false;
+
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             if (likeBookButton.Text == AppStrings.LikeBookButton)
@@ -149,16 +208,21 @@ namespace PhoneApp1
                         {
                             if (task.IsFaulted)
                             {
-                                MessageBox.Show(AppStrings.CouldNotLikeBook);
-                                task.Exception.Handle((ex) =>
+                                MessageBox.Show(
+                                    AppStrings.CouldNotLikeBook,
+                                    AppStrings.LikeFailedTitle,
+                                    MessageBoxButton.OK);
+
+                                /*task.Exception.Handle((ex) =>
                                 {
                                     return true;
-                                });
+                                });*/
                             }
                             else
                             {
                                 likeBookButton.Text = AppStrings.UnlikeBookButton;
                                 likeBookButton.IconUri = new Uri("/icons/appbar.heart.png", UriKind.Relative);
+                                likeBookButton.IsEnabled = true;
                             }
                         }, uiTaskScheduler);
             }
@@ -169,6 +233,8 @@ namespace PhoneApp1
                     {
                         likeBookButton.Text = AppStrings.LikeBookButton;
                         likeBookButton.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
+                        likeBookButton.IsEnabled = true;
+
                     }, uiTaskScheduler);
             }
         }
@@ -179,15 +245,25 @@ namespace PhoneApp1
             Button likeButton = (Button)sender;
             string highlightId = (string)likeButton.Tag;
 
+            //disable untill we are ready to process input again
+            likeButton.IsEnabled = false;
+
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             AppContext.CurrentUser.HasHighlight(highlightId).ContinueWith(
                 has =>
                 {
                     if (has.Result)
+                    {
                         likeButton.Content = AppStrings.UnlikeHighlightButton;
+                        likeButton.IsEnabled = true;
+                    }
                     else
+                    {
                         likeButton.Content = AppStrings.LikeHighlightButton;
+                        likeButton.IsEnabled = true;
+                    }
+
                 }, uiTaskScheduler);
         }
 
@@ -195,6 +271,23 @@ namespace PhoneApp1
         {
             //Try Saving Liked Highlights
             AppContext.CurrentUser.TrySaveCollectedHighlightsLocally();
+
+            //Cancel Pending Tasks?
+            try
+            {
+                cancelLoadHighlights.Cancel();
+            }
+            catch (OperationCanceledException ex)
+            {
+                //no op
+            }
+            catch (AggregateException ex)
+            {
+                ex.Handle(err =>
+                    {
+                        return (err is OperationCanceledException || err is TaskCanceledException);
+                    });
+            }
 
             //Save Book? - Later
         }

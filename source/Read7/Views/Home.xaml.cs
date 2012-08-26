@@ -45,7 +45,7 @@ namespace PhoneApp1.Views
             string navigatedUri = e.Uri.ToString();
             if (navigatedUri.Contains("from_login=true"))
             {
-                //Remove login page(s) from back-stack
+                //Remove login page(s) from back-stack - home should be the first page
                 while(NavigationService.CanGoBack)
                     NavigationService.RemoveBackEntry();
             }
@@ -55,7 +55,10 @@ namespace PhoneApp1.Views
         {
             //ToDo: Not connected - handle better?
             if (!AppContext.IsConnected)
-                MessageBox.Show(AppStrings.NotConnectedMsg, AppStrings.NotConnectedMsgTitle, MessageBoxButton.OK);
+                MessageBox.Show(
+                    AppStrings.NotConnectedMsg, 
+                    AppStrings.NotConnectedMsgTitle, 
+                    MessageBoxButton.OK);
         }
 
         void HomePage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
@@ -139,6 +142,24 @@ namespace PhoneApp1.Views
         {
             //Load Books and Tiles
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            //Show Loading Messages if not loaded
+            //HubTileService.FreezeHubTile(bookTile1);
+            if (string.IsNullOrEmpty(bookTile1.Message))
+            {
+                bookTile1.Message = AppStrings.GenericLoadingMsg;
+                bookTile1.IsEnabled = false;
+            }
+
+            //HubTileService.FreezeHubTile(bookTile2);
+            if (string.IsNullOrEmpty(bookTile2.Message))
+            {
+                bookTile2.Message = AppStrings.GenericLoadingMsg;
+                bookTile2.IsEnabled = false;
+            }
+
+            if(string.IsNullOrEmpty(highlightTextBlock.Text))
+                highlightTextBlock.Text = AppStrings.GenericLoadingMsg;
             
             collectionsVM.LoadCollectedBooksAsync(true).ContinueWith(task =>
             {
@@ -162,18 +183,18 @@ namespace PhoneApp1.Views
                     //Empty list handling - good for now?
                     bookTile1.Message = AppStrings.NoCollectedBooksMsg;
                     bookTile1.IsEnabled = false;
-                    HubTileService.FreezeHubTile(bookTile1);
+                    //HubTileService.FreezeHubTile(bookTile1);
                     
                     bookTile2.Message = AppStrings.NoCollectedBooksMsg;
                     bookTile2.IsEnabled = false;
-                    HubTileService.FreezeHubTile(bookTile2);
+                    //HubTileService.FreezeHubTile(bookTile2);
                 }
             }, uiTaskScheduler);
 
             //Load Highlights
             List<string> ids = AppContext.CurrentUser.TryLoadCollectedHighlightsList(true);
             if (ids == null)
-                highlightTextBlock.Text = "No highlights collected yet.";
+                highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
             else
             {
                 collectionsVM.LoadCollectedHighlightsAsync(ids, true).ContinueWith(
@@ -182,9 +203,9 @@ namespace PhoneApp1.Views
                         if (collectionsVM.CollectedHighlights != null && collectionsVM.CollectedHighlights.Count > 0)
                         {
                             Random randomGen = new Random();
-                            int i = randomGen.Next(collectionsVM.CollectedHighlights.Count);
+                            int i = randomGen.Next(0, collectionsVM.CollectedHighlights.Count);
 
-                            highlightTextBlock.DataContext = collectionsVM.CollectedHighlights[i];
+                            highlightTextBlock.Text = collectionsVM.CollectedHighlights[i].Content;
                         }
                     },uiTaskScheduler);
             }

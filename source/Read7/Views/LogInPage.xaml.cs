@@ -28,12 +28,37 @@ namespace PhoneApp1
             readmillBrowser.Navigate(new Uri(AppContext.Constants.AuthUri));
         }
 
+        protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            //Remove login page(s) from back-stack
+            while (NavigationService.CanGoBack)
+                NavigationService.RemoveBackEntry();
+        }
+
         private void readmillBrowser_Navigating(object sender, NavigatingEventArgs e)
         {
             Uri redirectUri = e.Uri;
             if (redirectUri.AbsoluteUri.StartsWith(AppContext.Constants.RedirectUri))
             {
-                //ToDo: Handle "Deny" and "Back"
+                //ToDo: Handle "Deny"
+                if (redirectUri.Query.Contains("error=user_denied"))
+                {
+                    e.Cancel = true;
+                    this.Dispatcher.BeginInvoke(() =>
+                        {
+                            MessageBox.Show(
+                                AppStrings.MustAuthorize, 
+                                AppStrings.MustAuthorizeTitle,
+                                MessageBoxButton.OK);
+
+                            readmillBrowser.Navigate(new Uri(AppContext.Constants.AuthUri));
+                        });
+
+                    return;
+                }
+
                 string authCode = redirectUri.Query.Split(new string[] { "?code=" }, StringSplitOptions.RemoveEmptyEntries)[0];
                 string tokenUri = AppContext.Constants.TokenUri + authCode;
 
@@ -61,6 +86,8 @@ namespace PhoneApp1
                                     ser.WriteObject(stream, AppContext.AccessToken);
                                 }
                             }
+
+                            AppContext.ResetTokenRefreshing();
                         }
 
                         Task.Factory.StartNew(() =>

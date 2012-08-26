@@ -61,6 +61,24 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Looks like you are logged-out or authorization for Read Rover has expired. You&apos;ll need to authorize the rover again to access your Readmill account..
+        /// </summary>
+        internal static string AuthFailed {
+            get {
+                return ResourceManager.GetString("AuthFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authorization Failed.
+        /// </summary>
+        internal static string AuthFailedTitle {
+            get {
+                return ResourceManager.GetString("AuthFailedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to collapse fullscreen.
         /// </summary>
         internal static string CollapseFullScreenButton {
@@ -70,7 +88,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Something went wrong when trying to mark the book as interesting..
+        ///   Looks up a localized string similar to Something went wrong when trying to mark the book as &apos;interesting&apos; on Readmill and adding it to your collection..
         /// </summary>
         internal static string CouldNotLikeBook {
             get {
@@ -97,6 +115,15 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to loading....
+        /// </summary>
+        internal static string GenericLoadingMsg {
+            get {
+                return ResourceManager.GetString("GenericLoadingMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to highlights.
         /// </summary>
         internal static string HighlightsButton {
@@ -115,11 +142,47 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could Not Like.
+        /// </summary>
+        internal static string LikeFailedTitle {
+            get {
+                return ResourceManager.GetString("LikeFailedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to like.
         /// </summary>
         internal static string LikeHighlightButton {
             get {
                 return ResourceManager.GetString("LikeHighlightButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something went wrong while trying to &apos;like&apos; this highlight..
+        /// </summary>
+        internal static string LikeReadmillHighlightFailed {
+            get {
+                return ResourceManager.GetString("LikeReadmillHighlightFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must authorize Read Rover to access your Readmill account to continue using the app..
+        /// </summary>
+        internal static string MustAuthorize {
+            get {
+                return ResourceManager.GetString("MustAuthorize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Must Authorize.
+        /// </summary>
+        internal static string MustAuthorizeTitle {
+            get {
+                return ResourceManager.GetString("MustAuthorizeTitle", resourceCulture);
             }
         }
         
@@ -133,11 +196,29 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to you have not collected/saved any highlights on this device yet..
+        /// </summary>
+        internal static string NoCollectedHighlights {
+            get {
+                return ResourceManager.GetString("NoCollectedHighlights", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to sorry, no one seems to have highlighted this book yet..
         /// </summary>
         internal static string NoHighlights {
             get {
                 return ResourceManager.GetString("NoHighlights", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No reading for this book for current user..
+        /// </summary>
+        internal static string NoReadingEx {
+            get {
+                return ResourceManager.GetString("NoReadingEx", resourceCulture);
             }
         }
         
@@ -151,7 +232,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are not connected to internet. App functionality is limited in the offline mode. For full access please connect to the network and restart the application..
+        ///   Looks up a localized string similar to You are not connected to internet. A network connection is needed for Read Rover to function. Please connect and restart the application..
         /// </summary>
         internal static string NotConnectedMsg {
             get {
@@ -178,6 +259,24 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Something bad happened and the rover doesn&apos;t know how to handle this. It&apos;s best to exit and start again..
+        /// </summary>
+        internal static string UnknownException {
+            get {
+                return ResourceManager.GetString("UnknownException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string UnknownExceptionTitle {
+            get {
+                return ResourceManager.GetString("UnknownExceptionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to unlike book.
         /// </summary>
         internal static string UnlikeBookButton {
@@ -187,11 +286,29 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could Not Unlike.
+        /// </summary>
+        internal static string UnlikeFailedTitle {
+            get {
+                return ResourceManager.GetString("UnlikeFailedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to unlike.
         /// </summary>
         internal static string UnlikeHighlightButton {
             get {
                 return ResourceManager.GetString("UnlikeHighlightButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something went wrong while trying to &apos;unlike&apos; this highlight..
+        /// </summary>
+        internal static string UnlikeReadmillHighlightFailed {
+            get {
+                return ResourceManager.GetString("UnlikeReadmillHighlightFailed", resourceCulture);
             }
         }
     }

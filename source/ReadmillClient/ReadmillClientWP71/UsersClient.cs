@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using Com.Readmill.Api;
 using System.Threading.Tasks;
 using System.Security;
+using System.Threading;
 
 
 namespace Com.Readmill.Api
@@ -120,7 +121,11 @@ namespace Com.Readmill.Api
         /// <param name="userId">Readmill user-id of the user whose readings you want to retrieve</param>
         /// <param name="options">Query options for retrieving the readings</param>
         /// <returns></returns>
-        public Task<List<Reading>> GetUserReadings(string userId, ReadingsQueryOptions options = null, string accessToken = null)
+        public Task<List<Reading>> GetUserReadings(
+            string userId, 
+            ReadingsQueryOptions options = null, 
+            string accessToken = null,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
@@ -148,7 +153,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var readingsUrl = userUriTemplates[UsersUriTemplateType.UserReadings].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<List<Reading>>(readingsUrl);
+            return GetAsync<List<Reading>>(readingsUrl, cancellationToken);
         }
 
     }

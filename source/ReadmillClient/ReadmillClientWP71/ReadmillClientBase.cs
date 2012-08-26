@@ -11,6 +11,7 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using System.Threading;
 
 namespace Com.Readmill.Api
 {
@@ -55,12 +56,67 @@ namespace Com.Readmill.Api
                 }).Unwrap();            
         }
 
+        public Task PostAsync(Uri readmillUri)
+        {
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
+            req.Method = "POST";
+            //req.ContentType = "application/json";
+
+            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
+
+            return t.ContinueWith(
+                (responseTask) =>
+                {
+                    if (responseTask.IsFaulted)
+                    {
+                        responseTask.Exception.Flatten().Handle(
+                            ex =>
+                            {
+                                //We don't really want to mark as handled - only add extra info.
+                                if(ex is WebException 
+                                    && (((WebException)ex).Status == WebExceptionStatus.ProtocolError)
+                                    || (((WebException)ex).Status == WebExceptionStatus.UnknownError))
+                                {
+                                    try
+                                    {
+                                        using (HttpWebResponse resp = responseTask.Result as HttpWebResponse)
+                                        {
+                                            ex.Data.Add("HttpStatusCode", resp.StatusCode);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        //no op
+                                    }
+                                }
+                                return false;
+                            });
+                    }
+
+                    using (responseTask.Result)
+                    {
+                        return;
+                    }
+                });
+
+            /*cancellationToken.Register(() =>
+                {
+                    req.Abort();
+                    throw new OperationCanceledException(cancellationToken);
+                });*/
+        }
 
         protected Task<string> PostAsync<T>(T readmillObject, Uri readmillUri)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
             req.Method = "POST";
             req.ContentType = "application/json";
+
+            /*cancellationToken.Register(() =>
+                {
+                    req.Abort();
+                    throw new OperationCanceledException(cancellationToken);
+                });*/
 
             Task<Stream> s = Task<Stream>.Factory.FromAsync(req.BeginGetRequestStream, req.EndGetRequestStream, null);
             return s.ContinueWith(
@@ -85,34 +141,43 @@ namespace Com.Readmill.Api
                 }).Unwrap();                     
         }
 
-
-        protected Task<T> GetAsync<T>(Uri readmillUri)
+        protected Task<T> GetAsync<T>(Uri readmillUri, CancellationToken cancellationToken = default(CancellationToken))
         {
             TaskCompletionSource<Stream> tcs = new TaskCompletionSource<Stream>();
 
             WebClient client = new WebClient();
 
+            cancellationToken.Register(() =>
+            {
+                client.CancelAsync();
+            });
+
             client.OpenReadCompleted += (sender, args) =>
-                {
-                    if (args.Error != null)
-                        tcs.SetException(args.Error);
-                    else if (args.Cancelled)
-                        tcs.SetCanceled();
-                    else tcs.SetResult(args.Result);
-                };
+            {
+                if (args.Error != null)
+                    tcs.SetException(args.Error);
+                else if (args.Cancelled)
+                    tcs.SetCanceled();
+                else tcs.SetResult(args.Result);
+            };
 
             client.OpenReadAsync(readmillUri);
 
             return tcs.Task.ContinueWith(
                         (readTask) =>
                         {
+                            cancellationToken.Register(() =>
+                            {
+                                throw new OperationCanceledException(cancellationToken);
+                            });
+
                             using (readTask.Result)
                             {
                                 DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
                                 T obj = (T)ser.ReadObject(readTask.Result);
                                 return obj;
                             }
-                        });
+                        }, cancellationToken);
 
         }
 
@@ -134,7 +199,7 @@ namespace Com.Readmill.Api
         }
 
 
-        protected Task DeleteAsync(Uri readmillUri)
+        public Task DeleteAsync(Uri readmillUri)
         {
             HttpWebRequest req = (HttpWebRequest) WebRequest.Create(readmillUri);
             req.Method = "DELETE";

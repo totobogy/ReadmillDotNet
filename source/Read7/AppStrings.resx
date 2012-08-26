@@ -117,11 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AuthFailed" xml:space="preserve">
+    <value>Looks like you are logged-out or authorization for Read Rover has expired. You'll need to authorize the rover again to access your Readmill account.</value>
+  </data>
+  <data name="AuthFailedTitle" xml:space="preserve">
+    <value>Authorization Failed</value>
+  </data>
   <data name="CollapseFullScreenButton" xml:space="preserve">
     <value>collapse fullscreen</value>
   </data>
   <data name="CouldNotLikeBook" xml:space="preserve">
-    <value>Something went wrong when trying to mark the book as interesting.</value>
+    <value>Something went wrong when trying to mark the book as 'interesting' on Readmill and adding it to your collection.</value>
   </data>
   <data name="CouldNotLikeHighlight" xml:space="preserve">
     <value />
@@ -129,26 +135,47 @@
   <data name="FullScreenButton" xml:space="preserve">
     <value>fullscreen</value>
   </data>
+  <data name="GenericLoadingMsg" xml:space="preserve">
+    <value>loading...</value>
+  </data>
   <data name="HighlightsButton" xml:space="preserve">
     <value>highlights</value>
   </data>
   <data name="LikeBookButton" xml:space="preserve">
     <value>like book</value>
   </data>
+  <data name="LikeFailedTitle" xml:space="preserve">
+    <value>Could Not Like</value>
+  </data>
   <data name="LikeHighlightButton" xml:space="preserve">
     <value>like</value>
+  </data>
+  <data name="LikeReadmillHighlightFailed" xml:space="preserve">
+    <value>Something went wrong while trying to 'like' this highlight.</value>
+  </data>
+  <data name="MustAuthorize" xml:space="preserve">
+    <value>You must authorize Read Rover to access your Readmill account to continue using the app.</value>
+  </data>
+  <data name="MustAuthorizeTitle" xml:space="preserve">
+    <value>Must Authorize</value>
   </data>
   <data name="NoCollectedBooksMsg" xml:space="preserve">
     <value>there are no books in your collection yet</value>
   </data>
+  <data name="NoCollectedHighlights" xml:space="preserve">
+    <value>you have not collected/saved any highlights on this device yet.</value>
+  </data>
   <data name="NoHighlights" xml:space="preserve">
     <value>sorry, no one seems to have highlighted this book yet.</value>
+  </data>
+  <data name="NoReadingEx" xml:space="preserve">
+    <value>No reading for this book for current user.</value>
   </data>
   <data name="NoStoryMsg" xml:space="preserve">
     <value>there is no description or story available for this book yet.</value>
   </data>
   <data name="NotConnectedMsg" xml:space="preserve">
-    <value>You are not connected to internet. App functionality is limited in the offline mode. For full access please connect to the network and restart the application.</value>
+    <value>You are not connected to internet. A network connection is needed for Read Rover to function. Please connect and restart the application.</value>
   </data>
   <data name="NotConnectedMsgTitle" xml:space="preserve">
     <value>No Network</value>
@@ -156,10 +183,22 @@
   <data name="SearchHint" xml:space="preserve">
     <value>search title or author</value>
   </data>
+  <data name="UnknownException" xml:space="preserve">
+    <value>Something bad happened and the rover doesn't know how to handle this. It's best to exit and start again.</value>
+  </data>
+  <data name="UnknownExceptionTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
   <data name="UnlikeBookButton" xml:space="preserve">
     <value>unlike book</value>
   </data>
+  <data name="UnlikeFailedTitle" xml:space="preserve">
+    <value>Could Not Unlike</value>
+  </data>
   <data name="UnlikeHighlightButton" xml:space="preserve">
     <value>unlike</value>
+  </data>
+  <data name="UnlikeReadmillHighlightFailed" xml:space="preserve">
+    <value>Something went wrong while trying to 'unlike' this highlight.</value>
   </data>
 </root>

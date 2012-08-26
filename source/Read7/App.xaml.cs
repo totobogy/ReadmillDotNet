@@ -15,6 +15,8 @@ using Microsoft.Phone.Shell;
 using System.Runtime.Serialization.Json;
 using System.IO.IsolatedStorage;
 using System.IO;
+using System.Threading.Tasks;
+using Com.Readmill.Api.DataContracts;
 
 namespace PhoneApp1
 {
@@ -66,24 +68,51 @@ namespace PhoneApp1
 
         void RootFrame_Navigating(object sender, NavigatingCancelEventArgs e)
         {
-            if (e.Uri.ToString().Contains("/Views/Home.xaml") != true)
-                return;
-
-            if (TryRetrieveStoredAccessToken())
-                return;
-
-            e.Cancel = true;
-            RootFrame.Dispatcher.BeginInvoke(delegate
+            //Check Network Connection, if not connected, route to landing page
+            //except if we are exiting
+            if (!AppContext.IsConnected 
+                && 
+                !(e.Uri.ToString().Contains("/Views/ErrorLandingPage.xaml") 
+                    || e.Uri.ToString().Contains("app")))
             {
-                RootFrame.Navigate(new Uri("/Views/LogInPage.xaml", UriKind.Relative));
-            });
+                MessageBox.Show(
+                    AppStrings.NotConnectedMsg,
+                    AppStrings.NotConnectedMsgTitle,
+                    MessageBoxButton.OK);
 
+                e.Cancel = true;
+                RootFrame.Dispatcher.BeginInvoke(delegate
+                {
+                    RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+                });
+            }
+            else
+            {
+                if (!e.Uri.ToString().Contains("/Views/Home.xaml"))
+                    return;
+
+                //If there's a locally stored token
+                if (TryRetrieveStoredAccessToken())
+                {
+                    //which is valid?? How to check
+                    return;
+                }
+
+                e.Cancel = true;
+                RootFrame.Dispatcher.BeginInvoke(delegate
+                {
+                    RootFrame.Navigate(new Uri("/Views/LogInPage.xaml", UriKind.Relative));
+                });
+            }
         }
 
         private bool TryRetrieveStoredAccessToken()
         {
-            //ToDo: Handle when the token is not valid - this will only be detected at API call time
             //Right Now we only support non-expiring tokens, but user can still revoke access
+            
+            //If this was already called before and we have a token set
+            if (AppContext.AccessToken != null)
+                return true;
 
             DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(AccessToken));
             using (var store = IsolatedStorageFile.GetUserStoreForApplication())
@@ -118,12 +147,17 @@ namespace PhoneApp1
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
+            //Do we need to get the token again?
         }
 
         // Code to execute when the application is deactivated (sent to background)
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
+            //Try to save collections, in case we are terminated
+            AppContext.CurrentUser.TrySaveCollectedHighlightsLocally();
+
+            //Anything else?
         }
 
         // Code to execute when the application is closing (eg, user hit Back)
@@ -145,14 +179,99 @@ namespace PhoneApp1
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            //Aggregate Exception
-            //Thread Abort
-            //Null Ref
+            if (e.ExceptionObject is TaskCanceledException)
+                e.Handled = true;
+            else if (e.ExceptionObject is OperationCanceledException)
+                e.Handled = true;
+            else if (e.ExceptionObject is AggregateException)
+            {
+                AggregateException ex = (e.ExceptionObject as AggregateException).Flatten();
+                ex.Handle(err =>
+                    {
+                        if (err is TaskCanceledException)
+                            return e.Handled = true;
+
+                        else if (err is OperationCanceledException)
+                            return e.Handled = true;
+
+                        else if (err is WebException)
+                        {
+                            WebException webEx = err as WebException;
+
+                            if (webEx.Status == WebExceptionStatus.RequestCanceled)
+                                return e.Handled = true;
+
+                            else if (webEx.Status == WebExceptionStatus.ProtocolError
+                                || webEx.Status == WebExceptionStatus.UnknownError)
+                            {
+                                if (webEx.Response.SupportsHeaders)
+                                {
+                                    string status = webEx.Response.Headers["status"];
+
+                                    if (status.Contains("401"))
+                                    {
+                                        //Unauthorized
+                                        //what if the error is due to missing credentials?
+                                        if (!AppContext.TokenRefreshing())
+                                        {
+                                            RootFrame.Dispatcher.BeginInvoke(
+                                                delegate
+                                                {
+                                                    MessageBoxResult result =
+                                                        MessageBox.Show(
+                                                        AppStrings.AuthFailed,
+                                                        AppStrings.AuthFailedTitle,
+                                                        MessageBoxButton.OK);
+
+                                                    RootFrame.Navigate(new Uri("/Views/LogInPage.xaml", UriKind.Relative));
+                                                });
+                                        }
+                                        return e.Handled = true;
+                                    }
+                                    else
+                                        return false;
+                                }
+                                else
+                                    return false;
+                            }
+                            
+                            else
+                                return false;
+                        }
+
+                        else
+                        {
+                            //Unknown Exception
+                            //ToDo: Send Error Report?
+                            MessageBoxResult result = MessageBox.Show(
+                                AppStrings.UnknownException,
+                                AppStrings.UnknownExceptionTitle,
+                                MessageBoxButton.OK);
+
+                            RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+
+                            return e.Handled = true;
+                        }
+                    });
+            }
+            else
+            {
+                //Unknown Exception
+                //ToDo: Send Error Report?
+                MessageBoxResult result = MessageBox.Show(
+                    AppStrings.UnknownException,
+                    AppStrings.UnknownExceptionTitle,
+                    MessageBoxButton.OK);
+
+                RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+
+                e.Handled = true;
+            }
 
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 // An unhandled exception has occurred; break into the debugger
-                System.Diagnostics.Debugger.Break();
+                //System.Diagnostics.Debugger.Break();
             }
         }
 

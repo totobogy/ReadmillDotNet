@@ -64,20 +64,21 @@ namespace PhoneApp1.ViewModels
         public Task LikeBookAsync()
         {
             //if reading already exists, update?
-            return
-                IsCollectedAsync().ContinueWith(isCollected =>
+                return IsCollectedAsync().ContinueWith(isCollected =>
                     {
                         if (!isCollected.Result)
                         {
-                            client.Books.PostBookReadingAsync
-                            (AppContext.AccessToken.Token,
-                              SelectedBook.Id,
-                                Reading.ReadingState.Interesting).ContinueWith(task =>
-                                    {
-                                        string readingLink = task.Result;
+                                string readingLink =
+                                    client.Books.PostBookReadingAsync(
+                                    AppContext.AccessToken.Token,
+                                    SelectedBook.Id,
+                                    Reading.ReadingState.Interesting).Result;
 
-                                        bookReading = client.Readings.GetFromPermalinkAsync<Reading>(readingLink, AppContext.AccessToken.Token).Result;
-                                    });
+                                AppContext.CurrentUser.AddBookToLocalCollection(SelectedBook);
+
+                                bookReading = client.Readings.GetFromPermalinkAsync<Reading>(
+                                    readingLink,
+                                    AppContext.AccessToken.Token).Result;
                         }
                     });
         }
@@ -92,23 +93,30 @@ namespace PhoneApp1.ViewModels
                         if (isCollected.Result)
                         {
                             bookReading = AppContext.CurrentUser.GetReadingForBook(SelectedBook.Id);
-                            
-                            return
-                                client.Readings.DeleteReadingAsync(AppContext.AccessToken.Token, bookReading.Id);
+
+                            client.Readings.DeleteReadingAsync(
+                                AppContext.AccessToken.Token,
+                                bookReading.Id).Wait();
+
+                            AppContext.CurrentUser.RemoveBookFromLocalCollection(SelectedBook.Id);
                         }
                         else
                         {
-                            throw new InvalidOperationException("Reading not set for this book for this user");
+                            throw new InvalidOperationException(AppStrings.NoReadingEx);
                         }
                     });
             }
             else
             {
                 return
-                    client.Readings.DeleteReadingAsync(AppContext.AccessToken.Token, bookReading.Id);
+                    client.Readings.DeleteReadingAsync(
+                    AppContext.AccessToken.Token,
+                    bookReading.Id).ContinueWith(task =>
+                        {
+                            if(task.IsCompleted)
+                                AppContext.CurrentUser.RemoveBookFromLocalCollection(SelectedBook.Id);
+                        });
             }
         }
-
-        // Is liked?
     }
 }

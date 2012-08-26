@@ -48,6 +48,10 @@ namespace PhoneApp1
         {
             //Mark book as interesting, show in My Books
             ApplicationBarIconButton likeBookButton = (ApplicationBarIconButton)sender;
+
+            //Disable the button untill we have completed the operation
+            likeBookButton.IsEnabled = false;
+
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             if (likeBookButton.Text == AppStrings.LikeBookButton)
@@ -57,16 +61,22 @@ namespace PhoneApp1
                         {
                             if (task.IsFaulted)
                             {
-                                MessageBox.Show(AppStrings.CouldNotLikeBook);
-                                task.Exception.Handle((ex) =>
+                                MessageBox.Show(
+                                    AppStrings.CouldNotLikeBook, 
+                                    AppStrings.LikeFailedTitle, 
+                                    MessageBoxButton.OK);
+
+                                throw task.Exception;
+                                /*task.Exception.Handle((ex) =>
                                     {
                                         return true;
-                                    });
+                                    });*/
                             }
                             else
                             {
                                 likeBookButton.Text = AppStrings.UnlikeBookButton;
                                 likeBookButton.IconUri = new Uri("/icons/appbar.heart.png", UriKind.Relative);
+                                likeBookButton.IsEnabled = true;
                             }
                         }, uiTaskScheduler);                
             }
@@ -77,6 +87,7 @@ namespace PhoneApp1
                     {
                         likeBookButton.Text = AppStrings.LikeBookButton;
                         likeBookButton.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
+                        likeBookButton.IsEnabled = true;
                     }, uiTaskScheduler);
             }
         }
@@ -94,16 +105,19 @@ namespace PhoneApp1
                 has =>
                 {
                     ApplicationBarIconButton button = this.ApplicationBar.Buttons[0] as ApplicationBarIconButton;
+                    button.IsEnabled = false;
 
                     if (has.Result)
                     {                       
                         button.Text = AppStrings.UnlikeBookButton;
                         button.IconUri = new Uri("/icons/appbar.heart.png", UriKind.Relative);
+                        button.IsEnabled = true;
                     }
                     else
                     {
                         button.Text = AppStrings.LikeBookButton;
                         button.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
+                        button.IsEnabled = true;
                     }
                 }, uiTaskScheduler);
         }

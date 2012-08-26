@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using Com.Readmill.Api;
 using System.Threading.Tasks;
 using System.Security;
+using System.Threading;
 
 namespace Com.Readmill.Api
 {
@@ -106,7 +107,7 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <param name="options">Query options for retrieving the books</param>
         /// <returns></returns>
-        public Task<List<Book>> GetBooksAsync(BooksQueryOptions options = null)
+        public Task<List<Book>> GetBooksAsync(BooksQueryOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string,string> parameters = GetInitializedParameterCollection();
 
@@ -126,19 +127,19 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var booksUrl = booksUriTemplates[BooksUriTemplateType.Books].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<List<Book>>(booksUrl);
+            return GetAsync<List<Book>>(booksUrl, cancellationToken);
         }
 
-        public Task<Book> GetBookByIdAsync(string bookId)
+        public Task<Book> GetBookByIdAsync(string bookId, CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
             parameters.Add(BooksClient.BookId, bookId);
 
             var booksUrl = booksUriTemplates[BooksUriTemplateType.SingleBook].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<Book>(booksUrl);
+            return GetAsync<Book>(booksUrl, cancellationToken);
         }
 
-        public Task<Book> GetBestMatchAsync(BookMatchOptions options)
+        public Task<Book> GetBestMatchAsync(BookMatchOptions options, CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
@@ -159,7 +160,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var booksUrl = booksUriTemplates[BooksUriTemplateType.BooksMatch].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<Book>(booksUrl);
+            return GetAsync<Book>(booksUrl, cancellationToken);
 
         }
 
@@ -169,7 +170,11 @@ namespace Com.Readmill.Api
         /// <param name="bookId">Readmill Id of the book for which readings need to be retrieved</param>
         /// <param name="?"></param>
         /// <returns></returns>
-        public Task<List<Reading>> GetBookReadingsAsync(string bookId, ReadingsQueryOptions options = null, string accessToken = null)
+        public Task<List<Reading>> GetBookReadingsAsync(
+            string bookId, 
+            ReadingsQueryOptions options = null, 
+            string accessToken = null,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
             parameters.Add(BooksClient.BookId, bookId);
@@ -196,7 +201,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var bookReadingsUrl = booksUriTemplates[BooksUriTemplateType.BookReadings].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<List<Reading>>(bookReadingsUrl);
+            return GetAsync<List<Reading>>(bookReadingsUrl, cancellationToken);
         }
 
         public Task<string> PostBookAsync(string accessToken, Book newBook)

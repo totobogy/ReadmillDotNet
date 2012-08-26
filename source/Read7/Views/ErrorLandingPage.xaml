@@ -1,5 +1,5 @@
 ﻿<phone:PhoneApplicationPage 
-    x:Class="PhoneApp1.LogInPage"
+    x:Class="PhoneApp1.Views.ErrorLandingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
@@ -21,14 +21,14 @@
         </Grid.RowDefinitions>
 
         <!--TitlePanel contains the name of the application and page title-->
-        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="15,17,0,28">
-            <TextBlock x:Name="ApplicationTitle" Text="READ 7" Style="{StaticResource PhoneTextNormalStyle}"/>
-            <TextBlock x:Name="PageTitle" Text="sign in" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
+        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
+            <TextBlock x:Name="ApplicationTitle" Text="READ ROVER" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock x:Name="errorTitle" Text="Oops!" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="15,0,12,0">
-            <phone:WebBrowser HorizontalAlignment="Left" Name="readmillBrowser" VerticalAlignment="Top" Height="614" Width="420" BorderThickness="0,0,10,10" Navigating="readmillBrowser_Navigating" Margin="9,0,0,0" />
+        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,28">
+            <TextBlock Height="472" HorizontalAlignment="Left" Margin="12,6,0,0" Name="errorMessage" Text="Oops! Something's gone wrong and Read Rover can't continue right now. Restarting the app might fix this problem. Please press the back key to exit Read Rover. Sorry!" VerticalAlignment="Top" Width="420" FontSize="24" TextWrapping="Wrap" />
         </Grid>
     </Grid>
  

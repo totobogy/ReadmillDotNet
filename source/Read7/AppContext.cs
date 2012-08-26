@@ -35,6 +35,54 @@ namespace PhoneApp1
 
         public static AccessToken AccessToken { get; set; }
 
+        /// <summary>
+        /// used to indicate that the current access token has been invalidated
+        /// and is being refreshed. The first actor which finds that the token has been invalidated (e.g. gets
+        ///  a 401) must set this to 'true', refresh the token and set it to false again
+        /// (so that multiple actors don't try to refresh it)
+        /// ToDo: Use a locking device which doesn't cause others to wait/block?
+        /// </summary>
+        private static bool tokenRefreshing;
+
+        /// <summary>
+        /// This method is intended to be called by actors who discover that the token has been 
+        /// invalidated and needs to be refreshed. Only on actor needs to refresh the token so
+        /// the first actor who calls is indicated that no one is refreshing the token yet.
+        /// </summary>
+        /// <returns></returns>
+        public static bool TokenRefreshing()
+        {
+            lock (typeof(AppContext))
+            {
+                if (!tokenRefreshing)
+                {
+                    //No one is refreshing the token yet. Tell the caller so that it can refresh.
+                    
+                    tokenRefreshing = true;
+                    
+                    //invalidate current token
+                    AppContext.AccessToken = null;
+                    
+                    return false;
+                }
+                else
+                {
+                    //Token is already being refreshed. The caller can ignore and move on.
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reset the token refreshing flag to indicate that no actor is now in the process of
+        /// refreshing the token.
+        /// </summary>
+        public static void ResetTokenRefreshing()
+        {
+            tokenRefreshing = false;
+        }
+
+
         public static bool IsConnected
         {
             get
@@ -87,7 +135,11 @@ namespace PhoneApp1
         {
             if (forceRefresh || me == null)
             {
-                return client.Users.GetOwnerAsync(AppContext.AccessToken.Token);
+                return client.Users.GetOwnerAsync(AppContext.AccessToken.Token).ContinueWith(
+                    task =>
+                    {
+                        return me = task.Result;
+                    });
             }
             else
             {
@@ -200,8 +252,11 @@ namespace PhoneApp1
                 return false;
         }
 
-
-        public void CollectHighlight(Highlight highlight)
+        /// <summary>
+        /// Must only be called after the actual operation on Readmill has succeeded.
+        /// </summary>
+        /// <param name="highlight"></param>
+        public void TryCollectHighlight(Highlight highlight)
         {
             lock (this)
             {
@@ -213,16 +268,57 @@ namespace PhoneApp1
             }
         }
 
-        public void RemoveHighlight(string id)
+        /// <summary>
+        /// Must only be called after the actual operation on Readmill has succeeded
+        /// </summary>
+        /// <param name="id"></param>
+        public void TryRemoveHighlight(string id)
         {
-            if (collectedBooks == null)
-                throw new InvalidOperationException("User's highlights not initialized.");
+            if (collectedHighlights == null)
+                return;//throw new InvalidOperationException("User's highlights not initialized.");
 
             else
                 lock (this)
                 {
                     if (collectedHighlights.ContainsKey(id))
                         collectedHighlights.Remove(id);
+                }
+        }
+
+
+        /// <summary>
+        /// Must only be called after the actual operation on Readmill has succeeded.
+        /// This is only an optimization to avoid extra web service call
+        /// </summary>
+        /// <param name="book"></param>
+        public void AddBookToLocalCollection(Book book)
+        {
+            lock (this)
+            {
+                //should never happen
+                if (collectedBooks == null)
+                    throw new InvalidOperationException("Book collection must be already initialized.");
+
+                if (!collectedBooks.ContainsKey(book.Id))
+                    collectedBooks.Add(book.Id, book);
+            }
+        }
+
+        /// <summary>
+        /// Must only be called after the actual operation on Readmill has succeeded.
+        /// This is only an optimization to avoid extra web service call
+        /// </summary>
+        /// <param name="book"></param>
+        public void RemoveBookFromLocalCollection(string bookId)
+        {
+            if (collectedBooks == null)
+                return;//throw new InvalidOperationException("User's highlights not initialized.");
+
+            else
+                lock (this)
+                {
+                    if (collectedBooks.ContainsKey(bookId))
+                        collectedBooks.Remove(bookId);
                 }
         }
 
