@@ -41,7 +41,9 @@ namespace PhoneApp1
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);            
+            base.OnNavigatedTo(e);
+         
+
         }
 
         private void likeBook_Click(object sender, EventArgs e)

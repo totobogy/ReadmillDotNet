@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using Com.Readmill.Api.DataContracts;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace PhoneApp1.ViewModels
 {
@@ -78,12 +79,12 @@ namespace PhoneApp1.ViewModels
             ListState = State.Unloaded;
         }
 
-        public Task LoadRecentlyReadBooksAsync()
+        public Task LoadRecentlyReadBooksAsync(CancellationToken cancelToken = default(CancellationToken))
         {
-            BooksQueryOptions booksOptions = new BooksQueryOptions() { CountValue = 25 };
-            ReadingsQueryOptions readingsOptions = new ReadingsQueryOptions() { CountValue = 25 };
+            //BooksQueryOptions booksOptions = new BooksQueryOptions() { CountValue = 25 };
+            ReadingsQueryOptions readingsOptions = new ReadingsQueryOptions() { CountValue = 50 };
 
-            Task<List<Reading>> readingsTask = client.Readings.GetReadingsAsync(readingsOptions);
+            Task<List<Reading>> readingsTask = client.Readings.GetReadingsAsync(readingsOptions, cancelToken);
 
             return readingsTask.ContinueWith(task =>
             {
@@ -98,11 +99,11 @@ namespace PhoneApp1.ViewModels
             });
         }
 
-        public Task SearchBooksAsync(string searchString)
+        public Task SearchBooksAsync(string searchString, CancellationToken cancelToken = default(CancellationToken))
         {
             BooksQueryOptions booksOptions = new BooksQueryOptions() { SearchStringValue = searchString, CountValue = 100 };
             
-            Task<List<Book>> booksTask = client.Books.GetBooksAsync(booksOptions);
+            Task<List<Book>> booksTask = client.Books.GetBooksAsync(booksOptions, cancelToken);
             
             return booksTask.ContinueWith(task =>
             {

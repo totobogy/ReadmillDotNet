@@ -17,6 +17,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Com.Readmill.Api.DataContracts;
 using Microsoft.Phone.Shell;
+using System.Threading;
 
 namespace PhoneApp1.Views
 {
@@ -25,17 +26,42 @@ namespace PhoneApp1.Views
         BookListViewModel bookListVM;
         CollectionsViewModel collectionsVM;
 
+        private bool viewModelsInvalidated;
+        private bool viewInvalidated;
+
+        private CancellationTokenSource cancel;
+
         public Home()
         {
             InitializeComponent();
+
             this.Loaded += new RoutedEventHandler(HomePage_Loaded);
             this.BackKeyPress += new EventHandler<System.ComponentModel.CancelEventArgs>(HomePage_BackKeyPress);
 
-            bookListVM = new BookListViewModel();
-            booksPanoramaItem.DataContext = bookListVM;
+            viewModelsInvalidated = true;
+            viewInvalidated = true;
+        }
 
-            collectionsVM = new CollectionsViewModel();
-            collectionsPanoramaItem.DataContext = collectionsVM;
+        protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            if (e.NavigationMode == System.Windows.Navigation.NavigationMode.Back)
+            {
+                try
+                {
+                    cancel.Cancel();
+                }
+                finally
+                {
+
+                }
+            }
+            else
+            {
+                State["BooksViewModel"] = bookListVM;
+                State["CollectionsViewModel"] = collectionsVM;
+            }
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -49,16 +75,33 @@ namespace PhoneApp1.Views
                 while(NavigationService.CanGoBack)
                     NavigationService.RemoveBackEntry();
             }
+
+            //collectionsGrid.Visibility = System.Windows.Visibility.Collapsed;
+            if (viewModelsInvalidated)
+            {
+                if (State.ContainsKey("BooksViewModel"))
+                    bookListVM = State["BooksViewModel"] as BookListViewModel;
+                else
+                    bookListVM = new BookListViewModel();
+
+                booksPanoramaItem.DataContext = bookListVM;
+
+                if (State.ContainsKey("CollectionsViewModel"))
+                    collectionsVM = State["CollectionsViewModel"] as CollectionsViewModel;
+                else
+                    collectionsVM = new CollectionsViewModel();
+
+                collectionsPanoramaItem.DataContext = collectionsVM;
+
+                cancel = new CancellationTokenSource();
+
+                viewModelsInvalidated = false;
+            }
         }
 
         void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            //ToDo: Not connected - handle better?
-            if (!AppContext.IsConnected)
-                MessageBox.Show(
-                    AppStrings.NotConnectedMsg, 
-                    AppStrings.NotConnectedMsgTitle, 
-                    MessageBoxButton.OK);
+            
         }
 
         void HomePage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
@@ -98,14 +141,14 @@ namespace PhoneApp1.Views
                 booksProgressBar.Visibility = System.Windows.Visibility.Visible;
 
                 TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-                bookListVM.LoadRecentlyReadBooksAsync().ContinueWith(displayList =>
+                bookListVM.LoadRecentlyReadBooksAsync(cancel.Token).ContinueWith(displayList =>
                 {
                     //hide progress-bar
                     if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
                         booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
 
                     booksList.ItemsSource = bookListVM.BookList;
-                }, uiTaskScheduler);
+                }, cancel.Token, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
             }
         }
 
@@ -130,7 +173,7 @@ namespace PhoneApp1.Views
                 booksList.ItemsSource = null;
                 booksList.InvalidateArrange();
 
-                bookListVM.SearchBooksAsync(searchBox.Text).ContinueWith(task =>
+                bookListVM.SearchBooksAsync(searchBox.Text, cancel.Token).ContinueWith(task =>
                 {
                     booksList.ItemsSource = bookListVM.BookList;
                     booksList.Focus();
@@ -138,76 +181,116 @@ namespace PhoneApp1.Views
             }
         }
 
-        private void collectionsGrid_Loaded(object sender, RoutedEventArgs e)
+        private void RefreshBookTiles()
         {
-            //Load Books and Tiles
-            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-            //Show Loading Messages if not loaded
-            //HubTileService.FreezeHubTile(bookTile1);
-            if (string.IsNullOrEmpty(bookTile1.Message))
+            if (collectionsVM.CollectedBooks != null && collectionsVM.CollectedBooks.Count > 0)
             {
-                bookTile1.Message = AppStrings.GenericLoadingMsg;
-                bookTile1.IsEnabled = false;
-            }
+                Random randomGen = new Random();
 
-            //HubTileService.FreezeHubTile(bookTile2);
-            if (string.IsNullOrEmpty(bookTile2.Message))
-            {
-                bookTile2.Message = AppStrings.GenericLoadingMsg;
-                bookTile2.IsEnabled = false;
-            }
+                int index1 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
 
-            if(string.IsNullOrEmpty(highlightTextBlock.Text))
-                highlightTextBlock.Text = AppStrings.GenericLoadingMsg;
-            
-            collectionsVM.LoadCollectedBooksAsync(true).ContinueWith(task =>
-            {
-                if (collectionsVM.CollectedBooks != null && collectionsVM.CollectedBooks.Count > 0)
+                bookTile1.DataContext = collectionsVM.CollectedBooks[index1];
+                bookTile1.IsEnabled = true;
+                if (bookTile1.IsFrozen)
+                    HubTileService.UnfreezeHubTile(bookTile1);
+
+                if (collectionsVM.CollectedBooks.Count > 1)
                 {
-                    bookTile1.DataContext = collectionsVM.CollectedBooks[0];
-                    bookTile1.IsEnabled = true;
-                    if (bookTile1.IsFrozen)
-                        HubTileService.UnfreezeHubTile(bookTile1);
+                    int index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
 
-                    if (collectionsVM.CollectedBooks.Count > 1)
-                    {
-                        bookTile2.DataContext = collectionsVM.CollectedBooks[1];
-                        bookTile2.IsEnabled = true;
-                        if (bookTile2.IsFrozen)
-                            HubTileService.UnfreezeHubTile(bookTile2);
-                    }
+                    bookTile2.DataContext = collectionsVM.CollectedBooks[index2];
+                    bookTile2.IsEnabled = true;
+                    if (bookTile2.IsFrozen)
+                        HubTileService.UnfreezeHubTile(bookTile2);
                 }
                 else
                 {
-                    //Empty list handling - good for now?
-                    bookTile1.Message = AppStrings.NoCollectedBooksMsg;
-                    bookTile1.IsEnabled = false;
-                    //HubTileService.FreezeHubTile(bookTile1);
-                    
                     bookTile2.Message = AppStrings.NoCollectedBooksMsg;
                     bookTile2.IsEnabled = false;
                     //HubTileService.FreezeHubTile(bookTile2);
                 }
-            }, uiTaskScheduler);
-
-            //Load Highlights
-            List<string> ids = AppContext.CurrentUser.TryLoadCollectedHighlightsList(true);
-            if (ids == null)
-                highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
+            }
             else
             {
-                collectionsVM.LoadCollectedHighlightsAsync(ids, true).ContinueWith(
-                    task =>
-                    {
-                        if (collectionsVM.CollectedHighlights != null && collectionsVM.CollectedHighlights.Count > 0)
-                        {
-                            Random randomGen = new Random();
-                            int i = randomGen.Next(0, collectionsVM.CollectedHighlights.Count);
+                //Empty list handling - good for now?
+                bookTile1.Message = AppStrings.NoCollectedBooksMsg;
+                bookTile1.IsEnabled = false;
+                //HubTileService.FreezeHubTile(bookTile1);
 
-                            highlightTextBlock.Text = collectionsVM.CollectedHighlights[i].Content;
-                        }
-                    },uiTaskScheduler);
+                bookTile2.Message = AppStrings.NoCollectedBooksMsg;
+                bookTile2.IsEnabled = false;
+                //HubTileService.FreezeHubTile(bookTile2);
+            }
+        }
+
+        private void RefreshHighlightTile()
+        {
+            if (collectionsVM.CollectedHighlights != null && collectionsVM.CollectedHighlights.Count > 0)
+            {
+                Random randomGen = new Random();
+
+                int i = randomGen.Next(0, collectionsVM.CollectedHighlights.Count);
+                highlightTextBlock.Text = collectionsVM.CollectedHighlights[i].Content;
+            }
+            else
+            {
+                highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
+            }
+        }
+
+        private void InitializeCollectionsView()
+        {
+            bookTile1.IsEnabled = bookTile2.IsEnabled = false;
+        }
+
+        private void collectionsGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            //Initially everything is disabled
+            InitializeCollectionsView();
+
+            //Load Books and Tiles
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            if (collectionsVM.BooksCollectionRefreshNeeded)
+            {
+                collectionsVM.LoadCollectedBooksAsync(true, cancel.Token).ContinueWith(task =>
+                {
+                    cancel.Token.Register(() =>
+                        {
+                            throw new OperationCanceledException(cancel.Token);
+                        });
+
+                    RefreshBookTiles();
+                    
+                }, cancel.Token, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
+            }
+            else
+            {
+                //just refresh view
+                RefreshBookTiles();
+            }
+
+            if (collectionsVM.HighlightsCollectionRefreshNeeded)
+            {
+                //Load Highlights
+                List<string> ids = AppContext.CurrentUser.TryLoadCollectedHighlightsList(true);
+                if (ids == null)
+                {
+                    highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
+                }
+                else
+                {
+                    collectionsVM.LoadCollectedHighlightsAsync(ids, true, cancel.Token).ContinueWith(
+                        task =>
+                        {
+                            RefreshHighlightTile();
+
+                        }, cancel.Token, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
+                }
+            }
+            else
+            {
+                RefreshHighlightTile();
             }
         }
 

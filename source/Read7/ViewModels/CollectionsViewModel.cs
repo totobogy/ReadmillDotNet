@@ -18,6 +18,7 @@ using System.IO.IsolatedStorage;
 using System.IO;
 using System.Xml.Serialization;
 using System.Collections;
+using System.Threading;
 
 namespace PhoneApp1.ViewModels
 {
@@ -28,32 +29,41 @@ namespace PhoneApp1.ViewModels
         public List<Book> CollectedBooks { get; private set; }
         public List<Highlight> CollectedHighlights { get; private set; }
 
+        public bool BooksCollectionRefreshNeeded { get; set; }
+        public bool HighlightsCollectionRefreshNeeded { get; set; }
+
         public CollectionsViewModel()
         {
             client = new ReadmillClient(AppContext.ClientId);
 
             CollectedBooks = new List<Book>();
             CollectedHighlights = new List<Highlight>();
+
+            //Is this the only place a refresh is needed? Use INotification
+            BooksCollectionRefreshNeeded = true;
+            HighlightsCollectionRefreshNeeded = true;
         }
 
-        public Task LoadCollectedBooksAsync(bool forceRefresh)
+        public Task LoadCollectedBooksAsync(bool forceRefresh, CancellationToken cancelToken = default(CancellationToken))
         { 
             return 
-                AppContext.CurrentUser.LoadCollectedBooksAsync(forceRefresh).ContinueWith(
+                AppContext.CurrentUser.LoadCollectedBooksAsync(forceRefresh, cancelToken).ContinueWith(
                 loadTask =>
                 {
                     CollectedBooks = loadTask.Result;
-                });
+                    BooksCollectionRefreshNeeded = false;
+                }, cancelToken);
         }
 
-        public Task LoadCollectedHighlightsAsync(List<string> highlightIds, bool forceRefresh)
+        public Task LoadCollectedHighlightsAsync(List<string> highlightIds, bool forceRefresh, CancellationToken cancelToken = default(CancellationToken))
         {
             return
-                AppContext.CurrentUser.LoadCollectedHighlightsAsync(highlightIds, forceRefresh).ContinueWith(
+                AppContext.CurrentUser.LoadCollectedHighlightsAsync(highlightIds, forceRefresh, cancelToken).ContinueWith(
                 loadTask =>
                 {
                     CollectedHighlights = loadTask.Result;
-                });
+                    HighlightsCollectionRefreshNeeded = false;
+                }, cancelToken);
         }
     }
 }

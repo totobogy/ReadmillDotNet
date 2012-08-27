@@ -17,6 +17,7 @@ using Com.Readmill.Api;
 using System.IO.IsolatedStorage;
 using System.IO;
 using System.Xml.Serialization;
+using System.Threading;
 
 
 namespace PhoneApp1
@@ -131,7 +132,7 @@ namespace PhoneApp1
         private IDictionary<string, Highlight> collectedHighlights;
         private IDictionary<string, Reading> bookReadingHash;
 
-        public Task<User> GetMeAsync(bool forceRefresh = false)
+        public Task<User> GetMeAsync(bool forceRefresh = false, CancellationToken cancelToken = default(CancellationToken))
         {
             if (forceRefresh || me == null)
             {
@@ -146,11 +147,11 @@ namespace PhoneApp1
                 return Task.Factory.StartNew(() =>
                 {
                     return me;
-                });
+                }, cancelToken);
             }
         }
 
-        public Task<List<Book>> LoadCollectedBooksAsync(bool forceRefresh = false)
+        public Task<List<Book>> LoadCollectedBooksAsync(bool forceRefresh = false, CancellationToken cancelToken = default(CancellationToken))
         {
             if (forceRefresh || collectedBooks == null)
             {
@@ -160,8 +161,8 @@ namespace PhoneApp1
                 Task<List<Reading>> r = GetMeAsync().ContinueWith(me =>
                 {
                     return
-                        client.Users.GetUserReadings(me.Result.Id, accessToken: AppContext.AccessToken.Token);
-                }).Unwrap();
+                        client.Users.GetUserReadings(me.Result.Id, accessToken: AppContext.AccessToken.Token, cancellationToken:cancelToken);
+                }, cancelToken).Unwrap();
 
                 return r.ContinueWith(t =>
                 {
@@ -172,14 +173,14 @@ namespace PhoneApp1
                     }
 
                     return collectedBooks.Values.ToList();
-                });
+                }, cancelToken);
             }
             else
             {
                 return Task.Factory.StartNew(() =>
                 {
                     return collectedBooks.Values.ToList();
-                });
+                }, cancelToken);
             }
 
         }
@@ -326,7 +327,10 @@ namespace PhoneApp1
         //ToDo: right now the model is to store list of collected highlights locally
         //so this call expects a list of highlight id's to get
         //this should not be needed with API V2 anymore since there's an api to get user highlights
-        public Task<List<Highlight>> LoadCollectedHighlightsAsync(List<string> highlightIds, bool forceRefresh = false)
+        public Task<List<Highlight>> LoadCollectedHighlightsAsync(
+            List<string> highlightIds, 
+            bool forceRefresh = false,
+            CancellationToken cancelToken = default(CancellationToken))
         {
             if (collectedHighlights == null || forceRefresh)
             {
@@ -337,10 +341,15 @@ namespace PhoneApp1
 
                 return Task.Factory.StartNew(() =>
                 {
+                    cancelToken.Register(() =>
+                        {
+                            throw new OperationCanceledException(cancelToken);
+                        });
+
                     foreach (string id in highlightIds)
                     {
                         Highlight h =
-                            client.Highlights.GetHighlightByIdAsync(id, AppContext.AccessToken.Token).Result;
+                            client.Highlights.GetHighlightByIdAsync(id, AppContext.AccessToken.Token, cancelToken).Result;
 
                         lock (collectedHighlights)
                         {
@@ -349,42 +358,42 @@ namespace PhoneApp1
                     }
 
                     return collectedHighlights.Values.ToList();
-                });
+                }, cancelToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
             else
             {
                 return Task.Factory.StartNew(() =>
                     {
                         return collectedHighlights.Values.ToList();
-                    });
+                    }, cancelToken);
             }
         }
 
         //ToDo: Save showcase items?
 
-        public Task<bool> HasBook(string bookId, bool forceRefresh = false)
+        public Task<bool> HasBook(string bookId, bool forceRefresh = false, CancellationToken cancelToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(bookId))
                 throw new ArgumentNullException("highlightId");
 
             if (collectedBooks == null || forceRefresh)
             {
-                return LoadCollectedBooksAsync(forceRefresh).ContinueWith(task =>
+                return LoadCollectedBooksAsync(forceRefresh, cancelToken).ContinueWith(task =>
                     {
                         return collectedBooks.ContainsKey(bookId);
-                    });
+                    }, cancelToken);
             }
             else
             {
                 return Task.Factory.StartNew(() =>
                     {
                         return collectedBooks.ContainsKey(bookId);
-                    });
+                    }, cancelToken);
             }
         }
 
 
-        public Task<bool> HasHighlight(string highlightId, bool forceRefresh = false)
+        public Task<bool> HasHighlight(string highlightId, bool forceRefresh = false, CancellationToken cancelToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(highlightId))
                 throw new ArgumentNullException("highlightId");
@@ -399,14 +408,14 @@ namespace PhoneApp1
                     return Task.Factory.StartNew(() =>
                     {
                         return false;
-                    });
+                    }, cancelToken);
                 }
                 else
                 {
-                    return LoadCollectedHighlightsAsync(ids, forceRefresh).ContinueWith(task =>
+                    return LoadCollectedHighlightsAsync(ids, forceRefresh, cancelToken).ContinueWith(task =>
                     {
                         return collectedHighlights.ContainsKey(highlightId);
-                    });
+                    }, cancelToken);
                 }
             }
             else
@@ -414,7 +423,7 @@ namespace PhoneApp1
                 return Task.Factory.StartNew(() =>
                 {
                     return collectedHighlights.ContainsKey(highlightId);
-                });
+                }, cancelToken);
             }
         }
 
