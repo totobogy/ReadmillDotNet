@@ -208,7 +208,7 @@ namespace Com.Readmill.Api.DataContracts
     {
 
         [DataMember(Name = "is_private")]
-        public bool IsPrivate { get; set; }
+        new public bool IsPrivate { get; set; }
     }
 
     [DataContract]

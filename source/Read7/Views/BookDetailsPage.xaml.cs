@@ -22,19 +22,14 @@ namespace PhoneApp1
     public partial class BookDetailsPage : PhoneApplicationPage
     {
         BookDetailsViewModel bookDetailsVM;
+        private bool viewModelInvalidated;
+
         public BookDetailsPage()
         {
             InitializeComponent();
 
-            Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
-            bookDetailsVM = new BookDetailsViewModel(book);
-
-            this.DataContext = bookDetailsVM;
-
-            if (string.IsNullOrEmpty(bookDetailsVM.Story))
-            {
-                bookStory.Text = AppStrings.NoStoryMsg;
-            }
+            viewModelInvalidated = true;
+            
             //var gl = GestureService.GetGestureListener(this);
             //gl.Flick += new EventHandler<Microsoft.Phone.Controls.FlickGestureEventArgs>(gl_Flick);
         }
@@ -42,8 +37,26 @@ namespace PhoneApp1
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-         
 
+            if (viewModelInvalidated)
+            {
+                if (State.ContainsKey("BookDetailsViewModel"))
+                    bookDetailsVM = (BookDetailsViewModel)State["BookDetailsViewModel"];
+                else
+                {
+                    Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
+                    bookDetailsVM = new BookDetailsViewModel(book);
+                }
+
+                this.DataContext = bookDetailsVM;
+
+                if (string.IsNullOrEmpty(bookDetailsVM.Story))
+                {
+                    bookStory.Text = AppStrings.NoStoryMsg;
+                }
+
+                viewModelInvalidated = false;
+            }
         }
 
         private void likeBook_Click(object sender, EventArgs e)
@@ -101,6 +114,9 @@ namespace PhoneApp1
 
         private void PhoneApplicationPage_Loaded(object sender, RoutedEventArgs e)
         {
+            //SystemTray.IsVisible = false;
+            SystemTray.Opacity = 0.1;
+
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             bookDetailsVM.IsCollectedAsync().ContinueWith(

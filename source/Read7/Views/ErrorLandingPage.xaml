@@ -14,12 +14,15 @@
     shell:SystemTray.IsVisible="True">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
-    <Grid x:Name="LayoutRoot" Background="Transparent">
+    <Grid x:Name="LayoutRoot" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
+        <Grid.Background>
+            <ImageBrush ImageSource="/Images/panelthree.png"/>
+        </Grid.Background>
+        
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
             <TextBlock x:Name="ApplicationTitle" Text="READ ROVER" Style="{StaticResource PhoneTextNormalStyle}"/>
@@ -28,7 +31,7 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,28">
-            <TextBlock Height="472" HorizontalAlignment="Left" Margin="12,6,0,0" Name="errorMessage" Text="Oops! Something's gone wrong and Read Rover can't continue right now. Restarting the app might fix this problem. Please press the back key to exit Read Rover. Sorry!" VerticalAlignment="Top" Width="420" FontSize="24" TextWrapping="Wrap" />
+            <TextBlock Height="472" HorizontalAlignment="Left" Margin="12,6,0,0" Name="errorMessage" Text="Oops! Something's gone wrong and Read Rover can't continue right now. Restarting the app might fix this problem. Please press the back key to exit. Sorry!" VerticalAlignment="Top" Width="420" FontSize="24" TextWrapping="Wrap" />
         </Grid>
     </Grid>
  

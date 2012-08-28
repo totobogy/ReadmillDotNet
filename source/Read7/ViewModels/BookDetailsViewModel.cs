@@ -11,6 +11,7 @@ using System.Windows.Shapes;
 using Com.Readmill.Api.DataContracts;
 using System.Threading.Tasks;
 using Com.Readmill.Api;
+using System.Threading;
 
 namespace PhoneApp1.ViewModels
 {
@@ -55,10 +56,10 @@ namespace PhoneApp1.ViewModels
             //find out if a reading exists for this book
         }
 
-        public Task<bool> IsCollectedAsync()
+        public Task<bool> IsCollectedAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             return
-                AppContext.CurrentUser.HasBook(SelectedBook.Id);
+                AppContext.CurrentUser.HasBook(SelectedBook.Id, cancelToken: cancellationToken);
         }
 
         public Task LikeBookAsync()

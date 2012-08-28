@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Deployment xmlns="http://schemas.microsoft.com/windowsphone/2009/deployment" AppPlatformVersion="7.1">
-  <App xmlns="" ProductID="{dce6b287-e1f0-4d33-894a-2f48e69e9f52}" Title="Read 7" RuntimeType="Silverlight" Version="1.0.0.0" Genre="apps.normal" Author="Tushar Malhotra" Description="Read with Readmill!" Publisher="totobogy">
+  <App xmlns="" ProductID="{dce6b287-e1f0-4d33-894a-2f48e69e9f52}" Title="Read Rover" RuntimeType="Silverlight" Version="1.0.0.0" Genre="apps.normal" Author="Tushar Malhotra" Description="Read with Readmill!" Publisher="totobogy">
     <IconPath IsRelative="true" IsResource="false">ApplicationIcon.png</IconPath>
     <Capabilities>
       <Capability Name="ID_CAP_GAMERSERVICES" />
@@ -26,7 +26,7 @@
         <TemplateType5>
           <BackgroundImageURI IsRelative="true" IsResource="false">Images\tile.png</BackgroundImageURI>
           <Count>0</Count>
-          <Title>Read 7</Title>
+          <Title>Read Rover</Title>
         </TemplateType5>
       </PrimaryToken>
     </Tokens>

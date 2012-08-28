@@ -20,9 +20,20 @@ namespace Com.Readmill.Api
         protected Uri readmillBaseUri =  new Uri(ReadmillConstants.ReadmillBaseUrl);
         protected string ClientId { get; set; }
 
+        /// <summary>
+        /// RequestTimeout in seconds.
+        /// Timeout value must be updated before a call, if desired. Changing the timeout
+        /// does not affect in progress requests.
+        /// </summary>
+        protected int RequestTimeout { get; set; }
+
         public ReadmillClientBase(string clientId)
         {
             this.ClientId = clientId;
+
+            //defualt timeout
+            RequestTimeout = TimeSpan.FromSeconds(15).Seconds;
+
             LoadTemplates();
         }
 

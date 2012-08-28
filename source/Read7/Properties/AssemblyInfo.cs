@@ -6,12 +6,12 @@ using System.Resources;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PhoneApp1")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("ReadRover")]
+[assembly: AssemblyDescription("Read Rover")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("PhoneApp1")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2012")]
+[assembly: AssemblyCompany("totobogy")]
+[assembly: AssemblyProduct("Read Rover for Readmill")]
+[assembly: AssemblyCopyright("Copyright © totobogy 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

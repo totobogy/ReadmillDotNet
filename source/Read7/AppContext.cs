@@ -24,6 +24,8 @@ namespace PhoneApp1
 {
     public static class AppContext
     {
+        public static bool ErrorScreenShown { get; set; }
+
         public static class Constants
         {
             public const string RedirectUri = "http://totobogy.thoughtbubblez.com";
@@ -348,9 +350,10 @@ namespace PhoneApp1
 
                     foreach (string id in highlightIds)
                     {
-                        Highlight h =
-                            client.Highlights.GetHighlightByIdAsync(id, AppContext.AccessToken.Token, cancelToken).Result;
-
+                        Highlight h = client.Highlights.GetHighlightByIdAsync(
+                                        id,
+                                        AppContext.AccessToken.Token,
+                                        cancelToken).Result;
                         lock (collectedHighlights)
                         {
                             collectedHighlights.Add(h.Id, h);
@@ -358,7 +361,7 @@ namespace PhoneApp1
                     }
 
                     return collectedHighlights.Values.ToList();
-                }, cancelToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                }, cancelToken, TaskCreationOptions.None, TaskScheduler.Default);
             }
             else
             {

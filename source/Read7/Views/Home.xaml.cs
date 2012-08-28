@@ -23,11 +23,32 @@ namespace PhoneApp1.Views
 {
     public partial class Home : PhoneApplicationPage
     {
+        /************
+         * ToDo
+         * **********
+         * Timeouts for collections??
+         * Timeout pop-up asks before cancelling??
+         * Post cancelling, UI state / text etc.
+         * First time exp - loading text etc.
+         * Show collection control only after load. Flipped text on tiles
+         * Make sure back is always available
+         * Refresh (after timeout or otherwise)??
+         * book and highlighter name in highlight
+         * 
+         * story not working?
+         * search on separate page?
+         * 
+         * All books and All highlights pages
+         * Latest Highlights
+         * Settings (e.g. timeouts - not needed if refresh is available)?
+         */
+
         BookListViewModel bookListVM;
+        AutoResetEvent bookListLoadTimeoutHandle;
+
         CollectionsViewModel collectionsVM;
 
         private bool viewModelsInvalidated;
-        private bool viewInvalidated;
 
         private CancellationTokenSource cancel;
 
@@ -39,7 +60,6 @@ namespace PhoneApp1.Views
             this.BackKeyPress += new EventHandler<System.ComponentModel.CancelEventArgs>(HomePage_BackKeyPress);
 
             viewModelsInvalidated = true;
-            viewInvalidated = true;
         }
 
         protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
@@ -48,20 +68,15 @@ namespace PhoneApp1.Views
 
             if (e.NavigationMode == System.Windows.Navigation.NavigationMode.Back)
             {
-                try
-                {
-                    cancel.Cancel();
-                }
-                finally
-                {
-
-                }
+                
             }
             else
             {
                 State["BooksViewModel"] = bookListVM;
                 State["CollectionsViewModel"] = collectionsVM;
             }
+
+            bookListLoadTimeoutHandle.Dispose();
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -97,6 +112,8 @@ namespace PhoneApp1.Views
 
                 viewModelsInvalidated = false;
             }
+
+            bookListLoadTimeoutHandle = new AutoResetEvent(false);
         }
 
         void HomePage_Loaded(object sender, RoutedEventArgs e)
@@ -106,12 +123,15 @@ namespace PhoneApp1.Views
 
         void HomePage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //We shouldn't exit the page, except from RecentlyRead state
-            if (bookListVM.ListState != BookListViewModel.State.RecentlyRead)
+            //If we are returning from a search AND the user is on search page
+            if (bookListVM.ListState == BookListViewModel.State.SearchResult
+                && panoramaRoot.SelectedItem == booksPanoramaItem)
             {
                 e.Cancel = true;
 
                 //Load RecentlyRead instead
+                booksPanoramaItem.Header = AppStrings.RecentlyReadPageTitle;
+                searchBox.Text = string.Empty;
 
                 //Show progress bar if the list is empty
                 if (bookListVM.ListState == BookListViewModel.State.Unloaded)
@@ -121,7 +141,7 @@ namespace PhoneApp1.Views
                 }
 
                 TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-                bookListVM.LoadRecentlyReadBooksAsync().ContinueWith(displayList =>
+                bookListVM.LoadRecentlyReadBooksAsync(cancel.Token).ContinueWith(displayList =>
                 {
                     //hide progress-bar
                     if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
@@ -130,25 +150,91 @@ namespace PhoneApp1.Views
                     booksList.ItemsSource = bookListVM.BookList;
                 }, uiTaskScheduler);
             }
+            else
+            {
+                try
+                {
+                    if (!cancel.IsCancellationRequested)
+                        cancel.Cancel();
+                }
+                catch (OperationCanceledException ex)
+                {
+                    //no op
+                }
+                catch (AggregateException ex)
+                {
+                    ex.Handle(err =>
+                    {
+                        return (err is OperationCanceledException || err is TaskCanceledException);
+                    });
+                }
+            }
         }
+
+        /*bool ShowTimeoutMessage()
+        {
+            this.Dispatcher.BeginInvoke(
+               () =>
+               {
+                   MessageBoxResult res = MessageBox.Show(
+                       AppStrings.TimeoutMsg,
+                       AppStrings.TimeoutMsgTitle,
+                       MessageBoxButton.OKCancel);
+                   if (!(res == MessageBoxResult.OK))
+                       return true;
+                   else
+                       return false;
+               });
+        }*/
 
         private void booksList_Loaded(object sender, RoutedEventArgs e)
         {
             if (bookListVM.ListState == BookListViewModel.State.Unloaded)
             {
+                //bar interactions till the list has actually loaded
+                booksList.IsEnabled = false;
+
                 //Show progress bar
                 booksProgressBar.IsIndeterminate = true;
                 booksProgressBar.Visibility = System.Windows.Visibility.Visible;
 
+                //Timer
+                ThreadPool.RegisterWaitForSingleObject(
+                    bookListLoadTimeoutHandle,
+                    new WaitOrTimerCallback(
+                        (cancelToken, timedOut) =>
+                        {
+                            if (timedOut)
+                            {
+                                //ShowTimeoutMessage();
+                            }
+                        }),
+                    cancel,
+                    TimeSpan.FromSeconds(15),
+                    true);
+
+
                 TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
                 bookListVM.LoadRecentlyReadBooksAsync(cancel.Token).ContinueWith(displayList =>
                 {
+                    //signal the event - we don't want to initiate a timeout cancellation now
+                    bookListLoadTimeoutHandle.Set();
+
                     //hide progress-bar
                     if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
                         booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
 
-                    booksList.ItemsSource = bookListVM.BookList;
-                }, cancel.Token, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
+                    if (!displayList.IsCanceled && !displayList.IsFaulted)
+                    {
+                        booksList.ItemsSource = bookListVM.BookList;
+                        booksList.IsEnabled = true;
+                    }
+                    else
+                    {
+                        //Error
+                    }
+
+                }, uiTaskScheduler);
             }
         }
 
@@ -170,13 +256,17 @@ namespace PhoneApp1.Views
             {
                 TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
+                booksPanoramaItem.Header = AppStrings.SearchPageTitle;
+
                 booksList.ItemsSource = null;
                 booksList.InvalidateArrange();
 
                 bookListVM.SearchBooksAsync(searchBox.Text, cancel.Token).ContinueWith(task =>
                 {
+                    //searchBox.Text = searchBox.Hint;
                     booksList.ItemsSource = bookListVM.BookList;
                     booksList.Focus();
+
                 }, uiTaskScheduler);
             }
         }
@@ -188,6 +278,11 @@ namespace PhoneApp1.Views
                 Random randomGen = new Random();
 
                 int index1 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
+                int index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
+                while (index1 == index2)
+                {
+                    index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
+                }
 
                 bookTile1.DataContext = collectionsVM.CollectedBooks[index1];
                 bookTile1.IsEnabled = true;
@@ -195,9 +290,7 @@ namespace PhoneApp1.Views
                     HubTileService.UnfreezeHubTile(bookTile1);
 
                 if (collectionsVM.CollectedBooks.Count > 1)
-                {
-                    int index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
-
+                {                    
                     bookTile2.DataContext = collectionsVM.CollectedBooks[index2];
                     bookTile2.IsEnabled = true;
                     if (bookTile2.IsFrozen)
@@ -298,6 +391,10 @@ namespace PhoneApp1.Views
         {
             HubTile bookTile = sender as HubTile;
             Book selectedBook = bookTile.DataContext as Book;
+
+            //this maybe because the tile wasn't ready
+            if (selectedBook == null)
+                return;
 
             //ToDo: Do we need to synchronize access to Current.State?
             if (PhoneApplicationService.Current.State.ContainsKey("SelectedBook"))

@@ -10,9 +10,9 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
-    mc:Ignorable="d" d:DesignHeight="696" d:DesignWidth="480"
+    mc:Ignorable="d" d:DesignHeight="768" d:DesignWidth="480"
     shell:SystemTray.IsVisible="True" xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit" BackKeyPress="PhoneApplicationPage_BackKeyPress">
-	<phone:PhoneApplicationPage.Resources>
+    <phone:PhoneApplicationPage.Resources>
 		<Style x:Key="ListBoxItemStyleNoHighlight" TargetType="ListBoxItem">
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="BorderThickness" Value="0"/>
@@ -57,7 +57,10 @@
 	</phone:PhoneApplicationPage.Resources>
 
     <!--LayoutRoot is the root grid where all page content is placed-->
-    <Grid x:Name="LayoutRoot" Background="Transparent">
+    <Grid x:Name="LayoutRoot" >
+        <Grid.Background>
+            <ImageBrush ImageSource="/Images/paneltwo.png"/>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -65,7 +68,7 @@
 
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="15,17,0,28">
-            <TextBlock x:Name="ApplicationTitle" Text="READ 7 / book highlights" Style="{StaticResource PhoneTextNormalStyle}" Width="486" Margin="10,0" />
+            <TextBlock x:Name="ApplicationTitle" Text="READ ROVER / book highlights" Style="{StaticResource PhoneTextNormalStyle}" Width="486" Margin="10,0" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
@@ -74,11 +77,11 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10" Name="bookTitlePanel" VerticalAlignment="Top" Width="456">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10" Name="bookTitlePanel" VerticalAlignment="Top" MaxHeight="175" Width="456">
                 <Image Source="{Binding CoverUrl}" Width="66" Margin="10,0,0,0"></Image>
-                <TextBlock Text="{Binding DisplayTitle}" FontSize="24" Padding="10" Name="bookTitle" Width="378" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding DisplayTitle}" FontSize="24" Padding="10" Name="bookTitle" Width="378" TextTrimming="WordEllipsis" TextWrapping="Wrap" />
             </StackPanel>
-            <ListBox ManipulationCompleted="highlightsListBox_ManipulationCompleted" VirtualizingStackPanel.VirtualizationMode="Recycling" Grid.Row="1" HorizontalAlignment="Left" Name="highlightsListBox" Margin="0,10,0,10" VerticalAlignment="Top" Width="456" ItemContainerStyle="{StaticResource ListBoxItemStyleNoHighlight}">
+            <ListBox Loaded="highlightsListBox_Loaded" ManipulationCompleted="highlightsListBox_ManipulationCompleted" VirtualizingStackPanel.VirtualizationMode="Recycling" Grid.Row="1" HorizontalAlignment="Left" Name="highlightsListBox" Margin="0,10,0,70" VerticalAlignment="Top" Width="456" ItemContainerStyle="{StaticResource ListBoxItemStyleNoHighlight}">
                 <!--ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel/>
@@ -86,26 +89,26 @@
                 </ListBox.ItemsPanel-->
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{StaticResource PhoneAccentBrush}" Padding="10,10,10,10" Margin="10,35,0,35">
-                            <StackPanel Orientation="Vertical" Width="410">
-                                <TextBlock Text="{Binding Content}" Width="410" TextWrapping="Wrap" Padding="10" FontSize="24">      
+                        <Border Background="#897d69" Padding="10,10,10,10" Margin="10,35,0,35">
+                            <StackPanel Orientation="Vertical" Width="400">
+                                <TextBlock Text="{Binding Content}" Width="380" TextWrapping="Wrap" Padding="10" FontSize="24">      
                                 </TextBlock>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding User.FullName}" Width="300" TextWrapping="Wrap" Padding="10" FontSize="20"/>
-                                    <Button Loaded="LikeButton_Loaded" Content="like" Width="110" HorizontalContentAlignment="Center" Padding="2" FontSize="20" Tag="{Binding Id}" Click="Like_Click"/>
+                                    <TextBlock Text="{Binding User.FullName}" Width="280" TextWrapping="Wrap" Padding="10" FontSize="20"/>
+                                    <Button Loaded="LikeButton_Loaded" Content="like" Width="100" HorizontalContentAlignment="Center" Padding="2" FontSize="20" Tag="{Binding Id}" Click="Like_Click"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>                
             </ListBox>
-            <toolkit:PerformanceProgressBar HorizontalAlignment="Left" Margin="100,146,0,0" Name="highlightsProgressBar" VerticalAlignment="Top" Height="94" Width="228" />
+            <toolkit:PerformanceProgressBar Foreground="#897d69" HorizontalAlignment="Left" Margin="100,200,0,0" Name="highlightsProgressBar" VerticalAlignment="Top" Height="72" Width="228" Grid.Row="1" />
         </Grid>
     </Grid>
  
     <!--Sample code showing usage of ApplicationBar-->
     <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True" Opacity="0.3">
             <shell:ApplicationBarIconButton IconUri="/icons/appbar.heart.outline.png" Text="like book" Click="likeBookButton_Click" />
             <shell:ApplicationBarIconButton IconUri="/icons/appbar.fullscreen.png" Text="fullscreen" Click="fullscreenButton_Click" />
         </shell:ApplicationBar>

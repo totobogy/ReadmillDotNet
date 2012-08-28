@@ -164,6 +164,8 @@ namespace PhoneApp1
         // This code will not execute when the application is deactivated
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
+            //Try to save collections, in case we are terminated
+            AppContext.CurrentUser.TrySaveCollectedHighlightsLocally();
         }
 
         // Code to execute if a navigation fails
@@ -179,29 +181,42 @@ namespace PhoneApp1
         // Code to execute on Unhandled Exceptions
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
+            //We have already communicated fatal error to the user and the app will be exited
+            //No further action needed
+            if (AppContext.ErrorScreenShown)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            //should we handle Cancellations silently here?
             if (e.ExceptionObject is TaskCanceledException)
                 e.Handled = true;
             else if (e.ExceptionObject is OperationCanceledException)
                 e.Handled = true;
+
             else if (e.ExceptionObject is AggregateException)
             {
                 AggregateException ex = (e.ExceptionObject as AggregateException).Flatten();
                 ex.Handle(err =>
                     {
+                        //should we handle Cancellations silently here?
                         if (err is TaskCanceledException)
                             return e.Handled = true;
 
-                        else if (err is OperationCanceledException)
+                        //should we handle Cancellations silently here?
+                        if (err is OperationCanceledException)
                             return e.Handled = true;
 
-                        else if (err is WebException)
+                        if (err is WebException)
                         {
                             WebException webEx = err as WebException;
 
+                            //should we handle Cancellations silently here?
                             if (webEx.Status == WebExceptionStatus.RequestCanceled)
                                 return e.Handled = true;
 
-                            else if (webEx.Status == WebExceptionStatus.ProtocolError
+                            if (webEx.Status == WebExceptionStatus.ProtocolError
                                 || webEx.Status == WebExceptionStatus.UnknownError)
                             {
                                 if (webEx.Response.SupportsHeaders)
@@ -249,7 +264,7 @@ namespace PhoneApp1
                                 MessageBoxButton.OK);
 
                             RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
-
+                            AppContext.ErrorScreenShown = true;
                             return e.Handled = true;
                         }
                     });
@@ -264,7 +279,7 @@ namespace PhoneApp1
                     MessageBoxButton.OK);
 
                 RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
-
+                AppContext.ErrorScreenShown = true;
                 e.Handled = true;
             }
 

@@ -10,15 +10,14 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
-    mc:Ignorable="d" d:DesignHeight="696" d:DesignWidth="480"
+    mc:Ignorable="d" d:DesignHeight="768" d:DesignWidth="480"
     shell:SystemTray.IsVisible="True" Loaded="PhoneApplicationPage_Loaded">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
-    <Grid x:Name="LayoutRoot" Background="Transparent">
-        <!--Grid.Background>
-            <ImageBrush ImageSource="{Binding CoverUrl}" Stretch="Fill">                
-            </ImageBrush>            
-        </Grid.Background-->
+    <Grid x:Name="LayoutRoot">
+        <Grid.Background>
+            <ImageBrush ImageSource="/Images/panelone.png"/>       
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -26,15 +25,15 @@
 
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="15,17,0,28">
-            <TextBlock x:Name="ApplicationTitle" Text="READ 7" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBlock x:Name="ApplicationTitle" Text="READ ROVER" Style="{StaticResource PhoneTextNormalStyle}"/>
             <TextBlock x:Name="PageTitle" Margin="10,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" Text="book details" FontSize="48" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="15,0,12,0">
             <Image Source="{Binding CoverUrl}" Height="229" HorizontalAlignment="Left" Margin="10,6,0,0" Name="bookCover" Stretch="Fill" VerticalAlignment="Top" Width="160" />
-            <TextBlock FontSize="24" Text="{Binding DisplayTitle}" Height="229" HorizontalAlignment="Left" Margin="176,6,0,0" Name="bookTitle" VerticalAlignment="Top" Width="251" TextWrapping="Wrap" Padding="10,0,10,10" />
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10,267,29,6">
+            <TextBlock FontSize="24" Text="{Binding DisplayTitle}" Height="229" HorizontalAlignment="Left" Margin="176,6,0,0" Name="bookTitle" VerticalAlignment="Top" Width="248" TextWrapping="Wrap" Padding="10,0,10,10" />
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10,267,29,70">
                 <TextBlock Text="{Binding Story}" FontSize="22" HorizontalAlignment="Left" Name="bookStory" VerticalAlignment="Top" Width="414" Padding="0,10,10,10" TextWrapping="Wrap" />
             </ScrollViewer>           
         </Grid>
@@ -42,7 +41,7 @@
  
     <!--Sample code showing usage of ApplicationBar-->
     <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True" Opacity="0.3" >
             <shell:ApplicationBarIconButton IconUri="/icons/appbar.heart.outline.png" Text="like book" x:Name="likeBook" Click="likeBook_Click" />
             <shell:ApplicationBarIconButton IconUri="/icons/appbar.book.open.png" Text="highlights" x:Name="roveHighlights" Click="roveHighlights_Click" />
         </shell:ApplicationBar>

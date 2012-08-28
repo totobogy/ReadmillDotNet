@@ -61,7 +61,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Looks like you are logged-out or authorization for Read Rover has expired. You&apos;ll need to authorize the rover again to access your Readmill account..
+        ///   Looks up a localized string similar to Looks like you are logged-out or authorization for Read Rover has expired. You&apos;ll need to authorize the rover to access your Readmill account again..
         /// </summary>
         internal static string AuthFailed {
             get {
@@ -79,7 +79,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to collapse fullscreen.
+        ///   Looks up a localized string similar to collapse.
         /// </summary>
         internal static string CollapseFullScreenButton {
             get {
@@ -187,7 +187,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to there are no books in your collection yet.
+        ///   Looks up a localized string similar to there are no books in your collection yet..
         /// </summary>
         internal static string NoCollectedBooksMsg {
             get {
@@ -196,7 +196,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to you have not collected/saved any highlights on this device yet..
+        ///   Looks up a localized string similar to you have not saved any highlights on this device yet..
         /// </summary>
         internal static string NoCollectedHighlights {
             get {
@@ -250,6 +250,15 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to just read.
+        /// </summary>
+        internal static string RecentlyReadPageTitle {
+            get {
+                return ResourceManager.GetString("RecentlyReadPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to search title or author.
         /// </summary>
         internal static string SearchHint {
@@ -259,7 +268,34 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Something bad happened and the rover doesn&apos;t know how to handle this. It&apos;s best to exit and start again..
+        ///   Looks up a localized string similar to search.
+        /// </summary>
+        internal static string SearchPageTitle {
+            get {
+                return ResourceManager.GetString("SearchPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading books and highlights seems to be taking long. Your internet connection maybe slow. Press &apos;ok&apos; if you want the rover to continue trying to load. Press &apos;cancel&apos; or back key to stop loading..
+        /// </summary>
+        internal static string TimeoutMsg {
+            get {
+                return ResourceManager.GetString("TimeoutMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Things Are Slow!.
+        /// </summary>
+        internal static string TimeoutMsgTitle {
+            get {
+                return ResourceManager.GetString("TimeoutMsgTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something bad happened and the rover doesn&apos;t know how to handle this situation. It&apos;s best to exit and start again. Sorry!.
         /// </summary>
         internal static string UnknownException {
             get {
@@ -304,7 +340,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Something went wrong while trying to &apos;unlike&apos; this highlight..
+        ///   Looks up a localized string similar to something went wrong while trying to &apos;unlike&apos; this highlight..
         /// </summary>
         internal static string UnlikeReadmillHighlightFailed {
             get {

@@ -17,6 +17,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Phone.Shell;
 
 namespace PhoneApp1
 {
@@ -25,6 +26,8 @@ namespace PhoneApp1
         public LogInPage()
         {
             InitializeComponent();
+            SystemTray.Opacity = 0.1;
+
             readmillBrowser.Navigate(new Uri(AppContext.Constants.AuthUri));
         }
 

@@ -25,68 +25,27 @@ namespace PhoneApp1
 
         CancellationTokenSource cancelLoadHighlights;
 
+        private bool viewModelInvalidated;
+
         public ReadingPage()
         {
             InitializeComponent();
 
-            Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
-            bookHighlightsVM = new BookHighlightsViewModel(book);
-            this.DataContext = bookHighlightsVM;
-
-            //show progress bar
-            highlightsProgressBar.IsIndeterminate = true;
-            highlightsProgressBar.Visibility = System.Windows.Visibility.Visible;
-
-            //only enable app-bar when highlights have loaded to avoid problems
-            ApplicationBar.IsVisible = false;
-
-
-            cancelLoadHighlights = new CancellationTokenSource();
-
-
-            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-            bookHighlightsVM.LoadBookHighlightsAsync(cancelLoadHighlights.Token).ContinueWith(displayList =>
-                {
-                    //Is this the right thing to do?
-                    cancelLoadHighlights.Token.Register(() =>
-                        {
-                            throw new OperationCanceledException(cancelLoadHighlights.Token);
-                        }, true);
-
-                    //hide progress bar
-                    highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
-
-                    if (bookHighlightsVM.BookHighlights.Count <= 0)
-                    {
-                        highlightsListBox.Items.Add(new ListBoxItem()
-                        {
-                            Content = new TextBlock()
-                            {
-                                TextWrapping = System.Windows.TextWrapping.Wrap,
-                                FontSize = 24,
-                                Padding = new Thickness(10, 30, 10, 10),
-                                Text = AppStrings.NoHighlights
-                            }
-                        });
-                    }
-                    else
-                    {
-                        //ToDo: sorting should be in VM
-                        highlightsListBox.ItemsSource = from highlight in bookHighlightsVM.BookHighlights
-                                                        orderby highlight.Position
-                                                        select highlight;
-                    }
-
-                    //Show App-bar now 
-                    ApplicationBar.IsVisible = true;
-
-                }, cancelLoadHighlights.Token, TaskContinuationOptions.NotOnCanceled, uiTaskScheduler);            
+            viewModelInvalidated = true;                        
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
+            bookHighlightsVM = new BookHighlightsViewModel(book);
+            this.DataContext = bookHighlightsVM;
+
+            //only enable app-bar when highlights have loaded to avoid problems
+            ApplicationBar.IsVisible = false;
+
+            cancelLoadHighlights = new CancellationTokenSource();
 
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -106,6 +65,8 @@ namespace PhoneApp1
                         button.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
                     }
                 }, uiTaskScheduler);
+
+            SystemTray.IsVisible = false;
         }
 
         private void Like_Click(object sender, RoutedEventArgs e)
@@ -120,8 +81,7 @@ namespace PhoneApp1
 
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             if ((string)likeButton.Content == AppStrings.LikeHighlightButton)
-            {
-                //                
+            {               
                 bookHighlightsVM.LikeHighlightAsync(highlightId).ContinueWith(
                     task =>
                     {
@@ -179,6 +139,7 @@ namespace PhoneApp1
             {
                 TitlePanel.Visibility = System.Windows.Visibility.Collapsed;
                 bookTitlePanel.Visibility = System.Windows.Visibility.Collapsed;
+                ApplicationBar.Mode = ApplicationBarMode.Minimized;
                 fullScreenButton.Text = AppStrings.CollapseFullScreenButton;
                 fullScreenButton.IconUri = new Uri("/icons/appbar.arrow.collapsed.png", UriKind.Relative);
             }
@@ -186,6 +147,7 @@ namespace PhoneApp1
             {
                 TitlePanel.Visibility = System.Windows.Visibility.Visible;
                 bookTitlePanel.Visibility = System.Windows.Visibility.Visible;
+                ApplicationBar.Mode = ApplicationBarMode.Default;
                 fullScreenButton.Text = AppStrings.FullScreenButton;
                 fullScreenButton.IconUri = new Uri("/icons/appbar.fullscreen.png", UriKind.Relative);
             }
@@ -272,7 +234,7 @@ namespace PhoneApp1
             //Try Saving Liked Highlights
             AppContext.CurrentUser.TrySaveCollectedHighlightsLocally();
 
-            //Cancel Pending Tasks?
+            //Cancel Pending Tasks
             try
             {
                 cancelLoadHighlights.Cancel();
@@ -298,5 +260,50 @@ namespace PhoneApp1
             this.Focus();
         }
 
+        private void highlightsListBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+            //show progress bar
+            highlightsProgressBar.IsIndeterminate = true;
+            highlightsProgressBar.Visibility = System.Windows.Visibility.Visible;
+
+            bookHighlightsVM.LoadBookHighlightsAsync(cancelLoadHighlights.Token).ContinueWith(displayList =>
+            {
+                //Is this the right thing to do?
+                cancelLoadHighlights.Token.Register(() =>
+                {
+                    throw new OperationCanceledException(cancelLoadHighlights.Token);
+                }, true);
+
+                //hide progress bar
+                highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
+                if (bookHighlightsVM.BookHighlights.Count <= 0)
+                {
+                    highlightsListBox.Items.Add(new ListBoxItem()
+                    {
+                        Content = new TextBlock()
+                        {
+                            TextWrapping = System.Windows.TextWrapping.Wrap,
+                            FontSize = 24,
+                            Padding = new Thickness(10, 30, 10, 10),
+                            Text = AppStrings.NoHighlights
+                        }
+                    });
+                }
+                else
+                {
+                    //ToDo: sorting should be in VM
+                    highlightsListBox.ItemsSource = from highlight in bookHighlightsVM.BookHighlights
+                                                    orderby highlight.Position
+                                                    select highlight;
+                }
+
+                //Show App-bar now 
+                ApplicationBar.IsVisible = true;
+
+            }, cancelLoadHighlights.Token, TaskContinuationOptions.NotOnCanceled, uiTaskScheduler);            
+        }
     }
 }
