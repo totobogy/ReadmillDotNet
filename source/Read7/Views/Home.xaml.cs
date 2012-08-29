@@ -30,21 +30,13 @@ namespace PhoneApp1.Views
          * Timeout pop-up asks before cancelling??
          * Post cancelling, UI state / text etc.
          * First time exp - loading text etc.
-         * Show collection control only after load. Flipped text on tiles
-         * Make sure back is always available
+         * Flipped text on tiles
          * Refresh (after timeout or otherwise)??
-         * book and highlighter name in highlight
-         * 
-         * story not working?
-         * search on separate page?
-         * 
          * All books and All highlights pages
          * Latest Highlights
-         * Settings (e.g. timeouts - not needed if refresh is available)?
          */
 
         BookListViewModel bookListVM;
-        AutoResetEvent bookListLoadTimeoutHandle;
 
         CollectionsViewModel collectionsVM;
 
@@ -68,15 +60,13 @@ namespace PhoneApp1.Views
 
             if (e.NavigationMode == System.Windows.Navigation.NavigationMode.Back)
             {
-                
+   
             }
             else
             {
                 State["BooksViewModel"] = bookListVM;
                 State["CollectionsViewModel"] = collectionsVM;
-            }
-
-            bookListLoadTimeoutHandle.Dispose();
+            }            
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -91,7 +81,6 @@ namespace PhoneApp1.Views
                     NavigationService.RemoveBackEntry();
             }
 
-            //collectionsGrid.Visibility = System.Windows.Visibility.Collapsed;
             if (viewModelsInvalidated)
             {
                 if (State.ContainsKey("BooksViewModel"))
@@ -108,12 +97,16 @@ namespace PhoneApp1.Views
 
                 collectionsPanoramaItem.DataContext = collectionsVM;
 
-                cancel = new CancellationTokenSource();
-
                 viewModelsInvalidated = false;
-            }
+            }            
 
-            bookListLoadTimeoutHandle = new AutoResetEvent(false);
+            cancel = new CancellationTokenSource();
+
+            //Load UI
+            LoadBooksPanoramaItem();
+
+            LoadCollectionsPanoramaItem();
+
         }
 
         void HomePage_Loaded(object sender, RoutedEventArgs e)
@@ -130,15 +123,14 @@ namespace PhoneApp1.Views
                 e.Cancel = true;
 
                 //Load RecentlyRead instead
-                booksPanoramaItem.Header = AppStrings.RecentlyReadPageTitle;
-                searchBox.Text = string.Empty;
+                booksList.ItemsSource = null;
+                booksList.InvalidateArrange();
 
-                //Show progress bar if the list is empty
-                if (bookListVM.ListState == BookListViewModel.State.Unloaded)
-                {
-                    booksProgressBar.IsIndeterminate = true;
-                    booksProgressBar.Visibility = System.Windows.Visibility.Visible;
-                }
+                //show progress bar - move to VM?
+                booksProgressBar.IsIndeterminate = true;
+                booksProgressBar.Visibility = System.Windows.Visibility.Visible;
+
+                booksPanoramaItem.Header = AppStrings.RecentlyReadPageTitle;
 
                 TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
                 bookListVM.LoadRecentlyReadBooksAsync(cancel.Token).ContinueWith(displayList =>
@@ -171,23 +163,10 @@ namespace PhoneApp1.Views
             }
         }
 
-        /*bool ShowTimeoutMessage()
-        {
-            this.Dispatcher.BeginInvoke(
-               () =>
-               {
-                   MessageBoxResult res = MessageBox.Show(
-                       AppStrings.TimeoutMsg,
-                       AppStrings.TimeoutMsgTitle,
-                       MessageBoxButton.OKCancel);
-                   if (!(res == MessageBoxResult.OK))
-                       return true;
-                   else
-                       return false;
-               });
-        }*/
-
-        private void booksList_Loaded(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Any heavy loading is done asynchronously
+        /// </summary>
+        private void LoadBooksPanoramaItem()
         {
             if (bookListVM.ListState == BookListViewModel.State.Unloaded)
             {
@@ -198,34 +177,20 @@ namespace PhoneApp1.Views
                 booksProgressBar.IsIndeterminate = true;
                 booksProgressBar.Visibility = System.Windows.Visibility.Visible;
 
-                //Timer
-                ThreadPool.RegisterWaitForSingleObject(
-                    bookListLoadTimeoutHandle,
-                    new WaitOrTimerCallback(
-                        (cancelToken, timedOut) =>
-                        {
-                            if (timedOut)
-                            {
-                                //ShowTimeoutMessage();
-                            }
-                        }),
-                    cancel,
-                    TimeSpan.FromSeconds(15),
-                    true);
-
-
                 TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
                 bookListVM.LoadRecentlyReadBooksAsync(cancel.Token).ContinueWith(displayList =>
                 {
                     //signal the event - we don't want to initiate a timeout cancellation now
-                    bookListLoadTimeoutHandle.Set();
+                    //bookListLoadTimeoutHandle.Set();
 
-                    //hide progress-bar
-                    if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
-                        booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+                    //if faulted, shd we not continue? or keep showing progress bar?
 
                     if (!displayList.IsCanceled && !displayList.IsFaulted)
                     {
+                        //hide progress-bar
+                        if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
+                            booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
                         booksList.ItemsSource = bookListVM.BookList;
                         booksList.IsEnabled = true;
                     }
@@ -236,6 +201,11 @@ namespace PhoneApp1.Views
 
                 }, uiTaskScheduler);
             }
+        }
+
+        private void booksList_Loaded(object sender, RoutedEventArgs e)
+        {
+            
         }
 
         private void booksList_Tap(object sender, System.Windows.Input.GestureEventArgs e)
@@ -261,11 +231,24 @@ namespace PhoneApp1.Views
                 booksList.ItemsSource = null;
                 booksList.InvalidateArrange();
 
-                bookListVM.SearchBooksAsync(searchBox.Text, cancel.Token).ContinueWith(task =>
+                //show progress bar
+                booksProgressBar.IsIndeterminate = true;
+                booksProgressBar.Visibility = System.Windows.Visibility.Visible;
+
+                string searchString = searchBox.Text;
+                searchBox.Text = string.Empty;
+
+                //set focus on an element other than the search box or list
+                //not on list because when that is invalidated, focus returns to searchbox
+                this.Focus();
+
+                bookListVM.SearchBooksAsync(searchString, cancel.Token).ContinueWith(task =>
                 {
-                    //searchBox.Text = searchBox.Hint;
+                    //hide progress-bar
+                    if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
+                        booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
                     booksList.ItemsSource = bookListVM.BookList;
-                    booksList.Focus();
 
                 }, uiTaskScheduler);
             }
@@ -314,6 +297,8 @@ namespace PhoneApp1.Views
                 bookTile2.IsEnabled = false;
                 //HubTileService.FreezeHubTile(bookTile2);
             }
+
+            ShowControlsIfCollectionsReady();
         }
 
         private void RefreshHighlightTile()
@@ -324,23 +309,88 @@ namespace PhoneApp1.Views
 
                 int i = randomGen.Next(0, collectionsVM.CollectedHighlights.Count);
                 highlightTextBlock.Text = collectionsVM.CollectedHighlights[i].Content;
+                highlightedBy.Text = "highlighted by: " + collectionsVM.CollectedHighlights[i].User.FullName;
+                highlightedBy.Visibility = System.Windows.Visibility.Visible;
             }
             else
             {
                 highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
+                highlightedBy.Visibility = System.Windows.Visibility.Collapsed;
             }
+
+            ShowControlsIfCollectionsReady();
         }
 
-        private void InitializeCollectionsView()
+        private void HideCollectionsControls()
         {
+            //book tiles
             bookTile1.IsEnabled = bookTile2.IsEnabled = false;
+            bookTile1.Visibility = bookTile2.Visibility = System.Windows.Visibility.Collapsed;
+            
+            //highlight tile
+            //highlightTile.Visibility = System.Windows.Visibility.Collapsed;
+            highlightBorder.Visibility = System.Windows.Visibility.Collapsed;
+            
+            //links
+            allBooks.Visibility = allHighlights.Visibility = System.Windows.Visibility.Collapsed;
+
+            //show progress-bar
+            collectionsProgressBar.IsIndeterminate = true;
+            collectionsProgressBar.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Displays Collections Controls if the CollectionsVM indicates that both books
+        /// and highlight collections are ready to be displayed
+        /// </summary>
+        /// <returns>true if controls were displayed, false otherwise</returns>
+        private bool ShowControlsIfCollectionsReady()
+        {
+            if (collectionsVM.CollectionsReady)
+            {
+                //book tiles
+                bookTile1.IsEnabled = bookTile2.IsEnabled = true;
+                bookTile1.Visibility = bookTile2.Visibility = System.Windows.Visibility.Visible;
+
+                //highlight tile
+                //highlightTile.Visibility = System.Windows.Visibility.Visible;
+                highlightBorder.Visibility = System.Windows.Visibility.Visible;
+
+                //links
+                allBooks.Visibility = allHighlights.Visibility = System.Windows.Visibility.Visible;
+
+                //show progress-bar
+                collectionsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
+                return true;
+            }
+            else
+                return false;
         }
 
         private void collectionsGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            //Initially everything is disabled
-            InitializeCollectionsView();
+                     
+        }
 
+        /// <summary>
+        /// Any heavy loading is done asynchronously
+        /// </summary>
+        private void LoadCollectionsPanoramaItem()
+        {
+            //Initially everything is disabled
+            HideCollectionsControls();
+
+            LoadDisplayBooksCollection();
+
+            LoadDisplayHighlightsCollection();   
+        }
+
+        /// <summary>
+        /// Any heavy loading is done asynchronously
+        /// </summary>
+        private void LoadDisplayBooksCollection()
+        {
             //Load Books and Tiles
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -349,12 +399,12 @@ namespace PhoneApp1.Views
                 collectionsVM.LoadCollectedBooksAsync(true, cancel.Token).ContinueWith(task =>
                 {
                     cancel.Token.Register(() =>
-                        {
-                            throw new OperationCanceledException(cancel.Token);
-                        });
+                    {
+                        throw new OperationCanceledException(cancel.Token);
+                    });
 
                     RefreshBookTiles();
-                    
+
                 }, cancel.Token, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
             }
             else
@@ -362,6 +412,14 @@ namespace PhoneApp1.Views
                 //just refresh view
                 RefreshBookTiles();
             }
+        }
+
+        /// <summary>
+        /// Any heavy loading is done asynchronously
+        /// </summary>
+        private void LoadDisplayHighlightsCollection()
+        {
+            TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             if (collectionsVM.HighlightsCollectionRefreshNeeded)
             {
@@ -369,7 +427,17 @@ namespace PhoneApp1.Views
                 List<string> ids = AppContext.CurrentUser.TryLoadCollectedHighlightsList(true);
                 if (ids == null)
                 {
+                    //This means the use has no highlights saved
                     highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
+                    highlightedBy.Visibility = System.Windows.Visibility.Collapsed;
+
+                    //Is it safe to do this here? Probably, because the user doesn't have
+                    //any highlights saved, we won't need to get anything from web. 
+                    //but overall this whole model seems broken!
+                    collectionsVM.HighlightsCollectionRefreshNeeded = false;
+
+
+                    ShowControlsIfCollectionsReady();
                 }
                 else
                 {
@@ -402,7 +470,13 @@ namespace PhoneApp1.Views
 
             PhoneApplicationService.Current.State.Add("SelectedBook", selectedBook);
 
-            NavigationService.Navigate(new Uri("/Views/BookDetailsPage.xaml", UriKind.Relative));
+            //The book objects obtained through reading don't have a 'story' :S
+            //This is a workaround to avoid making another webservice call to get the book.
+            //Coming to think of it, it might be better for UX - they already have the book, afterall!
+            NavigationService.Navigate(new Uri("/Views/ReadingPage.xaml", UriKind.Relative));
+
+            //NavigationService.Navigate(new Uri("/Views/BookDetailsPage.xaml", UriKind.Relative));
+            
         }
 
         private void booksList_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)

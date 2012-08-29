@@ -57,6 +57,7 @@ namespace PhoneApp1
 
                 viewModelInvalidated = false;
             }
+
         }
 
         private void likeBook_Click(object sender, EventArgs e)
@@ -115,8 +116,8 @@ namespace PhoneApp1
         private void PhoneApplicationPage_Loaded(object sender, RoutedEventArgs e)
         {
             //SystemTray.IsVisible = false;
-            SystemTray.Opacity = 0.1;
-
+            SystemTray.Opacity = 0.0;
+           
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             bookDetailsVM.IsCollectedAsync().ContinueWith(

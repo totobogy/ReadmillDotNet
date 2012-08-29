@@ -28,7 +28,7 @@ namespace PhoneApp1
 
         public static class Constants
         {
-            public const string RedirectUri = "http://totobogy.thoughtbubblez.com";
+            public const string RedirectUri = "http://about.me/totobogy";
             public const string AuthUri = "http://m.readmill.com/oauth/authorize?response_type=code&client_id=" + ClientId + "&scope=non-expiring&redirect_uri=" + RedirectUri;
             public const string TokenUri = "http://readmill.com/oauth/token?grant_type=authorization_code&client_id=" + ClientId + "&client_secret=" + ClientSecret + "&redirect_uri=" + RedirectUri + "&code=";
         }
@@ -133,6 +133,22 @@ namespace PhoneApp1
         private IDictionary<string, Book> collectedBooks;
         private IDictionary<string, Highlight> collectedHighlights;
         private IDictionary<string, Reading> bookReadingHash;
+
+        public List<Book> CollectedBooks
+        {
+            get
+            {
+                return collectedBooks.Values.ToList();
+            }
+        }
+
+        public List<Highlight> CollectedHighlights
+        {
+            get
+            {
+                return collectedHighlights.Values.ToList();
+            }
+        }
 
         public Task<User> GetMeAsync(bool forceRefresh = false, CancellationToken cancelToken = default(CancellationToken))
         {

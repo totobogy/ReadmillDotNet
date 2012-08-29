@@ -93,7 +93,7 @@
                             <StackPanel Orientation="Vertical" Width="400">
                                 <TextBlock Text="{Binding Content}" Width="380" TextWrapping="Wrap" Padding="10" FontSize="24">      
                                 </TextBlock>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" Width="380">
                                     <TextBlock Text="{Binding User.FullName}" Width="280" TextWrapping="Wrap" Padding="10" FontSize="20"/>
                                     <Button Loaded="LikeButton_Loaded" Content="like" Width="100" HorizontalContentAlignment="Center" Padding="2" FontSize="20" Tag="{Binding Id}" Click="Like_Click"/>
                                 </StackPanel>

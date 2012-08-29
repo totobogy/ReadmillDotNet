@@ -26,14 +26,24 @@ namespace PhoneApp1
         public LogInPage()
         {
             InitializeComponent();
-            SystemTray.Opacity = 0.1;
+            this.Loaded += new RoutedEventHandler(LogInPage_Loaded);
 
             readmillBrowser.Navigate(new Uri(AppContext.Constants.AuthUri));
+        }
+
+        void LogInPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SystemTray.Opacity = 0.0;
+            //SystemTray.IsVisible = false;
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            //Hide progress bar, make browser visible
+            browserProgressBar.IsIndeterminate = true;
+            browserProgressBar.Visibility = System.Windows.Visibility.Visible;
 
             //Remove login page(s) from back-stack
             while (NavigationService.CanGoBack)
@@ -103,6 +113,20 @@ namespace PhoneApp1
 
                     }, null);
             }
+        }
+
+        private void readmillBrowser_Navigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
+        {
+            //Hide progress bar, make browser visible
+            browserProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+            readmillBrowser.Opacity = 1;
+        }
+
+        private void readmillBrowser_NavigationFailed(object sender, System.Windows.Navigation.NavigationFailedEventArgs e)
+        {
+            //Hide progress bar, make browser visible
+            browserProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+            readmillBrowser.Opacity = 1;
         }
     }
 

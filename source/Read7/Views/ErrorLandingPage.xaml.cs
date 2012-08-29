@@ -19,13 +19,18 @@ namespace PhoneApp1.Views
         public ErrorLandingPage()
         {
             InitializeComponent();
+            this.Loaded += new RoutedEventHandler(ErrorLandingPage_Loaded);
+        }
+
+        void ErrorLandingPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SystemTray.Opacity = 0.0;
+            //SystemTray.IsVisible = false;
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-
-            SystemTray.Opacity = 0.1;
 
             //Clear back-stack. We only want to be able to exit from here.
             while (NavigationService.CanGoBack)

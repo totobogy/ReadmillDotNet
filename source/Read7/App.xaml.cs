@@ -258,12 +258,16 @@ namespace PhoneApp1
                         {
                             //Unknown Exception
                             //ToDo: Send Error Report?
-                            MessageBoxResult result = MessageBox.Show(
-                                AppStrings.UnknownException,
-                                AppStrings.UnknownExceptionTitle,
-                                MessageBoxButton.OK);
+                            RootFrame.Dispatcher.BeginInvoke(() =>
+                                {
+                                   MessageBox.Show(
+                                        AppStrings.UnknownFatalError,
+                                        AppStrings.UnknownFatalErrorTitle,
+                                        MessageBoxButton.OK);
 
-                            RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+                                   RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+                                });
+
                             AppContext.ErrorScreenShown = true;
                             return e.Handled = true;
                         }
@@ -273,12 +277,16 @@ namespace PhoneApp1
             {
                 //Unknown Exception
                 //ToDo: Send Error Report?
-                MessageBoxResult result = MessageBox.Show(
-                    AppStrings.UnknownException,
-                    AppStrings.UnknownExceptionTitle,
-                    MessageBoxButton.OK);
+                RootFrame.Dispatcher.BeginInvoke(() =>
+                    {
+                       MessageBox.Show(
+                            AppStrings.UnknownFatalError,
+                            AppStrings.UnknownFatalErrorTitle,
+                            MessageBoxButton.OK);
 
-                RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+                       RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+                    });
+               
                 AppContext.ErrorScreenShown = true;
                 e.Handled = true;
             }

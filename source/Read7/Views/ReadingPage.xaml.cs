@@ -30,8 +30,15 @@ namespace PhoneApp1
         public ReadingPage()
         {
             InitializeComponent();
+            this.Loaded += new RoutedEventHandler(ReadingPage_Loaded);
 
             viewModelInvalidated = true;                        
+        }
+
+        void ReadingPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SystemTray.Opacity = 0.0;
+            //SystemTray.IsVisible = false;
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -64,9 +71,7 @@ namespace PhoneApp1
                         button.Text = AppStrings.LikeBookButton;
                         button.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
                     }
-                }, uiTaskScheduler);
-
-            SystemTray.IsVisible = false;
+                }, uiTaskScheduler);          
         }
 
         private void Like_Click(object sender, RoutedEventArgs e)
@@ -268,9 +273,9 @@ namespace PhoneApp1
             highlightsProgressBar.IsIndeterminate = true;
             highlightsProgressBar.Visibility = System.Windows.Visibility.Visible;
 
-            bookHighlightsVM.LoadBookHighlightsAsync(cancelLoadHighlights.Token).ContinueWith(displayList =>
+            bookHighlightsVM.LoadBookHighlightsAsync(cancelLoadHighlights.Token).ContinueWith(
+            displayList =>
             {
-                //Is this the right thing to do?
                 cancelLoadHighlights.Token.Register(() =>
                 {
                     throw new OperationCanceledException(cancelLoadHighlights.Token);
@@ -279,8 +284,40 @@ namespace PhoneApp1
                 //hide progress bar
                 highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
 
-                if (bookHighlightsVM.BookHighlights.Count <= 0)
+                if (!displayList.IsFaulted)
+                {                    
+                    if (bookHighlightsVM.BookHighlights.Count <= 0)
+                    {
+                        highlightsListBox.Items.Add(new ListBoxItem()
+                        {
+                            Content = new TextBlock()
+                            {
+                                TextWrapping = System.Windows.TextWrapping.Wrap,
+                                FontSize = 24,
+                                Padding = new Thickness(10, 30, 10, 10),
+                                Text = AppStrings.NoHighlights
+                            }
+                        });
+                    }
+                    else
+                    {
+                        //ToDo: sorting should be in VM
+                        highlightsListBox.ItemsSource = from highlight in bookHighlightsVM.BookHighlights
+                                                        orderby highlight.Position
+                                                        select highlight;
+                    }
+
+                    //Show App-bar now 
+                    ApplicationBar.IsVisible = true;
+                }
+                else
                 {
+                    //Error Occured
+                    MessageBox.Show(
+                        AppStrings.UnknownWebError,
+                        AppStrings.UnknownWebErrorTitle,
+                        MessageBoxButton.OK);
+
                     highlightsListBox.Items.Add(new ListBoxItem()
                     {
                         Content = new TextBlock()
@@ -288,20 +325,22 @@ namespace PhoneApp1
                             TextWrapping = System.Windows.TextWrapping.Wrap,
                             FontSize = 24,
                             Padding = new Thickness(10, 30, 10, 10),
-                            Text = AppStrings.NoHighlights
+                            Text = AppStrings.UnknownWebError
                         }
                     });
-                }
-                else
-                {
-                    //ToDo: sorting should be in VM
-                    highlightsListBox.ItemsSource = from highlight in bookHighlightsVM.BookHighlights
-                                                    orderby highlight.Position
-                                                    select highlight;
-                }
 
-                //Show App-bar now 
-                ApplicationBar.IsVisible = true;
+                    displayList.Exception.Flatten().Handle((ex) =>
+                        {
+                            if (ex is WebException)
+                            {
+                                WebException webEx = ex as WebException;
+                                if (webEx.Status == WebExceptionStatus.UnknownError)
+                                    if (!webEx.Response.SupportsHeaders)
+                                        return true;                               
+                            }
+                            return false;
+                        });
+                }                
 
             }, cancelLoadHighlights.Token, TaskContinuationOptions.NotOnCanceled, uiTaskScheduler);            
         }

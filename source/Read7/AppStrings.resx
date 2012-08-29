@@ -163,7 +163,7 @@
     <value>there are no books in your collection yet.</value>
   </data>
   <data name="NoCollectedHighlights" xml:space="preserve">
-    <value>you have not saved any highlights on this device yet.</value>
+    <value>You have not saved any highlights on this device yet. Start collecting now!</value>
   </data>
   <data name="NoHighlights" xml:space="preserve">
     <value>sorry, no one seems to have highlighted this book yet.</value>
@@ -195,11 +195,17 @@
   <data name="TimeoutMsgTitle" xml:space="preserve">
     <value>Things Are Slow!</value>
   </data>
-  <data name="UnknownException" xml:space="preserve">
+  <data name="UnknownFatalError" xml:space="preserve">
     <value>Something bad happened and the rover doesn't know how to handle this situation. It's best to exit and start again. Sorry!</value>
   </data>
-  <data name="UnknownExceptionTitle" xml:space="preserve">
+  <data name="UnknownFatalErrorTitle" xml:space="preserve">
     <value>Error</value>
+  </data>
+  <data name="UnknownWebError" xml:space="preserve">
+    <value>Something went wrong while trying to connect to Readmill. The rover isn't sure but it might be a connectivity issue. Please check your network connection and try again.</value>
+  </data>
+  <data name="UnknownWebErrorTitle" xml:space="preserve">
+    <value>Network Error</value>
   </data>
   <data name="UnlikeBookButton" xml:space="preserve">
     <value>unlike book</value>

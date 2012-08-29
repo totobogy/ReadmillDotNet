@@ -196,7 +196,7 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to you have not saved any highlights on this device yet..
+        ///   Looks up a localized string similar to You have not saved any highlights on this device yet. Start collecting now!.
         /// </summary>
         internal static string NoCollectedHighlights {
             get {
@@ -297,18 +297,36 @@ namespace PhoneApp1 {
         /// <summary>
         ///   Looks up a localized string similar to Something bad happened and the rover doesn&apos;t know how to handle this situation. It&apos;s best to exit and start again. Sorry!.
         /// </summary>
-        internal static string UnknownException {
+        internal static string UnknownFatalError {
             get {
-                return ResourceManager.GetString("UnknownException", resourceCulture);
+                return ResourceManager.GetString("UnknownFatalError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
-        internal static string UnknownExceptionTitle {
+        internal static string UnknownFatalErrorTitle {
             get {
-                return ResourceManager.GetString("UnknownExceptionTitle", resourceCulture);
+                return ResourceManager.GetString("UnknownFatalErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something went wrong while trying to connect to Readmill. The rover isn&apos;t sure but it might be a connectivity issue. Please check your network connection and try again..
+        /// </summary>
+        internal static string UnknownWebError {
+            get {
+                return ResourceManager.GetString("UnknownWebError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Network Error.
+        /// </summary>
+        internal static string UnknownWebErrorTitle {
+            get {
+                return ResourceManager.GetString("UnknownWebErrorTitle", resourceCulture);
             }
         }
         

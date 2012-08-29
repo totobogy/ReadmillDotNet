@@ -26,18 +26,44 @@ namespace PhoneApp1.ViewModels
     {
         private ReadmillClient client;
 
-        public List<Book> CollectedBooks { get; private set; }
-        public List<Highlight> CollectedHighlights { get; private set; }
+        public List<Book> CollectedBooks 
+        {
+            get
+            {
+                return AppContext.CurrentUser.CollectedBooks as List<Book>;
+            }
+        }
+
+        public List<Highlight> CollectedHighlights 
+        {
+            get
+            {
+                return AppContext.CurrentUser.CollectedHighlights as List<Highlight>;
+            }
+        }
 
         public bool BooksCollectionRefreshNeeded { get; set; }
         public bool HighlightsCollectionRefreshNeeded { get; set; }
+
+        public bool CollectionsReady
+        {
+            get
+            {
+                if (!BooksCollectionRefreshNeeded && !HighlightsCollectionRefreshNeeded)
+                {                   
+                    return true;
+                }
+                else
+                    return false;
+            }
+        }
 
         public CollectionsViewModel()
         {
             client = new ReadmillClient(AppContext.ClientId);
 
-            CollectedBooks = new List<Book>();
-            CollectedHighlights = new List<Highlight>();
+            //CollectedBooks = new List<Book>();
+            //CollectedHighlights = new List<Highlight>();
 
             //Is this the only place a refresh is needed? Use INotification
             BooksCollectionRefreshNeeded = true;
@@ -50,9 +76,12 @@ namespace PhoneApp1.ViewModels
                 AppContext.CurrentUser.LoadCollectedBooksAsync(forceRefresh, cancelToken).ContinueWith(
                 loadTask =>
                 {
-                    CollectedBooks = loadTask.Result;
+                    //CollectedBooks = loadTask.Result;
                     BooksCollectionRefreshNeeded = false;
-                }, cancelToken);
+                }, 
+                CancellationToken.None, 
+                TaskContinuationOptions.OnlyOnRanToCompletion, 
+                TaskScheduler.Current);
         }
 
         public Task LoadCollectedHighlightsAsync(List<string> highlightIds, bool forceRefresh, CancellationToken cancelToken = default(CancellationToken))
@@ -61,9 +90,12 @@ namespace PhoneApp1.ViewModels
                 AppContext.CurrentUser.LoadCollectedHighlightsAsync(highlightIds, forceRefresh, cancelToken).ContinueWith(
                 loadTask =>
                 {
-                    CollectedHighlights = loadTask.Result;
+                    //CollectedHighlights = loadTask.Result;
                     HighlightsCollectionRefreshNeeded = false;
-                }, cancelToken);
+                },
+                CancellationToken.None, 
+                TaskContinuationOptions.OnlyOnRanToCompletion, 
+                TaskScheduler.Current);
         }
     }
 }
