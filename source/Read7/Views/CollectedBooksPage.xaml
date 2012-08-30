@@ -30,8 +30,8 @@
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-            <ListBox VirtualizingStackPanel.VirtualizationMode="Recycling" Height="586" HorizontalAlignment="Left" Margin="0,20,0,0" Name="collectedBooksList" VerticalAlignment="Top" Width="456" Tap="collectedBooksList_Tap" ManipulationCompleted="collectedBooksList_ManipulationCompleted">
+        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="15,0,12,0">
+            <ListBox VirtualizingStackPanel.VirtualizationMode="Recycling" HorizontalAlignment="Left" Margin="0,20,0,70" Name="collectedBooksList" VerticalAlignment="Top" Width="456" Tap="collectedBooksList_Tap" ManipulationCompleted="collectedBooksList_ManipulationCompleted">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Width="400" MaxHeight="100" Margin="10,10,10,20" >

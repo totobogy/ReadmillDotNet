@@ -24,14 +24,14 @@
         </Grid.Background>
         
         <!--TitlePanel contains the name of the application and page title-->
-        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
+        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="15,17,0,28">
             <TextBlock x:Name="ApplicationTitle" Text="READ ROVER" Style="{StaticResource PhoneTextNormalStyle}"/>
-            <TextBlock x:Name="errorTitle" Text="Oops!" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
+            <TextBlock x:Name="errorTitle" Text="Oops!" Margin="10,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" FontSize="48" />
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,28">
-            <TextBlock Height="472" HorizontalAlignment="Left" Margin="12,6,0,0" Name="errorMessage" Text="Oops! Something's gone wrong and Read Rover can't continue right now. Restarting the app might fix this problem. Please press the back key to exit. Sorry!" VerticalAlignment="Top" Width="420" FontSize="24" TextWrapping="Wrap" />
+        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="15,0,12,28">
+            <TextBlock Height="472" HorizontalAlignment="Left" Margin="10,6,0,0" Name="errorMessage" Text="Oops! Something's gone wrong and Read Rover can't continue right now. Restarting the app might fix this problem. Please press the back key to exit. Sorry!" VerticalAlignment="Top" Width="420" FontSize="24" TextWrapping="Wrap" />
         </Grid>
     </Grid>
  

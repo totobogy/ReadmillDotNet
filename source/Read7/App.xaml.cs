@@ -148,6 +148,7 @@ namespace PhoneApp1
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
             //Do we need to get the token again?
+            TryRetrieveStoredAccessToken();
         }
 
         // Code to execute when the application is deactivated (sent to background)

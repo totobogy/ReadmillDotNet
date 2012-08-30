@@ -63,23 +63,13 @@ namespace PhoneApp1.ViewModels
 
         public Task LikeHighlightAsync(string highlightId)
         {           
-            return client.Highlights.PostAsync(BuildReadmillLikeUri(highlightId));            
+            return client.Highlights.PostAsync(AppContext.BuildReadmillLikeUri(highlightId));            
         }
 
         public Task UnlikeHighlightAsync(string highlightId)
         {
-            return client.Highlights.DeleteAsync(BuildReadmillLikeUri(highlightId));
+            return client.Highlights.DeleteAsync(AppContext.BuildReadmillLikeUri(highlightId));
         }
-
-        private Uri BuildReadmillLikeUri(string highlightId)
-        {
-            string likeHighlightUri =
-                "https://api.readmill.com/v2/likes/highlight/"
-                + highlightId
-                + "?access_token=" + AppContext.AccessToken.Token
-                + "&client_id=" + AppContext.ClientId;
-
-            return new Uri(likeHighlightUri);
-        }
+        
     }
 }

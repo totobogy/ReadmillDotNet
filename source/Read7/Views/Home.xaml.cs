@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Com.Readmill.Api.DataContracts;
 using Microsoft.Phone.Shell;
 using System.Threading;
+using System.Windows.Media.Imaging;
 
 namespace PhoneApp1.Views
 {
@@ -26,15 +27,12 @@ namespace PhoneApp1.Views
         /************
          * ToDo
          * **********
-         * First time exp - loading text etc.
-         * Flipped text on tiles
-         * Refresh (after timeout or otherwise)??
-         * All highlights pages
+         * **********************
+         * V1 CUT
+         * **********************
+         * list refreshes(sync) - all highlights and books
          * Latest Highlights
-         * 
-         * unlike, tap to book
-         * list refreshes
-         * empty lists - disable 'all'
+         * Refresh (after timeout or otherwise)??
          */
 
         BookListViewModel bookListVM;
@@ -100,18 +98,11 @@ namespace PhoneApp1.Views
 
             if (viewModelsInvalidated)
             {
-                //if (State.ContainsKey("BooksViewModel"))
-                    //bookListVM = State["BooksViewModel"] as BookListViewModel;
-                //else
-                    bookListVM = new BookListViewModel();
-
+                //We do not restore state but refresh on reactivations
+                bookListVM = new BookListViewModel();
                 booksPanoramaItem.DataContext = bookListVM;
-
-                //if (State.ContainsKey("CollectionsViewModel"))
-                    //collectionsVM = State["CollectionsViewModel"] as CollectionsViewModel;
-                //else
-                    collectionsVM = new CollectionsViewModel();
-
+                
+                collectionsVM = new CollectionsViewModel();
                 collectionsPanoramaItem.DataContext = collectionsVM;
 
                 viewModelsInvalidated = false;
@@ -273,6 +264,8 @@ namespace PhoneApp1.Views
 
         private void RefreshBookTiles()
         {
+            Uri defaultImageUri = new Uri("/Images/BookTileDefault.png", UriKind.Relative);
+
             if (collectionsVM.CollectedBooks != null && collectionsVM.CollectedBooks.Count > 0)
             {
                 Random randomGen = new Random();
@@ -298,21 +291,27 @@ namespace PhoneApp1.Views
                 }
                 else
                 {
-                    bookTile2.Message = AppStrings.NoCollectedBooksMsg;
+                    bookTile2.Message = AppStrings.NoCollectedBooksMsg;                                        
+                    bookTile2.Source = new BitmapImage(defaultImageUri);
                     bookTile2.IsEnabled = false;
-                    //HubTileService.FreezeHubTile(bookTile2);
                 }
+
+                allBooks.IsEnabled = true;
             }
             else
             {
                 //Empty list handling - good for now?
                 bookTile1.Message = AppStrings.NoCollectedBooksMsg;
+                bookTile1.Source = new BitmapImage(defaultImageUri);
                 bookTile1.IsEnabled = false;
                 //HubTileService.FreezeHubTile(bookTile1);
 
                 bookTile2.Message = AppStrings.NoCollectedBooksMsg;
+                bookTile2.Source = new BitmapImage(defaultImageUri);
                 bookTile2.IsEnabled = false;
                 //HubTileService.FreezeHubTile(bookTile2);
+
+                allBooks.IsEnabled = false;
             }
 
             ShowControlsIfCollectionsReady();
@@ -328,11 +327,13 @@ namespace PhoneApp1.Views
                 highlightTextBlock.Text = collectionsVM.CollectedHighlights[i].Content;
                 highlightedBy.Text = "highlighted by: " + collectionsVM.CollectedHighlights[i].User.FullName;
                 highlightedBy.Visibility = System.Windows.Visibility.Visible;
+                allHighlights.IsEnabled = true;
             }
             else
             {
                 highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
                 highlightedBy.Visibility = System.Windows.Visibility.Collapsed;
+                allHighlights.IsEnabled = false;
             }
 
             ShowControlsIfCollectionsReady();

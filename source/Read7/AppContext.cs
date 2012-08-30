@@ -85,6 +85,16 @@ namespace PhoneApp1
             tokenRefreshing = false;
         }
 
+        public static Uri BuildReadmillLikeUri(string highlightId)
+        {
+            string likeHighlightUri =
+                "https://api.readmill.com/v2/likes/highlight/"
+                + highlightId
+                + "?access_token=" + AppContext.AccessToken.Token
+                + "&client_id=" + AppContext.ClientId;
+
+            return new Uri(likeHighlightUri);
+        }
 
         public static bool IsConnected
         {

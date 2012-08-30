@@ -60,10 +60,10 @@
             <controls:PanoramaItem Header="about">
                 <Grid>
                     <TextBlock Height="184" HorizontalAlignment="Left" Margin="10,10,0,0" Name="textBlock3" Text="Read Rover lets you explore Readmill's reading landscape, discover books and readers and collect word treasures along the way." VerticalAlignment="Top" Width="380" TextWrapping="Wrap" FontSize="24" Padding="10" />
-                    <TextBlock Height="36" HorizontalAlignment="Left" Margin="10,450,0,0" Name="textBlock4" Text="version 1.0.0.0  (c) totobogy" VerticalAlignment="Top" Width="237" Padding="12,0,10,10" FontSize="18" />
-                    <TextBlock Height="184" Margin="10,190,30,0" Name="creditsTextBlock" Text="Credits: Readmill team for being awesome and for having me over summer, Justin Kropp for graphic art &amp; design &amp; the open source community for help, code and some icons" VerticalAlignment="Top" Padding="10" TextWrapping="Wrap" FontSize="22" Width="380" />
-                    <Image Source="/Images/ReadRoverLogo.png" HorizontalAlignment="Left" Margin="20,393,0,102" Name="image1" Stretch="Fill" Width="181" />
-                    <Image Source="/Images/madeforreadmill.png" Height="49" Margin="256,393,0,0" Name="image2" Stretch="Fill" VerticalAlignment="Top" HorizontalAlignment="Left" Width="124" />
+                    <TextBlock Height="36" HorizontalAlignment="Left" Margin="10,460,0,0" Name="textBlock4" Text="version 1.0.0.0  (c) totobogy" VerticalAlignment="Top" Width="237" Padding="12,0,10,10" FontSize="18" />
+                    <TextBlock Height="184" Margin="10,190,30,0" Name="creditsTextBlock" Text="Credits: Readmill team for being awesome and for having me over summer, Justin Kropp for graphic art &amp; design &amp; the .Net community for all the help &amp; resources - code samples, libraries &amp; some app icons." VerticalAlignment="Top" Padding="10" TextWrapping="Wrap" FontSize="22" Width="380" />
+                    <Image Source="/Images/ReadRoverLogo.png" HorizontalAlignment="Left" Margin="20,403,0,0" Name="image1" Stretch="Fill" Width="181" Height="49" VerticalAlignment="Top" />
+                    <Image Source="/Images/madeforreadmill.png" Height="49" Margin="256,403,0,0" Name="image2" Stretch="Fill" VerticalAlignment="Top" HorizontalAlignment="Left" Width="124" />
                 </Grid>
             </controls:PanoramaItem>
         </controls:Panorama>
