@@ -57,13 +57,6 @@ namespace PhoneApp1.Views
         {
             base.OnNavigatedFrom(e);
 
-            if (e.NavigationMode != System.Windows.Navigation.NavigationMode.Back
-                && !e.Uri.OriginalString.Contains("Error"))
-            {
-                //State["BooksViewModel"] = bookListVM;
-                //State["CollectionsViewModel"] = collectionsVM;
-            }
-
             //If we are navigating away, lets cancel any pending tasks since they 
             //can't be revived in a deterministic fashion.
             try
@@ -270,12 +263,7 @@ namespace PhoneApp1.Views
             {
                 Random randomGen = new Random();
 
-                int index1 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
-                int index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
-                while (index1 == index2)
-                {
-                    index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
-                }
+                int index1 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);                
 
                 bookTile1.DataContext = collectionsVM.CollectedBooks[index1];
                 bookTile1.IsEnabled = true;
@@ -283,7 +271,13 @@ namespace PhoneApp1.Views
                     HubTileService.UnfreezeHubTile(bookTile1);
 
                 if (collectionsVM.CollectedBooks.Count > 1)
-                {                    
+                {
+                    int index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
+                    while (index1 == index2)
+                    {
+                        index2 = randomGen.Next(0, collectionsVM.CollectedBooks.Count);
+                    }
+
                     bookTile2.DataContext = collectionsVM.CollectedBooks[index2];
                     bookTile2.IsEnabled = true;
                     if (bookTile2.IsFrozen)
@@ -291,7 +285,7 @@ namespace PhoneApp1.Views
                 }
                 else
                 {
-                    bookTile2.Message = AppStrings.NoCollectedBooksMsg;                                        
+                    //bookTile2.Message = AppStrings.NoCollectedBooksMsg;                                        
                     bookTile2.Source = new BitmapImage(defaultImageUri);
                     bookTile2.IsEnabled = false;
                 }
@@ -448,6 +442,7 @@ namespace PhoneApp1.Views
                     //This means the use has no highlights saved
                     highlightTextBlock.Text = AppStrings.NoCollectedHighlights;
                     highlightedBy.Visibility = System.Windows.Visibility.Collapsed;
+                    allHighlights.IsEnabled = false;
 
                     //Is it safe to do this here? Probably, because the user doesn't have
                     //any highlights saved, we won't need to get anything from web. 

@@ -14,6 +14,49 @@
     SupportedOrientations="Portrait"  Orientation="Portrait"
     shell:SystemTray.IsVisible="False" 
     xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit">
+    <phone:PhoneApplicationPage.Resources>
+        <Style x:Key="ListBoxItemStyleNoHighlight" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="LayoutRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver"/>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="LayoutRoot">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource TransparentBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimation Duration="0" To=".5" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ContentContainer"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="SelectionStates">
+                                    <VisualState x:Name="Unselected"/>
+                                    <VisualState x:Name="Selected">
+                                        <!--Storyboard>
+											<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentContainer">
+												<DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource PhoneAccentBrush}"/>
+											</ObjectAnimationUsingKeyFrames>
+										</Storyboard-->
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <ContentControl x:Name="ContentContainer" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </phone:PhoneApplicationPage.Resources>
 
     <!--LayoutRoot contains the root grid where all other page content is placed-->
     <Grid x:Name="LayoutRoot">
@@ -25,7 +68,7 @@
             <!--Panorama item one-->
             <controls:PanoramaItem Name="booksPanoramaItem" Header="just read">
                 <Grid>
-                    <ListBox  VirtualizingStackPanel.VirtualizationMode="Recycling" Height="412" HorizontalAlignment="Left" Margin="0,88,0,0" Name="booksList" VerticalAlignment="Top" Width="400" Tap="booksList_Tap" ManipulationCompleted="booksList_ManipulationCompleted">
+                    <ListBox ItemContainerStyle="{StaticResource ListBoxItemStyleNoHighlight}" VirtualizingStackPanel.VirtualizationMode="Recycling" Height="412" HorizontalAlignment="Left" Margin="0,88,0,0" Name="booksList" VerticalAlignment="Top" Width="400" Tap="booksList_Tap" ManipulationCompleted="booksList_ManipulationCompleted">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Width="380" MaxHeight="100" Margin="10,10,10,20" >
@@ -46,7 +89,7 @@
                     <Border Background="#897d69" BorderBrush="Black" BorderThickness="0" Height="176" HorizontalAlignment="Left" Margin="10,275,0,0" Name="highlightBorder" VerticalAlignment="Top" Width="366">
                         <StackPanel  Name="highlightTile" Orientation="Vertical">
                             <TextBlock TextTrimming="WordEllipsis" TextWrapping="Wrap" Height="130" Name="highlightTextBlock" Text="{Binding Content}" FontSize="24" Padding="15,15,15,15" TextAlignment="Left" Margin="5" Width="346" />
-                            <TextBlock TextTrimming="WordEllipsis" TextWrapping="Wrap" Height="30" Name="highlightedBy" Text="{Binding User.FullName}" HorizontalAlignment="Left" Margin="5,0,5,5" VerticalAlignment="Top" Width="346" Padding="15,2" />
+                            <TextBlock TextTrimming="WordEllipsis" TextWrapping="Wrap" Height="30" Name="highlightedBy" Text="{Binding User.FullName}" HorizontalAlignment="Stretch" Margin="5,0,5,5" VerticalAlignment="Top" Width="346" Padding="15,3" FontSize="18" />
                         </StackPanel>                        
                     </Border>
                     <toolkit:HubTile Foreground="{StaticResource PhoneForegroundBrush}" Source="{Binding CoverUrl}" Title="{Binding Title}" Message="{Binding Author}" Background="#897d69" Height="173" HorizontalAlignment="Left" Margin="10,9,0,0" Name="bookTile1" VerticalAlignment="Top" Width="173" Tap="bookTile_Tap" />
@@ -59,9 +102,9 @@
 
             <controls:PanoramaItem Header="about">
                 <Grid>
-                    <TextBlock Height="184" HorizontalAlignment="Left" Margin="10,10,0,0" Name="textBlock3" Text="Read Rover lets you explore Readmill's reading landscape, discover books and readers and collect word treasures along the way." VerticalAlignment="Top" Width="380" TextWrapping="Wrap" FontSize="24" Padding="10" />
-                    <TextBlock Height="36" HorizontalAlignment="Left" Margin="10,460,0,0" Name="textBlock4" Text="version 1.0.0.0  (c) totobogy" VerticalAlignment="Top" Width="237" Padding="12,0,10,10" FontSize="18" />
-                    <TextBlock Height="184" Margin="10,190,30,0" Name="creditsTextBlock" Text="Credits: Readmill team for being awesome and for having me over summer, Justin Kropp for graphic art &amp; design &amp; the .Net community for all the help &amp; resources - code samples, libraries &amp; some app icons." VerticalAlignment="Top" Padding="10" TextWrapping="Wrap" FontSize="22" Width="380" />
+                    <TextBlock Height="184" HorizontalAlignment="Left" Margin="10,10,0,0" Name="textBlock3" Text="Read Rover helps you explore the Readmill's reading landscape - discover books and fellow readers, and collect word treasures along the way. Read. Rove." VerticalAlignment="Top" Width="380" TextWrapping="Wrap" FontSize="23" Padding="10" />
+                    <TextBlock Height="36" HorizontalAlignment="Left" Margin="10,460,0,0" Name="textBlock4" Text="version 1.0.0.0  © totobogy" VerticalAlignment="Top" Width="237" Padding="12,0,10,10" FontSize="18" />
+                    <TextBlock Height="184" Margin="10,190,30,0" Name="creditsTextBlock" Text="Credits: the Readmill crew for being awesome and for having me over the summer, Justin Kropp for graphic art &amp; design, .Net community for all the help &amp; resources - code samples, libraries, app icons etc." VerticalAlignment="Top" Padding="10" TextWrapping="Wrap" FontSize="20" Width="380" />
                     <Image Source="/Images/ReadRoverLogo.png" HorizontalAlignment="Left" Margin="20,403,0,0" Name="image1" Stretch="Fill" Width="181" Height="49" VerticalAlignment="Top" />
                     <Image Source="/Images/madeforreadmill.png" Height="49" Margin="256,403,0,0" Name="image2" Stretch="Fill" VerticalAlignment="Top" HorizontalAlignment="Left" Width="124" />
                 </Grid>
