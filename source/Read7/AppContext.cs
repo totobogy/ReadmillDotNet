@@ -159,7 +159,7 @@ namespace PhoneApp1
         {
             get
             {
-                if (collectedBooks != null)
+                if (collectedHighlights != null)
                     return collectedHighlights.Values.ToList();
                 else
                     return null;

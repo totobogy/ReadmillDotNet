@@ -77,9 +77,9 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10" Name="bookTitlePanel" VerticalAlignment="Top" MaxHeight="175" Width="456">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10" Name="bookTitlePanel" VerticalAlignment="Top" MaxHeight="175" Width="430">
                 <Image Source="{Binding CoverUrl}" Width="66" Margin="10,0,0,0"></Image>
-                <TextBlock Text="{Binding DisplayTitle}" FontSize="24" Padding="10" Name="bookTitle" Width="378" TextTrimming="WordEllipsis" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding DisplayTitle}" FontSize="24" Padding="10" Name="bookTitle" Width="364" TextTrimming="WordEllipsis" TextWrapping="Wrap" />
             </StackPanel>
             <ListBox Loaded="highlightsListBox_Loaded" ManipulationCompleted="highlightsListBox_ManipulationCompleted" VirtualizingStackPanel.VirtualizationMode="Recycling" Grid.Row="1" HorizontalAlignment="Left" Name="highlightsListBox" Margin="0,10,0,70" VerticalAlignment="Top" Width="456" ItemContainerStyle="{StaticResource ListBoxItemStyleNoHighlight}">
                 <ListBox.ItemTemplate>
