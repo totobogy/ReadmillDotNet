@@ -138,7 +138,10 @@ namespace PhoneApp1
         {
             get
             {
-                return collectedBooks.Values.ToList();
+                if (collectedBooks != null)
+                    return collectedBooks.Values.ToList();
+                else
+                    return null;
             }
         }
 
@@ -146,7 +149,10 @@ namespace PhoneApp1
         {
             get
             {
-                return collectedHighlights.Values.ToList();
+                if (collectedBooks != null)
+                    return collectedHighlights.Values.ToList();
+                else
+                    return null;
             }
         }
 

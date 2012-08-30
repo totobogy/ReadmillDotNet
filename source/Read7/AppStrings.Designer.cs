@@ -79,6 +79,15 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Books collection is null.
+        /// </summary>
+        internal static string BooksCollectionNull {
+            get {
+                return ResourceManager.GetString("BooksCollectionNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to collapse.
         /// </summary>
         internal static string CollapseFullScreenButton {
@@ -129,6 +138,15 @@ namespace PhoneApp1 {
         internal static string HighlightsButton {
             get {
                 return ResourceManager.GetString("HighlightsButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Highlights collection is null.
+        /// </summary>
+        internal static string HighlightsCollectionNull {
+            get {
+                return ResourceManager.GetString("HighlightsCollectionNull", resourceCulture);
             }
         }
         

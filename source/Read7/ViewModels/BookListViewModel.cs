@@ -15,6 +15,7 @@ using Com.Readmill.Api.DataContracts;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Threading;
+using System.Runtime.Serialization;
 
 namespace PhoneApp1.ViewModels
 {
@@ -25,7 +26,7 @@ namespace PhoneApp1.ViewModels
 
         public ICollection<Book> BookList { get; private set; }
 
-        private string bookListTitle = "being read now...";
+        private string bookListTitle = "just read";
         public String BookListTitle 
         {
             get
@@ -59,13 +60,13 @@ namespace PhoneApp1.ViewModels
                     switch (value)
                     {
                         case State.RecentlyRead:
-                            BookListTitle = "being read now...";
+                            BookListTitle = "just read";
                             break;
                         case State.SearchResult:
-                            BookListTitle = "search results...";
+                            BookListTitle = "search";
                             break;
                         default:
-                            BookListTitle = "being read now...";
+                            BookListTitle = "just read";
                             break;
                     }
                 }
@@ -73,6 +74,17 @@ namespace PhoneApp1.ViewModels
         }
 
         public BookListViewModel()
+        {
+            Initialize();
+        }
+
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext context)
+        {
+            Initialize();
+        }  
+
+        private void Initialize()
         {
             client = new ReadmillClient(AppContext.ClientId);
             readableBooks = new Dictionary<string, Book>();

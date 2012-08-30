@@ -26,13 +26,15 @@ namespace PhoneApp1
         CancellationTokenSource cancelLoadHighlights;
 
         private bool viewModelInvalidated;
+        private bool highlightsDisplayed;
 
         public ReadingPage()
         {
             InitializeComponent();
             this.Loaded += new RoutedEventHandler(ReadingPage_Loaded);
 
-            viewModelInvalidated = true;                        
+            viewModelInvalidated = true;
+            highlightsDisplayed = false;          
         }
 
         void ReadingPage_Loaded(object sender, RoutedEventArgs e)
@@ -41,18 +43,54 @@ namespace PhoneApp1
             //SystemTray.IsVisible = false;
         }
 
+        protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            //If we are navigating away, lets cancel any pending tasks since they 
+            //can't be revived in a deterministic fashion.
+            try
+            {
+                if (cancelLoadHighlights != null && !cancelLoadHighlights.IsCancellationRequested)
+                    cancelLoadHighlights.Cancel();
+            }
+            catch (OperationCanceledException ex)
+            {
+                //no op
+            }
+            catch (AggregateException ex)
+            {
+                ex.Flatten().Handle(err =>
+                {
+                    return (err is OperationCanceledException || err is TaskCanceledException);
+                });
+            }
+        }
+
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
-            Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
-            bookHighlightsVM = new BookHighlightsViewModel(book);
-            this.DataContext = bookHighlightsVM;
+            if (viewModelInvalidated)
+            {
+                //what if 'book' is null? We'll let it cause fatal error right now
+                Book book = (Book)PhoneApplicationService.Current.State["SelectedBook"];
+                bookHighlightsVM = new BookHighlightsViewModel(book);
+                this.DataContext = bookHighlightsVM;
+                viewModelInvalidated = false;
+            }
+
+            cancelLoadHighlights = new CancellationTokenSource();
+
+            //If highlights are already displayed, this is a no-op. We might have
+            //landed here because of a reactivation in this case.
+            //This will never happen if this is a 'new' page navigation
+            //We'll have to relook at this if we implement a 'refresh'
+            if (highlightsDisplayed)
+                return;
 
             //only enable app-bar when highlights have loaded to avoid problems
             ApplicationBar.IsVisible = false;
-
-            cancelLoadHighlights = new CancellationTokenSource();
 
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -71,7 +109,9 @@ namespace PhoneApp1
                         button.Text = AppStrings.LikeBookButton;
                         button.IconUri = new Uri("/icons/appbar.heart.outline.png", UriKind.Relative);
                     }
-                }, uiTaskScheduler);          
+                }, uiTaskScheduler);
+
+            LoadDisplayHighlights();
         }
 
         private void Like_Click(object sender, RoutedEventArgs e)
@@ -265,8 +305,15 @@ namespace PhoneApp1
             this.Focus();
         }
 
-        private void highlightsListBox_Loaded(object sender, RoutedEventArgs e)
+        private void LoadDisplayHighlights()
         {
+            //If highlights are already displayed, this is a no-op. We might have
+            //landed here because of a reactivation in this case.
+            //This will never happen if this is a 'new' page navigation
+            //We'll have to relook at this if we implement a 'refresh'
+            if (highlightsDisplayed)           
+                return;
+
             TaskScheduler uiTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             //show progress bar
@@ -275,17 +322,12 @@ namespace PhoneApp1
 
             bookHighlightsVM.LoadBookHighlightsAsync(cancelLoadHighlights.Token).ContinueWith(
             displayList =>
-            {
-                cancelLoadHighlights.Token.Register(() =>
-                {
-                    throw new OperationCanceledException(cancelLoadHighlights.Token);
-                }, true);
-
-                //hide progress bar
-                highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
-
+            {                
                 if (!displayList.IsFaulted)
-                {                    
+                {
+                    //hide progress bar
+                    highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
                     if (bookHighlightsVM.BookHighlights.Count <= 0)
                     {
                         highlightsListBox.Items.Add(new ListBoxItem()
@@ -307,42 +349,72 @@ namespace PhoneApp1
                                                         select highlight;
                     }
 
+                    //Set highlightsDisplayed
+                    this.highlightsDisplayed = true;
+
                     //Show App-bar now 
                     ApplicationBar.IsVisible = true;
                 }
                 else
                 {
-                    //Error Occured
-                    MessageBox.Show(
-                        AppStrings.UnknownWebError,
-                        AppStrings.UnknownWebErrorTitle,
-                        MessageBoxButton.OK);
-
-                    highlightsListBox.Items.Add(new ListBoxItem()
-                    {
-                        Content = new TextBlock()
-                        {
-                            TextWrapping = System.Windows.TextWrapping.Wrap,
-                            FontSize = 24,
-                            Padding = new Thickness(10, 30, 10, 10),
-                            Text = AppStrings.UnknownWebError
-                        }
-                    });
-
+                    //handle exception
                     displayList.Exception.Flatten().Handle((ex) =>
+                    {
+                        if (ex is OperationCanceledException)
                         {
-                            if (ex is WebException)
-                            {
-                                WebException webEx = ex as WebException;
-                                if (webEx.Status == WebExceptionStatus.UnknownError)
-                                    if (!webEx.Response.SupportsHeaders)
-                                        return true;                               
-                            }
-                            return false;
-                        });
-                }                
+                            highlightsDisplayed = false;
+                            return true;
+                        }
 
-            }, cancelLoadHighlights.Token, TaskContinuationOptions.NotOnCanceled, uiTaskScheduler);            
+                        if (ex is WebException)
+                        {
+                            WebException webEx = ex as WebException;
+
+                            if (webEx.Status == WebExceptionStatus.RequestCanceled)
+                            {
+                                highlightsDisplayed = false;
+                                return true;
+                            }
+
+                            if (webEx.Status == WebExceptionStatus.UnknownError)
+                                if (!webEx.Response.SupportsHeaders)
+                                {
+                                    //hide progress bar
+                                    highlightsProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
+                                    //Error Occured
+                                    MessageBox.Show(
+                                        AppStrings.UnknownWebError,
+                                        AppStrings.UnknownWebErrorTitle,
+                                        MessageBoxButton.OK);
+
+                                    highlightsListBox.Items.Add(new ListBoxItem()
+                                    {
+                                        Content = new TextBlock()
+                                        {
+                                            TextWrapping = System.Windows.TextWrapping.Wrap,
+                                            FontSize = 24,
+                                            Padding = new Thickness(10, 30, 10, 10),
+                                            Text = AppStrings.UnknownWebError
+                                        }
+                                    });
+
+                                    //set highlightsDisplayed
+                                    this.highlightsDisplayed = true; 
+                                    return true;
+                                }
+                        }                       
+
+                        return false;
+                    });                                      
+                }
+
+            }, CancellationToken.None, TaskContinuationOptions.NotOnCanceled, uiTaskScheduler);            
+        }
+
+        private void highlightsListBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }

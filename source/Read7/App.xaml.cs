@@ -171,10 +171,26 @@ namespace PhoneApp1
         // Code to execute if a navigation fails
         private void RootFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
         {
+            //ToDo: Handle This
+            if (!AppContext.ErrorScreenShown)
+            {
+                RootFrame.Dispatcher.BeginInvoke(() =>
+                {
+                    MessageBox.Show(
+                         AppStrings.UnknownFatalError,
+                         AppStrings.UnknownFatalErrorTitle,
+                         MessageBoxButton.OK);
+
+                    RootFrame.Navigate(new Uri("/Views/ErrorLandingPage.xaml", UriKind.Relative));
+                });
+                AppContext.ErrorScreenShown = true;
+            }
+            e.Handled = true;
+
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 // A navigation has failed; break into the debugger
-                System.Diagnostics.Debugger.Break();
+                //System.Diagnostics.Debugger.Break();
             }
         }
 

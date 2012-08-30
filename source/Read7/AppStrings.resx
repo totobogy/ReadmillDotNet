@@ -123,6 +123,9 @@
   <data name="AuthFailedTitle" xml:space="preserve">
     <value>Authorization Failed</value>
   </data>
+  <data name="BooksCollectionNull" xml:space="preserve">
+    <value>Books collection is null</value>
+  </data>
   <data name="CollapseFullScreenButton" xml:space="preserve">
     <value>collapse</value>
   </data>
@@ -140,6 +143,9 @@
   </data>
   <data name="HighlightsButton" xml:space="preserve">
     <value>highlights</value>
+  </data>
+  <data name="HighlightsCollectionNull" xml:space="preserve">
+    <value>Highlights collection is null</value>
   </data>
   <data name="LikeBookButton" xml:space="preserve">
     <value>like book</value>

@@ -85,6 +85,12 @@
     <Compile Include="Views\BookDetailsPage.xaml.cs">
       <DependentUpon>BookDetailsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CollectedBooksPage.xaml.cs">
+      <DependentUpon>CollectedBooksPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectedHighlightsPage.xaml.cs">
+      <DependentUpon>CollectedHighlightsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ErrorLandingPage.xaml.cs">
       <DependentUpon>ErrorLandingPage.xaml</DependentUpon>
     </Compile>
@@ -108,6 +114,14 @@
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
     <Page Include="Views\BookDetailsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectedBooksPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectedHighlightsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

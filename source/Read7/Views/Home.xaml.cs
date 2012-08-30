@@ -26,14 +26,15 @@ namespace PhoneApp1.Views
         /************
          * ToDo
          * **********
-         * Timeouts for collections??
-         * Timeout pop-up asks before cancelling??
-         * Post cancelling, UI state / text etc.
          * First time exp - loading text etc.
          * Flipped text on tiles
          * Refresh (after timeout or otherwise)??
-         * All books and All highlights pages
+         * All highlights pages
          * Latest Highlights
+         * 
+         * unlike, tap to book
+         * list refreshes
+         * empty lists - disable 'all'
          */
 
         BookListViewModel bookListVM;
@@ -58,15 +59,31 @@ namespace PhoneApp1.Views
         {
             base.OnNavigatedFrom(e);
 
-            if (e.NavigationMode == System.Windows.Navigation.NavigationMode.Back)
+            if (e.NavigationMode != System.Windows.Navigation.NavigationMode.Back
+                && !e.Uri.OriginalString.Contains("Error"))
             {
-   
+                //State["BooksViewModel"] = bookListVM;
+                //State["CollectionsViewModel"] = collectionsVM;
             }
-            else
+
+            //If we are navigating away, lets cancel any pending tasks since they 
+            //can't be revived in a deterministic fashion.
+            try
             {
-                State["BooksViewModel"] = bookListVM;
-                State["CollectionsViewModel"] = collectionsVM;
-            }            
+                if (cancel!=null && !cancel.IsCancellationRequested)
+                    cancel.Cancel();
+            }
+            catch (OperationCanceledException ex)
+            {
+                //no op
+            }
+            catch (AggregateException ex)
+            {
+                ex.Flatten().Handle(err =>
+                {
+                    return (err is OperationCanceledException || err is TaskCanceledException);
+                });
+            }
         }
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
@@ -83,22 +100,22 @@ namespace PhoneApp1.Views
 
             if (viewModelsInvalidated)
             {
-                if (State.ContainsKey("BooksViewModel"))
-                    bookListVM = State["BooksViewModel"] as BookListViewModel;
-                else
+                //if (State.ContainsKey("BooksViewModel"))
+                    //bookListVM = State["BooksViewModel"] as BookListViewModel;
+                //else
                     bookListVM = new BookListViewModel();
 
                 booksPanoramaItem.DataContext = bookListVM;
 
-                if (State.ContainsKey("CollectionsViewModel"))
-                    collectionsVM = State["CollectionsViewModel"] as CollectionsViewModel;
-                else
+                //if (State.ContainsKey("CollectionsViewModel"))
+                    //collectionsVM = State["CollectionsViewModel"] as CollectionsViewModel;
+                //else
                     collectionsVM = new CollectionsViewModel();
 
                 collectionsPanoramaItem.DataContext = collectionsVM;
 
                 viewModelsInvalidated = false;
-            }            
+            }
 
             cancel = new CancellationTokenSource();
 
@@ -155,7 +172,7 @@ namespace PhoneApp1.Views
                 }
                 catch (AggregateException ex)
                 {
-                    ex.Handle(err =>
+                    ex.Flatten().Handle(err =>
                     {
                         return (err is OperationCanceledException || err is TaskCanceledException);
                     });
@@ -405,7 +422,7 @@ namespace PhoneApp1.Views
 
                     RefreshBookTiles();
 
-                }, cancel.Token, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
+                }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
             }
             else
             {
@@ -446,7 +463,7 @@ namespace PhoneApp1.Views
                         {
                             RefreshHighlightTile();
 
-                        }, cancel.Token, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
+                        }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, uiTaskScheduler);
                 }
             }
             else
@@ -464,7 +481,6 @@ namespace PhoneApp1.Views
             if (selectedBook == null)
                 return;
 
-            //ToDo: Do we need to synchronize access to Current.State?
             if (PhoneApplicationService.Current.State.ContainsKey("SelectedBook"))
                 PhoneApplicationService.Current.State.Remove("SelectedBook");
 
@@ -483,6 +499,24 @@ namespace PhoneApp1.Views
         {
             //workaround for jumpy / jerky listbox scrolling - don't know the reason
             this.Focus();
+        }
+
+        private void allBooks_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            if (collectionsVM.CollectedBooks != null)
+            {
+                PhoneApplicationService.Current.State["CollectedBooks"] = collectionsVM.CollectedBooks;
+                NavigationService.Navigate(new Uri("/Views/CollectedBooksPage.xaml", UriKind.Relative));
+            }
+        }
+
+        private void allHighlights_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            if (collectionsVM.CollectedHighlights != null)
+            {
+                PhoneApplicationService.Current.State["CollectedHighlights"] = collectionsVM.CollectedHighlights;
+                NavigationService.Navigate(new Uri("/Views/CollectedHighlightsPage.xaml", UriKind.Relative));
+            }
         }
     }
 }

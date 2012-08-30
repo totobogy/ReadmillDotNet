@@ -31,11 +31,6 @@ namespace PhoneApp1.ViewModels
 
         public Task LoadBookHighlightsAsync(CancellationToken cancelToken = default(CancellationToken))
         {
-            cancelToken.Register(() =>
-                {
-                    throw new OperationCanceledException(cancelToken);
-                });
-
             IDictionary<decimal, Highlight> highlights = new Dictionary<decimal, Highlight>();
             
             ReadingsQueryOptions readingOptions = new ReadingsQueryOptions() { CountValue = 100 };
@@ -58,13 +53,12 @@ namespace PhoneApp1.ViewModels
                             if (!highlights.ContainsKey(h.Locators.Position))
                             {
                                 highlights.Add(h.Locators.Position, h);
-                                //hCount++;
                             }
                     }
                 }
 
                 BookHighlights = highlights.Values.ToList<Highlight>();                              
-            }, cancelToken);           
+            }, cancelToken, TaskCreationOptions.None, TaskScheduler.Default);           
         }
 
         public Task LikeHighlightAsync(string highlightId)

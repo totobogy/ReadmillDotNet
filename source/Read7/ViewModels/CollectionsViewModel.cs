@@ -19,6 +19,7 @@ using System.IO;
 using System.Xml.Serialization;
 using System.Collections;
 using System.Threading;
+using System.Runtime.Serialization;
 
 namespace PhoneApp1.ViewModels
 {
@@ -59,6 +60,17 @@ namespace PhoneApp1.ViewModels
         }
 
         public CollectionsViewModel()
+        {
+            Initialize();
+        }
+
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext context)
+        {
+            Initialize();
+        }  
+
+        private void Initialize()
         {
             client = new ReadmillClient(AppContext.ClientId);
 
