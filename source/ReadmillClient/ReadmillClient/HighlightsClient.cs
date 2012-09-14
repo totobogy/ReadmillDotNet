@@ -9,6 +9,7 @@ using Com.Readmill.Api;
 using System.Threading.Tasks;
 using System.Security;
 using System.Xml;
+using System.Threading;
 
 namespace Com.Readmill.Api
 {
@@ -88,7 +89,7 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <param name="options">Query options for retrieving the highlights (optional)</param>
         /// <returns></returns>
-        public Task<List<Highlight>> GetHighlightsAsync(RangeQueryOptions options = null)
+        public Task<List<Highlight>> GetHighlightsAsync(RangeQueryOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
@@ -110,7 +111,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var highlightsUrl = highlightsUriTemplates[HighlightsUriTemplateType.PublicHighlights].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<List<Highlight>>(highlightsUrl);
+            return GetAsync<List<Highlight>>(highlightsUrl, cancellationToken);
         }
 
         /// <summary>
@@ -119,7 +120,7 @@ namespace Com.Readmill.Api
         /// <param name="highlightId"></param>
         /// <param name="accessToken">(optional) for private highlights</param>
         /// <returns></returns>
-        public Task<Highlight> GetHighlightByIdAsync(string highlightId, string accessToken = null)
+        public Task<Highlight> GetHighlightByIdAsync(string highlightId, string accessToken = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
@@ -135,7 +136,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var highlightsUrl = highlightsUriTemplates[HighlightsUriTemplateType.SingleHighlight].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<Highlight>(highlightsUrl);
+            return GetAsync<Highlight>(highlightsUrl, cancellationToken);
         }
 
         public Task<string> UpdateHighlightAsync(string accessToken, string highlightId, Highlight updatedHighlight)

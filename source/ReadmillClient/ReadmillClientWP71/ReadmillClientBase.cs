@@ -67,11 +67,15 @@ namespace Com.Readmill.Api
                 }).Unwrap();            
         }
 
+        /// <summary>
+        /// Not intended for normal Public use except in cases where the corrresponding API is not available
+        /// </summary>
+        /// <param name="readmillUri">Complete url of the Readmill resource, including authentication information. The url is used as is.</param>
+        /// <returns></returns>
         public Task PostAsync(Uri readmillUri)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
             req.Method = "POST";
-            //req.ContentType = "application/json";
 
             Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
 
@@ -197,16 +201,16 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <typeparam name="T">Readmill Resource type</typeparam>
         /// <param name="permalink">Permalink of the resource</param>
-        /// <param name="accessToken">Needed of the resource is private</param>
+        /// <param name="accessToken">Needed if the resource is private</param>
         /// <returns></returns>
-        public Task<T> GetFromPermalinkAsync<T>(string permalink, string accessToken = null)
+        public Task<T> GetFromPermalinkAsync<T>(string permalink, string accessToken = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             string readmillUri = permalink + "?client_id=" + this.ClientId;
 
             if (accessToken != null)
                 readmillUri = readmillUri + "&access_token=" + accessToken;
 
-            return GetAsync<T>(new Uri(readmillUri));
+            return GetAsync<T>(new Uri(readmillUri), cancellationToken);
         }
 
 

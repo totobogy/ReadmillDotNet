@@ -87,7 +87,7 @@
             <controls:PanoramaItem Name="collectionsPanoramaItem" Header="collections">
                 <Grid Name="collectionsGrid" Loaded="collectionsGrid_Loaded">
                     <Border Background="#897d69" BorderBrush="Black" BorderThickness="0" Height="176" HorizontalAlignment="Left" Margin="10,275,0,0" Name="highlightBorder" VerticalAlignment="Top" Width="366">
-                        <StackPanel  Name="highlightTile" Orientation="Vertical">
+                        <StackPanel Name="highlightTile" Orientation="Vertical">
                             <TextBlock TextTrimming="WordEllipsis" TextWrapping="Wrap" Height="130" Name="highlightTextBlock" Text="{Binding Content}" FontSize="24" Padding="15,15,15,15" TextAlignment="Left" Margin="5" Width="346" />
                             <TextBlock TextTrimming="WordEllipsis" TextWrapping="Wrap" Height="30" Name="highlightedBy" Text="{Binding User.FullName}" HorizontalAlignment="Stretch" Margin="5,0,5,5" VerticalAlignment="Top" Width="346" Padding="15,3" FontSize="18" />
                         </StackPanel>                        

@@ -9,6 +9,7 @@ using Com.Readmill.Api;
 using System.Threading.Tasks;
 using System.Security;
 using System.Xml;
+using System.Threading;
 
 namespace Com.Readmill.Api
 {
@@ -140,7 +141,7 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <param name="options">Query options for retrieving the readings (optional)</param>
         /// <returns></returns>
-        public Task<List<Reading>> GetReadingsAsync(ReadingsQueryOptions options = null)
+        public Task<List<Reading>> GetReadingsAsync(ReadingsQueryOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
 
@@ -165,7 +166,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var readingsUrl = readingsUriTemplates[ReadingsUriTemplateType.PublicReadings].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<List<Reading>>(readingsUrl);
+            return GetAsync<List<Reading>>(readingsUrl, cancellationToken);
         }
 
         /// <summary>
@@ -174,7 +175,7 @@ namespace Com.Readmill.Api
         /// <param name="readingId"></param>
         /// <param name="accessToken">(optional) for private readings</param>
         /// <returns></returns>
-        public Task<Reading> GetReadingByIdAsync(string readingId, string accessToken = null)
+        public Task<Reading> GetReadingByIdAsync(string readingId, string accessToken = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
             parameters.Add(ReadmillConstants.AccessToken, accessToken);
@@ -190,7 +191,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var readingsUrl = readingsUriTemplates[ReadingsUriTemplateType.SingleReading].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<Reading>(readingsUrl);
+            return GetAsync<Reading>(readingsUrl, cancellationToken);
         }
 
         public Task<string> UpdateReadingAsync(string accessToken, string readingId, ReadingUpdategram updatedReading)
@@ -217,7 +218,11 @@ namespace Com.Readmill.Api
             return DeleteAsync(readingUrl);
         }
         
-        public Task<List<Highlight>> GetReadingHighlightsAsync(string readingId, RangeQueryOptions options = null, string accessToken = null)
+        public Task<List<Highlight>> GetReadingHighlightsAsync(
+            string readingId, 
+            RangeQueryOptions options = null, 
+            string accessToken = null,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             IDictionary<string, string> parameters = GetInitializedParameterCollection();
             parameters.Add(ReadingsClient.ReadingId, readingId);
@@ -241,7 +246,7 @@ namespace Com.Readmill.Api
             parameters = tmpParams;
 
             var highlightsUrl = readingsUriTemplates[ReadingsUriTemplateType.ReadingHighlights].BindByName(this.readmillBaseUri, parameters);
-            return GetAsync<List<Highlight>>(highlightsUrl);            
+            return GetAsync<List<Highlight>>(highlightsUrl, cancellationToken);            
         }
 
         public Task<string> PostReadingHighlightAsync(string accessToken, string readingId, Highlight highlight)

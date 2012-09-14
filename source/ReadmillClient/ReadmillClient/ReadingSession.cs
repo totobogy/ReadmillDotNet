@@ -56,6 +56,7 @@ namespace Com.Readmill.Api
             Ping ping = new Ping();
             ping.SessionId = this.sessionId;
 
+            //ToDo: Shouldn't be less than last progress?
             ping.Progress = progress;
 
             ping.Latitude = latitude;
@@ -87,7 +88,7 @@ namespace Com.Readmill.Api
             Comment comment = new Comment() { Content = content };
             return client.PostReadingCommentAsync(this.accessToken, this.readingId, comment);
         }
-
+        
         public void Close()
         {
             this.isOpen = false;

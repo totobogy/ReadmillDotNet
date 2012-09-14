@@ -117,15 +117,22 @@ namespace PhoneApp1.Views
 
         void HomePage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //If we are returning from a search AND the user is on search page
+            //If we are returning from a search AND the user is on search panorama item
             if (bookListVM.ListState == BookListViewModel.State.SearchResult
                 && panoramaRoot.SelectedItem == booksPanoramaItem)
             {
                 e.Cancel = true;
 
-                //Load RecentlyRead instead
-                booksList.ItemsSource = null;
-                booksList.InvalidateArrange();
+                if (booksList.ItemsSource == null)
+                {
+                    if (booksList.Items.Count > 0)
+                        booksList.Items.RemoveAt(0);
+                }
+                else
+                {
+                    booksList.ItemsSource = null;
+                    booksList.InvalidateArrange();
+                }
 
                 //show progress bar - move to VM?
                 booksProgressBar.IsIndeterminate = true;
@@ -141,6 +148,8 @@ namespace PhoneApp1.Views
                         booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
 
                     booksList.ItemsSource = bookListVM.BookList;
+                    booksList.IsEnabled = true;
+
                 }, uiTaskScheduler);
             }
             else
@@ -213,6 +222,9 @@ namespace PhoneApp1.Views
         {
             Book selectedBook = (Book)booksList.SelectedItem;
 
+            if (selectedBook == null)
+                return;
+
             if (PhoneApplicationService.Current.State.ContainsKey("SelectedBook"))
                 PhoneApplicationService.Current.State.Remove("SelectedBook");
 
@@ -248,6 +260,23 @@ namespace PhoneApp1.Views
                     //hide progress-bar
                     if (booksProgressBar.Visibility == System.Windows.Visibility.Visible)
                         booksProgressBar.Visibility = System.Windows.Visibility.Collapsed;
+
+                    if (bookListVM.BookList == null || bookListVM.BookList.Count == 0)
+                    {
+                        booksList.ItemsSource = null;
+                        booksList.Items.Add(new ListBoxItem()
+                        {
+                            Content = new TextBlock()
+                            {
+                                TextWrapping = System.Windows.TextWrapping.Wrap,
+                                FontSize = 26,
+                                Padding = new Thickness(10, 10, 10, 10),
+                                Text = AppStrings.NoSearchResults
+                            }
+                        });
+                        booksList.IsEnabled = false;
+                        return;
+                    }
 
                     booksList.ItemsSource = bookListVM.BookList;
 

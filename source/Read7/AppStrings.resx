@@ -177,6 +177,9 @@
   <data name="NoReadingEx" xml:space="preserve">
     <value>No reading for this book for current user.</value>
   </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>sorry, no books or authors were found matching your search.</value>
+  </data>
   <data name="NoStoryMsg" xml:space="preserve">
     <value>there is no description or story available for this book yet.</value>
   </data>

@@ -241,6 +241,15 @@ namespace PhoneApp1 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to sorry, no books or authors were found matching your search..
+        /// </summary>
+        internal static string NoSearchResults {
+            get {
+                return ResourceManager.GetString("NoSearchResults", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to there is no description or story available for this book yet..
         /// </summary>
         internal static string NoStoryMsg {

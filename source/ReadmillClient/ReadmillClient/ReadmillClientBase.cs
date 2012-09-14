@@ -11,6 +11,7 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using System.Threading;
 
 namespace Com.Readmill.Api
 {
@@ -19,9 +20,20 @@ namespace Com.Readmill.Api
         protected Uri readmillBaseUri =  new Uri(ReadmillConstants.ReadmillBaseUrl);
         protected string ClientId { get; set; }
 
+        /// <summary>
+        /// RequestTimeout in seconds.
+        /// Timeout value must be updated before a call, if desired. Changing the timeout
+        /// does not affect in progress requests.
+        /// </summary>
+        protected int RequestTimeout { get; set; }
+
         public ReadmillClientBase(string clientId)
         {
             this.ClientId = clientId;
+
+            //defualt timeout
+            RequestTimeout = TimeSpan.FromSeconds(15).Seconds;
+
             LoadTemplates();
         }
 
@@ -55,12 +67,71 @@ namespace Com.Readmill.Api
                 }).Unwrap();            
         }
 
+        /// <summary>
+        /// Not intended for normal Public use except in cases where the corrresponding API is not available
+        /// </summary>
+        /// <param name="readmillUri">Complete url of the Readmill resource, including authentication information. The url is used as is.</param>
+        /// <returns></returns>
+        public Task PostAsync(Uri readmillUri)
+        {
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
+            req.Method = "POST";
+
+            Task<WebResponse> t = Task<WebResponse>.Factory.FromAsync(req.BeginGetResponse, req.EndGetResponse, null);
+
+            return t.ContinueWith(
+                (responseTask) =>
+                {
+                    if (responseTask.IsFaulted)
+                    {
+                        responseTask.Exception.Flatten().Handle(
+                            ex =>
+                            {
+                                //We don't really want to mark as handled - only add extra info.
+                                if(ex is WebException 
+                                    && (((WebException)ex).Status == WebExceptionStatus.ProtocolError)
+                                    || (((WebException)ex).Status == WebExceptionStatus.UnknownError))
+                                {
+                                    try
+                                    {
+                                        using (HttpWebResponse resp = responseTask.Result as HttpWebResponse)
+                                        {
+                                            ex.Data.Add("HttpStatusCode", resp.StatusCode);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        //no op
+                                    }
+                                }
+                                return false;
+                            });
+                    }
+
+                    using (responseTask.Result)
+                    {
+                        return;
+                    }
+                });
+
+            /*cancellationToken.Register(() =>
+                {
+                    req.Abort();
+                    throw new OperationCanceledException(cancellationToken);
+                });*/
+        }
 
         protected Task<string> PostAsync<T>(T readmillObject, Uri readmillUri)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(readmillUri);
             req.Method = "POST";
             req.ContentType = "application/json";
+
+            /*cancellationToken.Register(() =>
+                {
+                    req.Abort();
+                    throw new OperationCanceledException(cancellationToken);
+                });*/
 
             Task<Stream> s = Task<Stream>.Factory.FromAsync(req.BeginGetRequestStream, req.EndGetRequestStream, null);
             return s.ContinueWith(
@@ -85,34 +156,43 @@ namespace Com.Readmill.Api
                 }).Unwrap();                     
         }
 
-
-        protected Task<T> GetAsync<T>(Uri readmillUri)
+        protected Task<T> GetAsync<T>(Uri readmillUri, CancellationToken cancellationToken = default(CancellationToken))
         {
             TaskCompletionSource<Stream> tcs = new TaskCompletionSource<Stream>();
 
             WebClient client = new WebClient();
 
+            cancellationToken.Register(() =>
+            {
+                client.CancelAsync();
+            });
+
             client.OpenReadCompleted += (sender, args) =>
-                {
-                    if (args.Error != null)
-                        tcs.SetException(args.Error);
-                    else if (args.Cancelled)
-                        tcs.SetCanceled();
-                    else tcs.SetResult(args.Result);
-                };
+            {
+                if (args.Error != null)
+                    tcs.SetException(args.Error);
+                else if (args.Cancelled)
+                    tcs.SetCanceled();
+                else tcs.SetResult(args.Result);
+            };
 
             client.OpenReadAsync(readmillUri);
 
             return tcs.Task.ContinueWith(
                         (readTask) =>
                         {
+                            cancellationToken.Register(() =>
+                            {
+                                throw new OperationCanceledException(cancellationToken);
+                            });
+
                             using (readTask.Result)
                             {
                                 DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(T));
                                 T obj = (T)ser.ReadObject(readTask.Result);
                                 return obj;
                             }
-                        });
+                        }, cancellationToken);
 
         }
 
@@ -121,20 +201,20 @@ namespace Com.Readmill.Api
         /// </summary>
         /// <typeparam name="T">Readmill Resource type</typeparam>
         /// <param name="permalink">Permalink of the resource</param>
-        /// <param name="accessToken">Needed of the resource is private</param>
+        /// <param name="accessToken">Needed if the resource is private</param>
         /// <returns></returns>
-        public Task<T> GetFromPermalinkAsync<T>(string permalink, string accessToken = null)
+        public Task<T> GetFromPermalinkAsync<T>(string permalink, string accessToken = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             string readmillUri = permalink + "?client_id=" + this.ClientId;
 
             if (accessToken != null)
                 readmillUri = readmillUri + "&access_token=" + accessToken;
 
-            return GetAsync<T>(new Uri(readmillUri));
+            return GetAsync<T>(new Uri(readmillUri), cancellationToken);
         }
 
 
-        protected Task DeleteAsync(Uri readmillUri)
+        public Task DeleteAsync(Uri readmillUri)
         {
             HttpWebRequest req = (HttpWebRequest) WebRequest.Create(readmillUri);
             req.Method = "DELETE";
